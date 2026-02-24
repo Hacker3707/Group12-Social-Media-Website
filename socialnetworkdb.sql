@@ -42,7 +42,8 @@ CREATE TABLE `comment` (
   `CommentID` int(11) NOT NULL,
   `PostID` int(11) DEFAULT NULL,
   `UserID` int(11) DEFAULT NULL,
-  `Content` text DEFAULT NULL
+  `Content` text DEFAULT NULL,
+  `CreatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -124,7 +125,7 @@ CREATE TABLE `photo` (
 
 CREATE TABLE `post` (
   `PostID` int(11) NOT NULL,
-  `UserID` int(11) DEFAULT NULL,
+  `UserID` int(11) NOT NULL,
   `Content` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -136,9 +137,9 @@ CREATE TABLE `post` (
 
 CREATE TABLE `reaction` (
   `ReactionID` int(11) NOT NULL,
-  `UserID` int(11) DEFAULT NULL,
-  `CommentID` int(11) DEFAULT NULL,
-  `Type` varchar(50) DEFAULT NULL
+  `UserID` int(11) NOT NULL,
+  `TargetID` int(11) DEFAULT NULL,
+  `TargetType` ENUM('post','comment') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -237,7 +238,7 @@ ALTER TABLE `post`
 ALTER TABLE `reaction`
   ADD PRIMARY KEY (`ReactionID`),
   ADD KEY `UserID` (`UserID`),
-  ADD KEY `CommentID` (`CommentID`);
+  ADD KEY `TargetID` (`TargetID`);
 
 --
 -- Chỉ mục cho bảng `users`
@@ -278,7 +279,7 @@ ALTER TABLE `group`
 -- AUTO_INCREMENT cho bảng `media`
 --
 ALTER TABLE `media`
-  MODIFY `MediaID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `MediaID` int(11)  NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT cho bảng `notification`
@@ -364,9 +365,7 @@ ALTER TABLE `post`
 -- Các ràng buộc cho bảng `reaction`
 --
 ALTER TABLE `reaction`
-  ADD CONSTRAINT `reaction_ibfk_1` FOREIGN KEY (`UserID`) REFERENCES `users` (`UserID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `reaction_ibfk_2` FOREIGN KEY (`CommentID`) REFERENCES `comment` (`CommentID`) ON DELETE CASCADE ON UPDATE CASCADE;
-
+  ADD CONSTRAINT `reaction_ibfk_1` FOREIGN KEY (`UserID`) REFERENCES `users` (`UserID`) ON DELETE CASCADE ON UPDATE CASCADE;
 --
 -- Các ràng buộc cho bảng `video`
 --
