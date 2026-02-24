@@ -130,16 +130,6 @@ CREATE TABLE `post` (
 
 -- --------------------------------------------------------
 
---
--- Cấu trúc bảng cho bảng `reaction`
---
-
-CREATE TABLE `reaction` (
-  `ReactionID` int(11) NOT NULL,
-  `UserID` int(11) DEFAULT NULL,
-  `CommentID` int(11) DEFAULT NULL,
-  `Type` varchar(50) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
