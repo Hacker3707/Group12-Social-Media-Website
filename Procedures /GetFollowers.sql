@@ -3,6 +3,7 @@ DELIMITER $$
 CREATE PROCEDURE GetFollowers(
      IN userID_in INT
 )
+     
 BEGIN
      SELECT u.UserID,
             u.Username
