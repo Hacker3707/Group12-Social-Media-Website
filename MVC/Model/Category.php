@@ -28,10 +28,11 @@ class Category{
         $this->description = $description;
     }
 
-    public function __construct(){
-        $this->categoryId = "";
-        $this->categoryName = "";
-        $this->description = "";
+    
+    public function __construct($categoryId = "", $categoryName = "", $description = ""){
+        $this->categoryId = $categoryId;
+        $this->categoryName = $categoryName;
+        $this->description = $description;
     }
 
     public function __toString(){

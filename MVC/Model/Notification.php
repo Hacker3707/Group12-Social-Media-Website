@@ -46,12 +46,19 @@ class Notification{
         $this->isRead = $isRead;
     }
 
-    public function __construct(){
-        $this->notificationId = "";
-        $this->userId = "";
-        $this->content = "";
-        $this->createdAt = date("Y-m-d H:i:s");
-        $this->isRead = false;
+    
+    public function __construct(
+        $notificationId = "",
+        $userId = "",
+        $content = "",
+        $createdAt = "",
+        $isRead = false
+    ){
+        $this->notificationId = $notificationId;
+        $this->userId = $userId;
+        $this->content = $content;
+        $this->createdAt = $createdAt ?: date("Y-m-d H:i:s");
+        $this->isRead = $isRead;
     }
 
     public function __toString(){

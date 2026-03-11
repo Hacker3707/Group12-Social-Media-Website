@@ -28,10 +28,11 @@ class Follow{
         $this->followDate = $followDate;
     }
 
-    public function __construct(){
-        $this->followerId = "";
-        $this->followingId = "";
-        $this->followDate = date("Y-m-d H:i:s");
+  
+    public function __construct($followerId = "", $followingId = "", $followDate = ""){
+        $this->followerId = $followerId;
+        $this->followingId = $followingId;
+        $this->followDate = $followDate ?: date("Y-m-d H:i:s");
     }
 
     public function __toString(){
