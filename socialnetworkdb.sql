@@ -42,7 +42,8 @@ CREATE TABLE `comment` (
   `CommentID` int(11) NOT NULL,
   `PostID` int(11) DEFAULT NULL,
   `UserID` int(11) DEFAULT NULL,
-  `Content` text DEFAULT NULL
+  `Content` text DEFAULT NULL,
+  `CreatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -124,7 +125,7 @@ CREATE TABLE `photo` (
 
 CREATE TABLE `post` (
   `PostID` int(11) NOT NULL,
-  `UserID` int(11) DEFAULT NULL,
+  `UserID` int(11) NOT NULL,
   `Content` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -136,9 +137,9 @@ CREATE TABLE `post` (
 
 CREATE TABLE `reaction` (
   `ReactionID` int(11) NOT NULL,
-  `UserID` int(11) DEFAULT NULL,
-  `CommentID` int(11) DEFAULT NULL,
-  `Type` varchar(50) DEFAULT NULL
+  `UserID` int(11) NOT NULL,
+  `TargetID` int(11) DEFAULT NULL,
+  `TargetType` ENUM('post','comment') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -237,7 +238,7 @@ ALTER TABLE `post`
 ALTER TABLE `reaction`
   ADD PRIMARY KEY (`ReactionID`),
   ADD KEY `UserID` (`UserID`),
-  ADD KEY `CommentID` (`CommentID`);
+  ADD KEY `TargetID` (`TargetID`);
 
 --
 -- Chỉ mục cho bảng `users`
@@ -278,7 +279,7 @@ ALTER TABLE `group`
 -- AUTO_INCREMENT cho bảng `media`
 --
 ALTER TABLE `media`
-  MODIFY `MediaID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `MediaID` int(11)  NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT cho bảng `notification`
@@ -303,77 +304,3 @@ ALTER TABLE `reaction`
 --
 ALTER TABLE `users`
   MODIFY `UserID` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- Các ràng buộc cho các bảng đã đổ
---
-
---
--- Các ràng buộc cho bảng `comment`
---
-ALTER TABLE `comment`
-  ADD CONSTRAINT `comment_ibfk_1` FOREIGN KEY (`PostID`) REFERENCES `post` (`PostID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `comment_ibfk_2` FOREIGN KEY (`UserID`) REFERENCES `users` (`UserID`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Các ràng buộc cho bảng `follow`
---
-ALTER TABLE `follow`
-  ADD CONSTRAINT `follow_ibfk_1` FOREIGN KEY (`FollowerID`) REFERENCES `users` (`UserID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `follow_ibfk_2` FOREIGN KEY (`FollowingID`) REFERENCES `users` (`UserID`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Các ràng buộc cho bảng `group`
---
-ALTER TABLE `group`
-  ADD CONSTRAINT `group_ibfk_1` FOREIGN KEY (`CategoryID`) REFERENCES `category` (`CategoryID`) ON DELETE SET NULL ON UPDATE CASCADE;
-
---
--- Các ràng buộc cho bảng `group_member`
---
-ALTER TABLE `group_member`
-  ADD CONSTRAINT `group_member_ibfk_1` FOREIGN KEY (`UserID`) REFERENCES `users` (`UserID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `group_member_ibfk_2` FOREIGN KEY (`GroupID`) REFERENCES `group` (`GroupID`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Các ràng buộc cho bảng `media`
---
-ALTER TABLE `media`
-  ADD CONSTRAINT `media_ibfk_1` FOREIGN KEY (`PostID`) REFERENCES `post` (`PostID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `media_ibfk_2` FOREIGN KEY (`UserID`) REFERENCES `users` (`UserID`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Các ràng buộc cho bảng `notification`
---
-ALTER TABLE `notification`
-  ADD CONSTRAINT `notification_ibfk_1` FOREIGN KEY (`UserID`) REFERENCES `users` (`UserID`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Các ràng buộc cho bảng `photo`
---
-ALTER TABLE `photo`
-  ADD CONSTRAINT `photo_ibfk_1` FOREIGN KEY (`MediaID`) REFERENCES `media` (`MediaID`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Các ràng buộc cho bảng `post`
---
-ALTER TABLE `post`
-  ADD CONSTRAINT `post_ibfk_1` FOREIGN KEY (`UserID`) REFERENCES `users` (`UserID`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Các ràng buộc cho bảng `reaction`
---
-ALTER TABLE `reaction`
-  ADD CONSTRAINT `reaction_ibfk_1` FOREIGN KEY (`UserID`) REFERENCES `users` (`UserID`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `reaction_ibfk_2` FOREIGN KEY (`CommentID`) REFERENCES `comment` (`CommentID`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Các ràng buộc cho bảng `video`
---
-ALTER TABLE `video`
-  ADD CONSTRAINT `video_ibfk_1` FOREIGN KEY (`MediaID`) REFERENCES `media` (`MediaID`) ON DELETE CASCADE ON UPDATE CASCADE;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
