@@ -304,3 +304,120 @@ ALTER TABLE `reaction`
 --
 ALTER TABLE `users`
   MODIFY `UserID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- UPDATE NGÀY 15/03/2026 - CS LẦN 2: Sửa các bảng reaction, post, comment, media, notification, group -> groups; Thêm mới bảng post_media, photo_media
+--
+
+--
+-- Update table `reaction`
+--
+ALTER TABLE `reaction`
+  DROP COLUMN `TargetID`,
+  DROP COLUMN `TargetType`,
+  ADD COLUMN `PostID` INT(11) DEFAULT NULL,
+  ADD COLUMN `CommentID` INT(11) DEFAULT NULL,
+  ADD COLUMN ReactionType VARCHAR(20) DEFAULT 'like',
+  ADD COLUMN CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  ADD KEY `PostID` (`PostID`),
+  ADD KEY `CommentID` (`CommentID`);
+
+
+--
+-- Create table `post_media`
+--
+CREATE TABLE `post_media` (
+  `Post_mediaID` INT(11) NOT NULL,
+  `PostID` INT(11) NOT NULL,
+  `MediaID` INT(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE `post_media`
+  ADD PRIMARY KEY (`Post_mediaID`),
+  ADD KEY `PostID` (`PostID`),
+  ADD KEY `MediaID` (`MediaID`);
+
+ALTER TABLE `post_media`
+  MODIFY `Post_mediaID` int(11) NOT NULL AUTO_INCREMENT;
+
+
+--
+-- Create table `comment_media`
+--
+CREATE TABLE `comment_media` (
+  `Comment_mediaID` INT(11) NOT NULL,
+  `CommentID` INT(11) NOT NULL,
+  `MediaID` INT(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE `comment_media`
+  ADD PRIMARY KEY (`Comment_mediaID`),
+  ADD KEY `CommentID` (`CommentID`),
+  ADD KEY `MediaID` (`MediaID`);
+
+ALTER TABLE `comment_media`
+  MODIFY `Comment_mediaID` int(11) NOT NULL AUTO_INCREMENT;
+
+
+--
+-- Update table `media`
+--
+ALTER TABLE `media`
+    DROP COLUMN `PostID`,
+    ADD COLUMN FilePath VARCHAR(255),
+    ADD COLUMN CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    DROP COLUMN `MediaType`,
+    ADD COLUMN `MediaType` ENUM('photo','video');
+
+
+--
+-- Update table `post`
+--
+ALTER TABLE `post`
+  ADD COLUMN `CreatedAt` datetime DEFAULT CURRENT_TIMESTAMP,
+  ADD COLUMN `CategoryID` int(11) DEFAULT NULL;
+
+ALTER TABLE `post`
+  ADD KEY `CategoryID` (`CategoryID`);
+
+
+--
+-- Update table `notification`
+--
+ALTER TABLE notification
+  ADD COLUMN IsRead BOOLEAN DEFAULT FALSE,
+  ADD COLUMN CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  ADD COLUMN SenderID INT;
+
+
+--
+-- Update table `users`
+--
+ALTER TABLE users
+ADD COLUMN Password VARCHAR(255),
+ADD COLUMN AvatarFP VARCHAR(255),
+ADD COLUMN Phone VARCHAR(20),
+ADD COLUMN Bio TEXT,
+ADD COLUMN CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN LastLogin DATETIME,
+ADD COLUMN Role ENUM('user','admin') DEFAULT 'user',
+ADD COLUMN AccountStatus ENUM('active','suspended','deleted') DEFAULT 'active';
+
+
+--
+-- Update table `group` thành `groups` (do trùng tên thành phần hệ thống)
+-- 
+DROP TABLE IF EXISTS `group`;
+
+CREATE TABLE `groups` (
+  `GroupID` int(11) NOT NULL,
+  `CategoryID` int(11) DEFAULT NULL,
+  `GroupName` varchar(255) NOT NULL,
+  `Description` varchar(150) NOT NULL,
+  `Privacy` ENUM('public','private') NOT NULL,
+  `CreatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE `groups`
+  ADD PRIMARY KEY (`GroupID`),
+  ADD KEY `CategoryID` (`CategoryID`);
