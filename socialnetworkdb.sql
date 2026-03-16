@@ -370,6 +370,7 @@ ALTER TABLE `media`
 ALTER TABLE `post`
   ADD COLUMN `CreatedAt` datetime DEFAULT CURRENT_TIMESTAMP,
   ADD COLUMN `CategoryID` int(11) DEFAULT NULL;
+  ADD COLUMN `Title` VARCHAR(255) DEFAULT NULL;
 
 ALTER TABLE `post`
   ADD KEY `CategoryID` (`CategoryID`);
@@ -390,14 +391,14 @@ ALTER TABLE notification
 -- Update table `users`
 --
 ALTER TABLE users
-ADD COLUMN accountPassword VARCHAR(255),
+ADD COLUMN AccountPassword VARCHAR(255),
 ADD COLUMN AvatarFP VARCHAR(255),
 ADD COLUMN Phone VARCHAR(20),
 ADD COLUMN Bio TEXT,
 ADD COLUMN CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
 ADD COLUMN LastLogin DATETIME,
-ADD COLUMN userRole ENUM('user','admin') DEFAULT 'user',
-ADD COLUMN accountStatus ENUM('active','suspended','deleted') DEFAULT 'active';
+ADD COLUMN UserRole ENUM('user','admin') DEFAULT 'user',
+ADD COLUMN AccountStatus ENUM('active','suspended','deleted') DEFAULT 'active';
 
 
 --
@@ -423,8 +424,8 @@ ALTER TABLE `groups`
 -- Update table `comment`
 --
 ALTER TABLE `comment`
-  ADD COLUMN `commentParentID` INT(11) DEFAULT NULL,
-  ADD KEY `commentParentID` (`commentParentID`);
+  ADD COLUMN `CommentParentID` INT(11) DEFAULT NULL,
+  ADD KEY `CommentParentID` (`CommentParentID`);
 
 
 --
