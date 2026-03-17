@@ -374,7 +374,7 @@ ALTER TABLE `post`
   ADD COLUMN `GroupID` int(11) DEFAULT NULL;
 
 ALTER TABLE `post`
-  ADD KEY `CategoryID` (`CategoryID`);
+  ADD KEY `CategoryID` (`CategoryID`),
   ADD KEY `GroupID` (`GroupID`);
 
 
