@@ -306,8 +306,11 @@ ALTER TABLE `users`
   MODIFY `UserID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- UPDATE NGÀY 15/03/2026 - CS LẦN 2: Sửa các bảng reaction, post, comment, media, notification, group -> groups; Thêm mới bảng post_media, photo_media
---
+-- LẦN 2: Sửa các bảng reaction, post, comment, media, notification, group -> groups; Thêm mới bảng post_media, photo_media
+-- ==============================
+-- VERSION 2 (15/03/2026)
+-- Schema Update
+-- ==============================
 
 --
 -- Update table `reaction`
@@ -327,36 +330,26 @@ ALTER TABLE `reaction`
 -- Create table `post_media`
 --
 CREATE TABLE `post_media` (
-  `Post_mediaID` INT(11) NOT NULL,
   `PostID` INT(11) NOT NULL,
   `MediaID` INT(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 ALTER TABLE `post_media`
-  ADD PRIMARY KEY (`Post_mediaID`),
-  ADD KEY `PostID` (`PostID`),
-  ADD KEY `MediaID` (`MediaID`);
-
-ALTER TABLE `post_media`
-  MODIFY `Post_mediaID` int(11) NOT NULL AUTO_INCREMENT;
+  ADD PRIMARY KEY (`PostID`, `MediaID`),
+  ADD KEY `PostID` (`PostID`);
 
 
 --
 -- Create table `comment_media`
 --
 CREATE TABLE `comment_media` (
-  `Comment_mediaID` INT(11) NOT NULL,
   `CommentID` INT(11) NOT NULL,
   `MediaID` INT(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-ALTER TABLE `comment_media`
-  ADD PRIMARY KEY (`Comment_mediaID`),
-  ADD KEY `CommentID` (`CommentID`),
-  ADD KEY `MediaID` (`MediaID`);
-
-ALTER TABLE `comment_media`
-  MODIFY `Comment_mediaID` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `comment_media` 
+  ADD PRIMARY KEY (`CommentID`, `MediaID`),
+  ADD KEY `CommentID` (`CommentID`);
 
 
 --
@@ -364,9 +357,9 @@ ALTER TABLE `comment_media`
 --
 ALTER TABLE `media`
     DROP COLUMN `PostID`,
+    DROP COLUMN `MediaType`,
     ADD COLUMN FilePath VARCHAR(255),
     ADD COLUMN CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    DROP COLUMN `MediaType`,
     ADD COLUMN `MediaType` ENUM('photo','video');
 
 
@@ -375,10 +368,13 @@ ALTER TABLE `media`
 --
 ALTER TABLE `post`
   ADD COLUMN `CreatedAt` datetime DEFAULT CURRENT_TIMESTAMP,
-  ADD COLUMN `CategoryID` int(11) DEFAULT NULL;
+  ADD COLUMN `CategoryID` int(11) DEFAULT NULL,
+  ADD COLUMN `Title` VARCHAR(255) DEFAULT NULL,
+  ADD COLUMN `GroupID` int(11) DEFAULT NULL;
 
 ALTER TABLE `post`
-  ADD KEY `CategoryID` (`CategoryID`);
+  ADD KEY `CategoryID` (`CategoryID`),
+  ADD KEY `GroupID` (`GroupID`);
 
 
 --
@@ -387,20 +383,22 @@ ALTER TABLE `post`
 ALTER TABLE notification
   ADD COLUMN IsRead BOOLEAN DEFAULT FALSE,
   ADD COLUMN CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  ADD COLUMN SenderID INT;
+  ADD COLUMN SenderID INT,
+  ADD KEY SenderID (SenderID),
+  ADD COLUMN notiType ENUM('like', 'comment', 'follow', 'group_invite');
 
 
 --
 -- Update table `users`
 --
 ALTER TABLE users
-ADD COLUMN Password VARCHAR(255),
+ADD COLUMN AccountPassword VARCHAR(255),
 ADD COLUMN AvatarFP VARCHAR(255),
 ADD COLUMN Phone VARCHAR(20),
 ADD COLUMN Bio TEXT,
 ADD COLUMN CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
 ADD COLUMN LastLogin DATETIME,
-ADD COLUMN Role ENUM('user','admin') DEFAULT 'user',
+ADD COLUMN UserRole ENUM('user','admin') DEFAULT 'user',
 ADD COLUMN AccountStatus ENUM('active','suspended','deleted') DEFAULT 'active';
 
 
@@ -421,3 +419,52 @@ CREATE TABLE `groups` (
 ALTER TABLE `groups`
   ADD PRIMARY KEY (`GroupID`),
   ADD KEY `CategoryID` (`CategoryID`);
+
+
+--
+-- Update table `comment`
+--
+ALTER TABLE `comment`
+  ADD COLUMN `CommentParentID` INT(11) DEFAULT NULL,
+  ADD KEY `CommentParentID` (`CommentParentID`);
+
+
+--
+--  Ràng buộc duy nhất và các ràng buộc bổ sung (Unique Keys)
+--
+ALTER TABLE users
+ADD CONSTRAINT unique_username 
+UNIQUE (Username);
+
+ALTER TABLE reaction
+ADD CONSTRAINT unique_post_reaction
+UNIQUE (UserID, PostID);
+
+ALTER TABLE reaction
+ADD CONSTRAINT unique_comment_reaction 
+UNIQUE (UserID, CommentID);
+
+ALTER TABLE post_media
+ADD CONSTRAINT unique_post_media
+UNIQUE (PostID, MediaID);
+
+ALTER TABLE comment_media
+ADD CONSTRAINT unique_comment_media
+UNIQUE (CommentID, MediaID);
+
+
+--
+-- Ràng buộc khóa ngoại (Foreign Keys)
+--
+
+
+--
+--  Ràng buộc kiểm tra (Check Constraints)
+--
+ALTER TABLE reaction -- 1: Đảm bảo mỗi reaction chỉ liên kết với một loại đối tượng (post hoặc comment)
+ADD CONSTRAINT chk_reaction_target
+CHECK (
+  (PostID IS NOT NULL AND CommentID IS NULL)
+OR
+  (PostID IS NULL AND CommentID IS NOT NULL)
+  );
