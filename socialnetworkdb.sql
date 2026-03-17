@@ -370,10 +370,12 @@ ALTER TABLE `media`
 ALTER TABLE `post`
   ADD COLUMN `CreatedAt` datetime DEFAULT CURRENT_TIMESTAMP,
   ADD COLUMN `CategoryID` int(11) DEFAULT NULL,
-  ADD COLUMN `Title` VARCHAR(255) DEFAULT NULL;
+  ADD COLUMN `Title` VARCHAR(255) DEFAULT NULL,
+  ADD COLUMN `GroupID` int(11) DEFAULT NULL;
 
 ALTER TABLE `post`
   ADD KEY `CategoryID` (`CategoryID`);
+  ADD KEY `GroupID` (`GroupID`);
 
 
 --
