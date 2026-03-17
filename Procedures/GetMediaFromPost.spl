@@ -1,0 +1,11 @@
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS getMediaFromPost$$
+CREATE PROCEDURE getMediaFromPost(IN postId INT)
+BEGIN
+    SELECT *
+    FROM media
+    WHERE post_id = postId;
+END$$
+
+DELIMITER ;
