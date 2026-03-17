@@ -358,7 +358,6 @@ ALTER TABLE `comment_media`
 ALTER TABLE `media`
     DROP COLUMN `PostID`,
     DROP COLUMN `MediaType`,
-    DROP COLUMN `UserID`,
     ADD COLUMN FilePath VARCHAR(255),
     ADD COLUMN CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     ADD COLUMN `MediaType` ENUM('photo','video');
