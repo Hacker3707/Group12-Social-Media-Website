@@ -385,7 +385,7 @@ ALTER TABLE notification
   ADD COLUMN CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
   ADD COLUMN SenderID INT,
   ADD KEY SenderID (SenderID),
-  ADD COLUMN notiType ENUM('like', 'comment', 'follow', 'group_invite');
+  ADD COLUMN NotiType ENUM('like', 'comment', 'follow', 'group_invite');
 
 
 --
