@@ -1,46 +1,32 @@
 <?php
-class GroupModel extends Model
+class Group
 {
-    private ?int $groupId = null;
-    private int $categoryId;
+    private ?int $groupId;
+    private ?int $categoryId;
     private string $groupName;
+    private string $description;
+    private string $privacy; // public hoặc private
+    private ?string $createdAt;
 
-    public function __construct(?int $categoryId = null, ?string $groupName = null)
-    {
-        parent::__construct();
-        $this->categoryId = $categoryId ?? 0;
-        $this->groupName = $groupName ?? '';
+    public function __construct(
+        ?int $groupId = null,
+        string $groupName = '',
+        string $privacy = 'public'
+    ) {
+        $this->groupId = $groupId;
+        $this->groupName = $groupName;
+        $this->privacy = $privacy;
     }
 
-    public function all(): array
-    {
-        $sql = 'SELECT g.*, c.CategoryName
-                FROM `group` g
-                LEFT JOIN category c ON g.CategoryID = c.CategoryID
-                ORDER BY g.GroupID DESC';
-        return $this->db->query($sql)->fetchAll();
-    }
+    // Getters & Setters
+    public function getGroupId(): ?int { return $this->groupId; }
 
-    public function create(): bool
-    {
-        $stmt = $this->db->prepare(
-            'INSERT INTO `group` (CategoryID, GroupName) VALUES (:categoryId, :groupName)'
-        );
-        return $stmt->execute([
-            'categoryId' => $this->categoryId,
-            'groupName' => $this->groupName,
-        ]);
-    }
+    public function getGroupName(): string { return $this->groupName; }
+    public function setGroupName(string $name): void { $this->groupName = $name; }
 
-    public function addMember(int $groupId, int $userId, string $role = 'member'): bool
-    {
-        $stmt = $this->db->prepare(
-            'INSERT INTO group_member (UserID, GroupID, Role) VALUES (:userId, :groupId, :role)'
-        );
-        return $stmt->execute([
-            'userId' => $userId,
-            'groupId' => $groupId,
-            'role' => $role,
-        ]);
-    }
+    public function getPrivacy(): string { return $this->privacy; }
+    public function setPrivacy(string $privacy): void { $this->privacy = $privacy; }
+
+    public function getDescription(): string { return $this->description; }
+    public function setDescription(string $desc): void { $this->description = $desc; }
 }
