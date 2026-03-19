@@ -397,7 +397,6 @@ ADD COLUMN AvatarFP VARCHAR(255),
 ADD COLUMN Phone VARCHAR(20),
 ADD COLUMN Bio TEXT,
 ADD COLUMN CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-ADD COLUMN LastLogin DATETIME,
 ADD COLUMN UserRole ENUM('user','admin') DEFAULT 'user',
 ADD COLUMN AccountStatus ENUM('active','suspended','deleted') DEFAULT 'active';
 
