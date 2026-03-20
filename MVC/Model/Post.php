@@ -1,30 +1,32 @@
 <?php
 class Post {
-    private $post_id;
-    private $user_id;
-    private $group_id;
+    private $postId;
+    private $userId;
+    private $groupId;
+    private $categoryId;
     private $title;
     private $content;
-    private array $media_list; // Array to hold media objects (images, videos, etc.)
+    private array $mediaList; // Array to hold media objects (images, videos, etc.)
     private $created_at;
     
 
-    public function __construct($post_id, $user_id, $group_id, $title, $content, $media_list = [], $created_at) {
-        $this->post_id = $post_id;
-        $this->user_id = $user_id;
-        $this->group_id = $group_id;
+    public function __construct($post_id, $user_id, $group_id, $category_id, $title, $content, $media_list = [], $created_at) {
+        $this->postId = $post_id;
+        $this->userId = $user_id;
+        $this->groupId = $group_id;
+        $this->categoryId = $category_id;
         $this->title = $title;
         $this->content = $content;
-        $this->media_list = $media_list;
+        $this->mediaList = $media_list;
         $this->created_at = $created_at;
     }
 
     public function getPostId() {
-        return $this->post_id;
+        return $this->postId;
     }
 
     public function getUserId() {
-        return $this->user_id;
+        return $this->userId;
     }
 
     public function getContent() {
@@ -37,6 +39,18 @@ class Post {
 
     public function getTitle() {
         return $this->title;
+    }
+
+    public function getGroupId() {
+        return $this->groupId;
+    }
+    
+    public function getCategoryId() {
+        return $this->categoryId;
+    }
+
+    public function getMediaList() {
+        return $this->mediaList;
     }
 }
 ?>

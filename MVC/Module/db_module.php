@@ -1,7 +1,7 @@
 <?php
 
 function taoKetNoi(&$link){
-    $link = mysqli_connect("localhost", "root", "", "qlbaiviet");
+    $link = mysqli_connect("localhost", "root", "", "passo");
 
     if(!$link){
         die("Không thể kết nối CSDL: ".mysqli_connect_error());
