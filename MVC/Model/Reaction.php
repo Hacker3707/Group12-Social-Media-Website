@@ -1,31 +1,31 @@
 <?php
 class Reaction {
-    private $reaction_id;
-    private $post_id;
-    private $user_id;
-    private $comment_id; // Optional, if the reaction is for a comment instead of a post
+    private $reactionId;
+    private $postId;
+    private $userId;
+    private $commentId; // Optional, if the reaction is for a comment instead of a post
     private $type; // e.g., 'like', 'love', 'haha', etc.
     private $created_at;
 
     public function __construct($reaction_id, $post_id, $comment_id, $user_id, $type, $created_at) {
-        $this->reaction_id = $reaction_id;
-        $this->post_id = $post_id;
-        $this->comment_id = $comment_id;
-        $this->user_id = $user_id;
+        $this->reactionId = $reaction_id;
+        $this->postId = $post_id;
+        $this->commentId = $comment_id;
+        $this->userId = $user_id;
         $this->type = $type;
         $this->created_at = $created_at;
     }
 
     public function getReactionId() {
-        return $this->reaction_id;
+        return $this->reactionId;
     }
 
     public function getPostId() {
-        return $this->post_id;
+        return $this->postId;
     }
 
     public function getUserId() {
-        return $this->user_id;
+        return $this->userId;
     }
 
     public function getType() {
@@ -33,7 +33,7 @@ class Reaction {
     }
 
     public function getCommentId() {
-        return $this->comment_id;
+        return $this->commentId;
     }
 
     public function getCreatedAt() {
