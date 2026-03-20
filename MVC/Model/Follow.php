@@ -1,9 +1,14 @@
 <?php
-class Follow{
+class Follow {
     private $followerId;
     private $followingId;
-    private $followDate;
 
+    public function __construct($followerId = null, $followingId = null){
+        $this->followerId = $followerId;
+        $this->followingId = $followingId;
+    }
+
+    // Getter & Setter
     public function getFollowerId(){
         return $this->followerId;
     }
@@ -20,23 +25,8 @@ class Follow{
         $this->followingId = $followingId;
     }
 
-    public function getFollowDate(){
-        return $this->followDate;
-    }
-
-    public function setFollowDate($followDate){
-        $this->followDate = $followDate;
-    }
-
-  
-    public function __construct($followerId = "", $followingId = "", $followDate = ""){
-        $this->followerId = $followerId;
-        $this->followingId = $followingId;
-        $this->followDate = $followDate ?: date("Y-m-d H:i:s");
-    }
-
     public function __toString(){
-        return "Follow(followerId=$this->followerId, followingId=$this->followingId, followDate=$this->followDate)";
+        return "Follow(followerId={$this->followerId}, followingId={$this->followingId})";
     }
 }
 ?>

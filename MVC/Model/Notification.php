@@ -1,11 +1,30 @@
 <?php
-class Notification{
+class Notification {
     private $notificationId;
     private $userId;
+    private $senderId;
     private $content;
     private $createdAt;
     private $isRead;
 
+    // ===== Constructor =====
+    public function __construct(
+        $userId = null,
+        $content = "",
+        $senderId = null,
+        $isRead = false,
+        $createdAt = null,
+        $notificationId = null
+    ){
+        $this->notificationId = $notificationId;
+        $this->userId = $userId;
+        $this->senderId = $senderId;
+        $this->content = $content;
+        $this->isRead = $isRead;
+        $this->createdAt = $createdAt;
+    }
+
+    // ===== Getter & Setter =====
     public function getNotificationId(){
         return $this->notificationId;
     }
@@ -20,6 +39,14 @@ class Notification{
 
     public function setUserId($userId){
         $this->userId = $userId;
+    }
+
+    public function getSenderId(){
+        return $this->senderId;
+    }
+
+    public function setSenderId($senderId){
+        $this->senderId = $senderId;
     }
 
     public function getContent(){
@@ -47,22 +74,27 @@ class Notification{
     }
 
     
-    public function __construct(
-        $notificationId = "",
-        $userId = "",
-        $content = "",
-        $createdAt = "",
-        $isRead = false
-    ){
-        $this->notificationId = $notificationId;
-        $this->userId = $userId;
-        $this->content = $content;
-        $this->createdAt = $createdAt ?: date("Y-m-d H:i:s");
-        $this->isRead = $isRead;
+
+    // Đánh dấu đã đọc
+    public function markAsRead(){
+        $this->isRead = true;
     }
 
+    // Kiểm tra đã đọc chưa
+    public function isRead(){
+        return $this->isRead;
+    }
+
+    // ===== To String =====
     public function __toString(){
-        return "Notification(id=$this->notificationId, userId=$this->userId, content=$this->content, createdAt=$this->createdAt, isRead=$this->isRead)";
+        return "Notification(
+            id={$this->notificationId},
+            userId={$this->userId},
+            senderId={$this->senderId},
+            content={$this->content},
+            createdAt={$this->createdAt},
+            isRead={$this->isRead}
+        )";
     }
 }
 ?>

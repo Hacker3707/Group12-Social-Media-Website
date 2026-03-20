@@ -1,9 +1,15 @@
 <?php
-class Category{
+class Category {
     private $categoryId;
     private $categoryName;
-    private $description;
 
+
+    public function __construct($categoryName = "", $categoryId = null){
+        $this->categoryId = $categoryId; // AUTO_INCREMENT -> không bắt buộc
+        $this->categoryName = $categoryName;
+    }
+
+    
     public function getCategoryId(){
         return $this->categoryId;
     }
@@ -20,23 +26,9 @@ class Category{
         $this->categoryName = $categoryName;
     }
 
-    public function getDescription(){
-        return $this->description;
-    }
-
-    public function setDescription($description){
-        $this->description = $description;
-    }
-
     
-    public function __construct($categoryId = "", $categoryName = "", $description = ""){
-        $this->categoryId = $categoryId;
-        $this->categoryName = $categoryName;
-        $this->description = $description;
-    }
-
     public function __toString(){
-        return "Category(id=$this->categoryId, name=$this->categoryName, description=$this->description)";
+        return "Category(id={$this->categoryId}, name={$this->categoryName})";
     }
 }
 ?>
