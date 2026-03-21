@@ -1,99 +1,109 @@
 <?php
 class Notification {
-    private $notificationId;
-    private $userId;
-    private $senderId;
-    private $content;
-    private $createdAt;
-    private $isRead;
+    private $NotificationID;
+    private $UserID;
+    private $SenderID;
+    private $Content;
+    private $NotiType;
+    private $CreatedAt;
+    private $IsRead;
 
     // ===== Constructor =====
     public function __construct(
-        $userId = null,
-        $content = "",
-        $senderId = null,
-        $isRead = false,
-        $createdAt = null,
-        $notificationId = null
+        $UserID = null,
+        $Content = "",
+        $NotiType = null,
+        $SenderID = null,
+        $IsRead = false,
+        $CreatedAt = null,
+        $NotificationID = null
     ){
-        $this->notificationId = $notificationId;
-        $this->userId = $userId;
-        $this->senderId = $senderId;
-        $this->content = $content;
-        $this->isRead = $isRead;
-        $this->createdAt = $createdAt;
+        $this->NotificationID = $NotificationID;
+        $this->UserID = $UserID;
+        $this->SenderID = $SenderID;
+        $this->Content = $Content;
+        $this->NotiType = $NotiType;
+        $this->IsRead = $IsRead;
+        $this->CreatedAt = $CreatedAt;
     }
 
     // ===== Getter & Setter =====
-    public function getNotificationId(){
-        return $this->notificationId;
+
+    public function getNotificationID(){
+        return $this->NotificationID;
     }
 
-    public function setNotificationId($notificationId){
-        $this->notificationId = $notificationId;
+    public function setNotificationID($NotificationID){
+        $this->NotificationID = $NotificationID;
     }
 
-    public function getUserId(){
-        return $this->userId;
+    public function getUserID(){
+        return $this->UserID;
     }
 
-    public function setUserId($userId){
-        $this->userId = $userId;
+    public function setUserID($UserID){
+        $this->UserID = $UserID;
     }
 
-    public function getSenderId(){
-        return $this->senderId;
+    public function getSenderID(){
+        return $this->SenderID;
     }
 
-    public function setSenderId($senderId){
-        $this->senderId = $senderId;
+    public function setSenderID($SenderID){
+        $this->SenderID = $SenderID;
     }
 
     public function getContent(){
-        return $this->content;
+        return $this->Content;
     }
 
-    public function setContent($content){
-        $this->content = $content;
+    public function setContent($Content){
+        $this->Content = $Content;
+    }
+
+    public function getNotiType(){
+        return $this->NotiType;
+    }
+
+    public function setNotiType($NotiType){
+        $this->NotiType = $NotiType;
     }
 
     public function getCreatedAt(){
-        return $this->createdAt;
+        return $this->CreatedAt;
     }
 
-    public function setCreatedAt($createdAt){
-        $this->createdAt = $createdAt;
+    public function setCreatedAt($CreatedAt){
+        $this->CreatedAt = $CreatedAt;
     }
 
     public function getIsRead(){
-        return $this->isRead;
+        return $this->IsRead;
     }
 
-    public function setIsRead($isRead){
-        $this->isRead = $isRead;
+    public function setIsRead($IsRead){
+        $this->IsRead = $IsRead;
     }
 
-    
-
-    // Đánh dấu đã đọc
+    // ===== Business Logic =====
     public function markAsRead(){
-        $this->isRead = true;
+        $this->IsRead = true;
     }
 
-    // Kiểm tra đã đọc chưa
-    public function isRead(){
-        return $this->isRead;
+    public function isReadStatus(){
+        return $this->IsRead;
     }
 
     // ===== To String =====
     public function __toString(){
         return "Notification(
-            id={$this->notificationId},
-            userId={$this->userId},
-            senderId={$this->senderId},
-            content={$this->content},
-            createdAt={$this->createdAt},
-            isRead={$this->isRead}
+            id={$this->NotificationID},
+            userId={$this->UserID},
+            senderId={$this->SenderID},
+            content={$this->Content},
+            type={$this->NotiType},
+            createdAt={$this->CreatedAt},
+            isRead={$this->IsRead}
         )";
     }
 }

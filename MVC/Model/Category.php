@@ -1,34 +1,31 @@
 <?php
 class Category {
-    private $categoryId;
-    private $categoryName;
+    private $CategoryID;
+    private $CategoryName;
 
-
-    public function __construct($categoryName = "", $categoryId = null){
-        $this->categoryId = $categoryId; // AUTO_INCREMENT -> không bắt buộc
-        $this->categoryName = $categoryName;
+    public function __construct($CategoryID = null, $CategoryName = ""){
+        $this->CategoryID = $CategoryID;
+        $this->CategoryName = $CategoryName;
     }
 
-    
-    public function getCategoryId(){
-        return $this->categoryId;
+    public function getCategoryID(){
+        return $this->CategoryID;
     }
 
-    public function setCategoryId($categoryId){
-        $this->categoryId = $categoryId;
+    public function setCategoryID($CategoryID){
+        $this->CategoryID = $CategoryID;
     }
 
     public function getCategoryName(){
-        return $this->categoryName;
+        return $this->CategoryName;
     }
 
-    public function setCategoryName($categoryName){
-        $this->categoryName = $categoryName;
+    public function setCategoryName($CategoryName){
+        $this->CategoryName = $CategoryName;
     }
 
-    
     public function __toString(){
-        return "Category(id={$this->categoryId}, name={$this->categoryName})";
+        return "Category(ID={$this->CategoryID}, Name={$this->CategoryName})";
     }
 }
 ?>
