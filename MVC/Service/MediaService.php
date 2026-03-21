@@ -9,6 +9,11 @@ class MediaService {
         $link = null;
         taoKetNoi($link);
 
+        $UserID    = mysqli_real_escape_string($link, $UserID);
+        $PostID    = mysqli_real_escape_string($link, $PostID);
+        $MediaType = mysqli_real_escape_string($link, $MediaType);
+        $FilePath  = mysqli_real_escape_string($link, $FilePath);
+
         $query = "INSERT INTO media (UserID, PostID, MediaType, FilePath)
                   VALUES ($UserID, $PostID, '$MediaType', '$FilePath')";
 
@@ -27,6 +32,11 @@ class MediaService {
         $link = null;
         taoKetNoi($link);
 
+        $UserID    = mysqli_real_escape_string($link, $UserID);
+        $CommentID = mysqli_real_escape_string($link, $CommentID);
+        $MediaType = mysqli_real_escape_string($link, $MediaType);
+        $FilePath  = mysqli_real_escape_string($link, $FilePath);
+
         $query = "INSERT INTO media (UserID, CommentID, MediaType, FilePath)
                   VALUES ($UserID, $CommentID, '$MediaType', '$FilePath')";
 
@@ -44,6 +54,8 @@ class MediaService {
     public function getMediaByPostID($PostID) {
         $link = null;
         taoKetNoi($link);
+
+        $PostID = mysqli_real_escape_string($link, $PostID);
 
         $query = "SELECT * FROM media WHERE PostID = $PostID";
         $result = chayTruyVanTraVeDL($link, $query);
@@ -70,6 +82,8 @@ class MediaService {
         $link = null;
         taoKetNoi($link);
 
+        $CommentID = mysqli_real_escape_string($link, $CommentID);
+
         $query = "SELECT * FROM media WHERE CommentID = $CommentID";
         $result = chayTruyVanTraVeDL($link, $query);
 
@@ -94,6 +108,8 @@ class MediaService {
     public function getMediaByUserID($UserID) {
         $link = null;
         taoKetNoi($link);
+
+        $UserID = mysqli_real_escape_string($link, $UserID);
 
         $query = "SELECT * FROM media WHERE UserID = $UserID";
         $result = chayTruyVanTraVeDL($link, $query);
@@ -120,6 +136,8 @@ class MediaService {
         $link = null;
         taoKetNoi($link);
 
+        $MediaID = mysqli_real_escape_string($link, $MediaID);
+
         $query = "SELECT * FROM media WHERE MediaID = $MediaID";
         $result = chayTruyVanTraVeDL($link, $query);
 
@@ -145,6 +163,8 @@ class MediaService {
     public function deleteMedia($MediaID) {
         $link = null;
         taoKetNoi($link);
+
+        $MediaID = mysqli_real_escape_string($link, $MediaID);
 
         $query = "DELETE FROM media WHERE MediaID = $MediaID";
         $result = chayTruyVanKhongTraVeDL($link, $query);
