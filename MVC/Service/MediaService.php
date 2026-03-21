@@ -14,8 +14,7 @@ class MediaService {
         $MediaType = mysqli_real_escape_string($link, $MediaType);
         $FilePath  = mysqli_real_escape_string($link, $FilePath);
 
-        $query = "INSERT INTO media (UserID, PostID, MediaType, FilePath)
-                  VALUES ($UserID, $PostID, '$MediaType', '$FilePath')";
+        $query = "CALL insertMediaToPost($UserID, $PostID, '$MediaType', '$FilePath')";
 
         $result = chayTruyVanKhongTraVeDL($link, $query);
 
@@ -25,6 +24,38 @@ class MediaService {
             return "Failed to create media.";
         }
         return "Media created successfully.";
+    }
+
+    public function getMediaByPostIDs($postIdList) {
+
+        $link = null;
+        taoKetNoi($link);
+
+        $query = "SELECT * FROM media WHERE PostID IN ($postIdList)";
+        $result = chayTruyVanTraVeDL($link, $query);
+
+        $mediaMap = [];
+
+        while ($row = mysqli_fetch_assoc($result)) {
+
+            $postId = $row['PostID'];
+
+            $media = new Media(
+                $row['MediaID'],
+                $row['UserID'],
+                $row['MediaType'],
+                $row['FilePath'],
+                $row['CreatedAt'],
+                $row['CommentID'],
+                $row['PostID']
+            );
+
+            $mediaMap[$postId][] = $media;
+        }
+
+        giaiPhongKetNoi($link);
+
+        return $mediaMap;
     }
 
     // Thêm media cho comment
