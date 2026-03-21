@@ -1,42 +1,32 @@
 <?php
-class Follow{
-    private $followerId;
-    private $followingId;
-    private $followDate;
+class Follow {
+    private $FollowerID;
+    private $FollowingID;
 
-    public function getFollowerId(){
-        return $this->followerId;
+    public function __construct($FollowerID = null, $FollowingID = null){
+        $this->FollowerID = $FollowerID;
+        $this->FollowingID = $FollowingID;
     }
 
-    public function setFollowerId($followerId){
-        $this->followerId = $followerId;
+    // Getter & Setter
+    public function getFollowerID(){
+        return $this->FollowerID;
     }
 
-    public function getFollowingId(){
-        return $this->followingId;
+    public function setFollowerID($FollowerID){
+        $this->FollowerID = $FollowerID;
     }
 
-    public function setFollowingId($followingId){
-        $this->followingId = $followingId;
+    public function getFollowingID(){
+        return $this->FollowingID;
     }
 
-    public function getFollowDate(){
-        return $this->followDate;
-    }
-
-    public function setFollowDate($followDate){
-        $this->followDate = $followDate;
-    }
-
-  
-    public function __construct($followerId = "", $followingId = "", $followDate = ""){
-        $this->followerId = $followerId;
-        $this->followingId = $followingId;
-        $this->followDate = $followDate ?: date("Y-m-d H:i:s");
+    public function setFollowingID($FollowingID){
+        $this->FollowingID = $FollowingID;
     }
 
     public function __toString(){
-        return "Follow(followerId=$this->followerId, followingId=$this->followingId, followDate=$this->followDate)";
+        return "Follow(FollowerID={$this->FollowerID}, FollowingID={$this->FollowingID})";
     }
 }
 ?>
