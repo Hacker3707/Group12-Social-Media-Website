@@ -1,92 +1,92 @@
 <?php
 class Media{
-    private $mediaId;
-    private $userId;
-    private $mediaType;
-    private $filePath;
-    private $createdAt;
-    private $commentId;
-    private $postId;
+    private $MediaID;
+    private $UserID;
+    private $MediaType;
+    private $FilePath;
+    private $CreatedAt;
+    private $CommentID;
+    private $PostID;
 
-    public function getMediaId(){
-        return $this->mediaId;
+    public function getMediaID(){
+        return $this->MediaID;
     }
 
-    public function setMediaId($mediaId){
-        $this->mediaId = $mediaId;
+    public function setMediaID($MediaID){
+        $this->MediaID = $MediaID;
     }
 
-    public function getUserId(){
-        return $this->userId;
+    public function getUserID(){
+        return $this->UserID;
     }
 
-    public function setUserId($userId){
-        $this->userId = $userId;
+    public function setUserID($UserID){
+        $this->UserID = $UserID;
     }
 
     public function getMediaType(){
-        return $this->mediaType;
+        return $this->MediaType;
     }
 
-    public function setMediaType($mediaType){
-        $this->mediaType = $mediaType;
+    public function setMediaType($MediaType){
+        $this->MediaType = $MediaType;
     }
 
     public function getFilePath(){
-        return $this->filePath;
+        return $this->FilePath;
     }
 
-    public function setFilePath($filePath){
-        $this->filePath = $filePath;
+    public function setFilePath($FilePath){
+        $this->FilePath = $FilePath;
     }
 
     public function getCreatedAt(){
-        return $this->createdAt;
+        return $this->CreatedAt;
     }
 
-    public function setCreatedAt($createdAt){
-        $this->createdAt = $createdAt;
+    public function setCreatedAt($CreatedAt){
+        $this->CreatedAt = $CreatedAt;
     }
 
-    public function getCommentId(){
-        return $this->commentId;
+    public function getCommentID(){
+        return $this->CommentID;
     }
 
-    public function setCommentId($commentId){
-        $this->commentId = $commentId;
+    public function setCommentID($CommentID){
+        $this->CommentID = $CommentID;
     }
 
-    public function getPostId(){
-        return $this->postId;
+    public function getPostID(){
+        return $this->PostID;
     }
 
-    public function setPostId($postId){
-        $this->postId = $postId;
+    public function setPostID($PostID){
+        $this->PostID = $PostID;
     }
 
     public function __construct(
-        $mediaId = "",
-        $userId = "",
-        $mediaType = "",
-        $filePath = "",
-        $createdAt = "",
-        $commentId = "",
-        $postId = ""
+        $MediaID = "",
+        $UserID = "",
+        $MediaType = "",
+        $FilePath = "",
+        $CreatedAt = "",
+        $CommentID = "",
+        $PostID = ""
     ){
-        $this->mediaId   = $mediaId;
-        $this->userId    = $userId;
-        $this->mediaType = $mediaType;
-        $this->filePath  = $filePath;
-        $this->createdAt = $createdAt ?: date("Y-m-d H:i:s");
-        $this->commentId = $commentId;
-        $this->postId    = $postId;
+        $this->MediaID   = $MediaID;
+        $this->UserID    = $UserID;
+        $this->MediaType = $MediaType;
+        $this->FilePath  = $FilePath;
+        $this->CreatedAt = $CreatedAt ?: date("Y-m-d H:i:s");
+        $this->CommentID = $CommentID;
+        $this->PostID    = $PostID;
     }
 
     public function __toString(){
-        return "Media(mediaId=$this->mediaId, userId=$this->userId, " .
-               "mediaType=$this->mediaType, filePath=$this->filePath, " .
-               "createdAt=$this->createdAt, commentId=$this->commentId, " .
-               "postId=$this->postId)";
+        return "Media(MediaID=$this->MediaID, UserID=$this->UserID, " .
+               "MediaType=$this->MediaType, FilePath=$this->FilePath, " .
+               "CreatedAt=$this->CreatedAt, CommentID=$this->CommentID, " .
+               "PostID=$this->PostID)";
     }
 }
 ?>
