@@ -1,42 +1,31 @@
 <?php
-class Category{
-    private $categoryId;
-    private $categoryName;
-    private $description;
+class Category {
+    private $CategoryID;
+    private $CategoryName;
 
-    public function getCategoryId(){
-        return $this->categoryId;
+    public function __construct($CategoryID = null, $CategoryName = ""){
+        $this->CategoryID = $CategoryID;
+        $this->CategoryName = $CategoryName;
     }
 
-    public function setCategoryId($categoryId){
-        $this->categoryId = $categoryId;
+    public function getCategoryID(){
+        return $this->CategoryID;
+    }
+
+    public function setCategoryID($CategoryID){
+        $this->CategoryID = $CategoryID;
     }
 
     public function getCategoryName(){
-        return $this->categoryName;
+        return $this->CategoryName;
     }
 
-    public function setCategoryName($categoryName){
-        $this->categoryName = $categoryName;
-    }
-
-    public function getDescription(){
-        return $this->description;
-    }
-
-    public function setDescription($description){
-        $this->description = $description;
-    }
-
-    
-    public function __construct($categoryId = "", $categoryName = "", $description = ""){
-        $this->categoryId = $categoryId;
-        $this->categoryName = $categoryName;
-        $this->description = $description;
+    public function setCategoryName($CategoryName){
+        $this->CategoryName = $CategoryName;
     }
 
     public function __toString(){
-        return "Category(id=$this->categoryId, name=$this->categoryName, description=$this->description)";
+        return "Category(ID={$this->CategoryID}, Name={$this->CategoryName})";
     }
 }
 ?>
