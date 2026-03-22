@@ -6,10 +6,10 @@ class Media
     protected $table = "media";
 
   public $media_id;
-public $user_id;
-public $file_path;
-public $created_at;
-public $media_type;
+  public $user_id;
+  public $file_path;
+  public $created_at;
+  public $media_type;
 
     public function __construct($db)
     {
