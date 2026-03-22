@@ -23,7 +23,7 @@ class PostModel extends AppModel {
         }
         $value = mysqli_real_escape_string($this->link, $value);
         $data = array();
-        $sql = "SELECT * FROM post WHERE $field = '$value' ORDER BY CreatedAt DESC";
+        $sql = "SELECT * FROM post WHERE $field = $value ORDER BY CreatedAt DESC";
         $result = $this->query($sql);
         while ($row = mysqli_fetch_assoc($result)) {
             array_push($data, new Post(

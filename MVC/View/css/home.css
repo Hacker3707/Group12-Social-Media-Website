@@ -1,0 +1,36 @@
+#home-container {
+    justify-content: space-around;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    
+}
+
+#upper-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    background-color: azure;
+}
+
+#left-sidebar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgb(244, 248, 176);
+    
+}
+
+#main-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgb(208, 222, 248);
+    
+}
+
+.nav-item {
+    margin: 5px;
+    justify-content: center;
+    align-items: center;
+}

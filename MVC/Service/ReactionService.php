@@ -1,79 +1,55 @@
 <?php
+include_once "MVC/Model/ReactionModel.php";
+include_once "Entity/Reaction.php";
+
 class ReactionService
 {
-    
-    public function addReactiontoPost($userId, $postId, $reactionType)
-    {
-        $link = null;
-        taoKetNoi($link);
-        $query = "CALL AddReaction($userId, $postId, NULL, '$reactionType')";
-        $result = chayTruyVanTraVeDL($link, $query);
-        giaiPhongKetNoi($link);
-        return $result;
+    private $reactionModel;
+    public function __construct() {
+        $this->reactionModel = new ReactionModel();
     }
 
-    public function addReactiontoComment($userId, $commentId, $reactionType)
+    public function addReactionToPost($userId, $postId, $reactionType)
     {
-        $link = null;
-        taoKetNoi($link);
-        $query = "CALL AddReaction($userId, NULL, $commentId, '$reactionType')";
-        $result = chayTruyVanTraVeDL($link, $query);
-        giaiPhongKetNoi($link);
-        return $result;
+        $result = $this->reactionModel->insertReaction($userId, $postId, null, $reactionType);
+
+        if (!$result) {
+            return "There's something went wrong... Cannot react!";
+        }
+
+        return "Reacted successfully!";
     }
 
-    public function removeReactionfromPost($userId, $postId)
+     public function addReactiontoComment($userId, $commentId, $reactionType)
     {
-        $link = null;
-        taoKetNoi($link);
-        $query = "DELETE FROM reaction WHERE PostID = $postId AND UserID = $userId";
-        $result = chayTruyVanKhongTraVeDL($link, $query);
-        giaiPhongKetNoi($link);
-        return $result;
+        $result = $this->reactionModel->insertReaction($userId, null, $commentId, $reactionType);
+        if (!$result)
+        {
+            return "There's something went wrong... Cannot react!";
+        }
+        return "Reacted successfully!";
     }
 
-    public function removeReactionfromComment($userId, $commentId)
+    public function removeReaction($reactionId)
     {
-        $link = null;
-        taoKetNoi($link);
-        $query = "DELETE FROM reaction WHERE CommentID = $commentId AND UserID = $userId";
-        $result = chayTruyVanKhongTraVeDL($link, $query);
-        giaiPhongKetNoi($link);
-        return $result;
+        $result = $this -> reactionModel -> deleteReaction($reactionId);
+        if (!$result)
+        {
+            return "There's something went wrong... Cannot remove reaction!";
+        }
+        return "Removed reaction successfully!";
     }
-    
+
     public function getReactionsForPost($postId)
     {
-        $link = null;
-        taoKetNoi($link);
-        $query = "SELECT * FROM reaction WHERE PostID = $postId";
-        $result = chayTruyVanTraVeDL($link, $query);
-        $reactions = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $reactions[] = new Reaction(
-                $row['ReactionID'], $row['PostID'], $row['CommentID'],
-                $row['UserID'], $row['Type'], $row['CreatedAt']
-            );
-        }
-        giaiPhongKetNoi($link);
-        return $reactions;
+        return $this->reactionModel->selectReactionsForPost($postId);
     }
 
     public function getReactionsForComment($commentId)
     {
-        $link = null;
-        taoKetNoi($link);
-        $query = "SELECT * FROM reaction WHERE CommentID = $commentId";
-        $result = chayTruyVanTraVeDL($link, $query);
-        $reactions = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $reactions[] = new Reaction(
-                $row['ReactionID'], $row['PostID'], $row['CommentID'],
-                $row['UserID'], $row['Type'], $row['CreatedAt']
-            );
-        }
-        giaiPhongKetNoi($link);
-        return $reactions;
+        return $this->reactionModel->selectReactionsForComment($commentId);
     }
+
+
 }   
 ?>

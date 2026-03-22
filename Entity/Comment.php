@@ -46,5 +46,13 @@ class Comment {
     public function getMediaList() {
         return $this->MediaList;
     }
+
+    public function addToMediaList($media) {
+    $this->MediaList[] = $media;
+    }
+
+    public function setMediaList($mediaList) {
+        $this->MediaList = $mediaList;
+    }
 }
 ?>
