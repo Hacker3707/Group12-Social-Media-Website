@@ -9,7 +9,7 @@ class Comment {
     private $CreatedAt;
     
 
-    public function __construct($comment_id, $reply_to_comment_id, $post_id, $user_id, $content, $media_list = [], $created_at) {
+    public function __construct($comment_id, $reply_to_comment_id, $post_id, $user_id, $content, $created_at, $media_list = []) {
         $this->CommentID = $comment_id;
         $this->replyToCommentId = $reply_to_comment_id;
         $this->PostID = $post_id;

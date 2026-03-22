@@ -10,7 +10,7 @@ class Post {
     private $CreatedAt;
     
 
-    public function __construct($post_id, $user_id, $group_id, $category_id, $title, $content, $media_list = [], $created_at) {
+    public function __construct($post_id, $user_id, $group_id, $category_id, $title, $content, $created_at, $media_list = []) {
         $this->PostID = $post_id;
         $this->UserID = $user_id;
         $this->GroupID = $group_id;

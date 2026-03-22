@@ -67,8 +67,7 @@ class PostService {
 
         if (count($postIds) > 0) {
 
-            $postIdList = implode(",", $postIds);
-
+            $postIdList = implode(",", array_map('intval', $postIds));
             $mediaMap = $this->mediaService->getMediaByPostIDs($postIdList);
 
             foreach ($posts as $post) {

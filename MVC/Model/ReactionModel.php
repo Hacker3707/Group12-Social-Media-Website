@@ -8,9 +8,9 @@ class ReactionModel extends AppModel {
         $postId = $postId === null ? "NULL" : (int)$postId;
         $commentId = $commentId === null ? "NULL" : (int)$commentId;
         $sql = "CALL createReaction($userId, $postId, $commentId, '$type')";
+        
         if ($this->execute($sql)) {
-            $row = mysqli_fetch_assoc($sql);
-            return $row['id'] ?? null; // Return the new ReactionID
+            return $this->getLastInsertId();
         }
         return false;
     }
@@ -22,6 +22,7 @@ class ReactionModel extends AppModel {
             return false;
         }
         $value = mysqli_real_escape_string($this->link, $value);
+        $value = (int)$value;
         $data = array();
         $sql = "SELECT * FROM reaction WHERE $field = $value ORDER BY CreatedAt DESC";
         $result = $this->query($sql);
@@ -56,6 +57,7 @@ class ReactionModel extends AppModel {
     }
 
     public function selectReactionsForComment($commentId) {
+        $commentId = intval($commentId);
         $sql = "SELECT * FROM reaction WHERE CommentID = $commentId ORDER BY CreatedAt DESC";
         $result = $this->query($sql);
         $reactions = [];

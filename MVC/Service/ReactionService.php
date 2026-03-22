@@ -20,7 +20,7 @@ class ReactionService
         return "Reacted successfully!";
     }
 
-     public function addReactiontoComment($userId, $commentId, $reactionType)
+     public function addReactionToComment($userId, $commentId, $reactionType)
     {
         $result = $this->reactionModel->insertReaction($userId, null, $commentId, $reactionType);
         if (!$result)

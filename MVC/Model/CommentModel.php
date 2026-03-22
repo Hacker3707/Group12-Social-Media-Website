@@ -4,7 +4,8 @@ include_once "Entity/Comment.php";
 
 class CommentModel extends AppModel {
 
-    public function createComment($userId, $postId, $content, $parentCommentId = null) {
+    public function createComment($userId, $postId, $content, $parentCommentId) {
+        $parentCommentId = $parentCommentId === null ? "NULL" : (int)$parentCommentId;
         $content = mysqli_real_escape_string($this->link, $content);
         $sql = "CALL createComment($userId, $postId, '$content', $parentCommentId)";
         if ($this->execute($sql)) {
@@ -20,6 +21,7 @@ class CommentModel extends AppModel {
             return false;
         }
         $value = mysqli_real_escape_string($this->link, $value);
+        $value = (int)$value;
         $data = array();
         $sql = "SELECT * FROM comment WHERE $field = $value ORDER BY CreatedAt DESC";
         $result = $this->query($sql);
@@ -27,8 +29,7 @@ class CommentModel extends AppModel {
             array_push($data, new Comment(
                 $row['CommentID'], $row['ParentCommentID'],
                 $row['PostID'], $row['UserID'],
-                $row['Content'], [],
-                $row['CreatedAt']
+                $row['Content'], $row['CreatedAt'], []
             ));
         }
         return $data;

@@ -1,6 +1,8 @@
 <?php
 include_once "MVC/Model/CommentModel.php";
 include_once "Entity/Comment.php";
+include_once "MVC/Service/MediaService.php";
+
 class CommentService
 {
     private $commentModel;
@@ -63,7 +65,7 @@ class CommentService
                 $commentId = $comment->getCommentId();
 
                 if (isset($mediaMap[$commentId])) {
-                    $comment->addToMediaList($mediaMap[$commentId]);
+                    $comment->setMediaList($mediaMap[$commentId]);
                 } else {
                     $comment->setMediaList([]);
                 }
