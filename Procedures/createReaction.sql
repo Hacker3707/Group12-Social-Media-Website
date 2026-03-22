@@ -1,6 +1,6 @@
 DELIMITER //
 
-CREATE PROCEDURE addReaction(
+CREATE PROCEDURE createReaction(
     IN p_post_id INT,
     IN p_user_id INT,
     IN p_comment_id INT,
@@ -31,6 +31,8 @@ BEGIN
     -- Insert reaction
     INSERT INTO reaction(PostID, UserID, CommentID, ReactionType)
     VALUES (p_post_id, p_user_id, p_comment_id, p_type);
+
+    SELECT LAST_INSERT_ID() AS id;
 
 END //
 

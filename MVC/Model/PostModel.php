@@ -23,21 +23,21 @@ class PostModel extends AppModel {
         }
         $value = mysqli_real_escape_string($this->link, $value);
         $data = array();
-        $sql = "SELECT * FROM post WHERE $field = '$value' ORDER BY CreatedAt DESC";
+        $sql = "SELECT * FROM post WHERE $field = $value ORDER BY CreatedAt DESC";
         $result = $this->query($sql);
         while ($row = mysqli_fetch_assoc($result)) {
             array_push($data, new Post(
                 $row['PostID'], $row['UserID'],
                 $row['GroupID'], $row['CategoryID'], 
                 $row['Title'], $row['Content'],
-                [], // MediaList sẽ được set sau
-                $row['CreatedAt']
+                $row['CreatedAt'], []
             ));
         }
         return $data;
     }
 
     public function delete($postId) {
+        $postId = (int)$postId;
         $sql = "DELETE FROM post WHERE PostID = $postId";
         return $this->execute($sql);
     }
@@ -50,7 +50,7 @@ class PostModel extends AppModel {
     }
 
     public function getById($postId) {
-
+        $postId = (int)$postId;
         $sql = "SELECT * FROM post WHERE PostID = $postId";
         $result = $this->query($sql);
 
@@ -59,8 +59,7 @@ class PostModel extends AppModel {
                 $row['PostID'], $row['UserID'],
                 $row['GroupID'], $row['CategoryID'],
                 $row['Title'], $row['Content'],
-                [],
-                $row['CreatedAt']
+                $row['CreatedAt'], []
             );
         }
 

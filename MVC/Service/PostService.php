@@ -67,8 +67,7 @@ class PostService {
 
         if (count($postIds) > 0) {
 
-            $postIdList = implode(",", $postIds);
-
+            $postIdList = implode(",", array_map('intval', $postIds));
             $mediaMap = $this->mediaService->getMediaByPostIDs($postIdList);
 
             foreach ($posts as $post) {
@@ -99,11 +98,19 @@ class PostService {
     }
     
     public function deletePost($postId) {
-        return $this->postModel->delete($postId);
+        $result = $this->postModel->delete($postId);
+        if ($result) {
+            return "Post deleted successfully.";
+        }
+        return "Failed to delete post.";
     }
 
     public function updatePost($postId, $title, $content) {
-        return $this->postModel->update($postId, $title, $content);
+        $result = $this->postModel->update($postId, $title, $content);
+        if ($result) {
+            return "Post updated successfully.";
+        }
+        return "Failed to update post.";
     }
 }
 ?>
