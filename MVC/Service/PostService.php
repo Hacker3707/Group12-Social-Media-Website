@@ -1,96 +1,116 @@
 <?php
-include_once "MVC/Model/Post.php";
+include_once "MVC/Model/PostModel.php";
 include_once "MVC/Model/Comment.php";
 include_once "MVC/Model/Follow.php";
 include_once "MVC/Model/Category.php";
 include_once "MVC/Module/db_module.php";
+include_once "MVC/Service/MediaService.php";
 
 class PostService {
 
+    private $postModel;
+    private $mediaService;
+
+    public function __construct() {
+        $this->postModel = new PostModel();
+        $this->mediaService = new MediaService();
+    }
+
     public function createPost($userId, $groupId, $categoryId, $title, $content, $mediaList = []) {
 
-        $link = null;
-        taoKetNoi($link);
+        $postId = $this->postModel->insertPost(
+            $userId,
+            $groupId,
+            $categoryId,
+            $title,
+            $content
+        );
 
-        $query = "INSERT INTO post (UserID, GroupID, CategoryID, Title, Content) 
-                VALUES ($userId, $groupId, $categoryId, '$title', '$content')";
-        
-        $result = chayTruyVanKhongTraVeDL($link, $query);
-
-        if (!$result) {
-            giaiPhongKetNoi($link);
+        if (!$postId) {
             return "Failed to create post.";
         }
 
-        $postId = mysqli_insert_id($link);
-
         foreach ($mediaList as $media) {
-
-            $type = $media['type'];      // photo / video
-            $path = $media['media_url']; // URL or file path to the media
-
-            $mediaQuery = "INSERT INTO media (UserID, PostID, MediaType, FilePath)
-                        VALUES ($userId, $postId, '$type', '$path')";
-
-            chayTruyVanKhongTraVeDL($link, $mediaQuery);
-        }
-
-        giaiPhongKetNoi($link);
-
-        return "Post created successfully.";
-    }
-
-    public function getPostById($postId) {
-
-    }
-
-    public function getPostsByUserId($userId) {
-        $link = null;
-        taoKetNoi($link);
-        $query = "SELECT * FROM post WHERE UserID = $userId ORDER BY CreatedAt DESC";
-        $result = chayTruyVanTraVeDL($link, $query);
-        $posts = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $postId = $row['PostID'];
-            $mediaQuery = "SELECT * FROM media WHERE PostID = $postId";
-            $mediaResult = chayTruyVanTraVeDL($link, $mediaQuery);
-            $mediaList = [];
-            while ($mediaRow = mysqli_fetch_assoc($mediaResult)) {
-                $mediaList[] = [
-                    'MediaID' => $mediaRow['MediaID'],
-                    'MediaType' => $mediaRow['MediaType'],
-                    'FilePath' => $mediaRow['FilePath']
-                ];
-            }
-            $posts[] = new Post(
-                $row['PostID'], $row['UserID'],
-                $row['GroupID'], $row['CategoryID'], 
-                $row['Title'], $row['Content'],
-                $mediaList, $row['CreatedAt']
+            $this->mediaService->createMediaForPost(
+                $userId,
+                $postId,
+                $media->getMediaType(),
+                $media->getFilePath()
             );
         }
-        giaiPhongKetNoi($link);
+
+        return "Post created successfully.";
+    }   
+
+    public function getPostById($postId) {
+        
+        $result = $this->postModel->getById($postId);
+        $mediaList = $this->mediaService->getMediaByPostID($postId);
+        if ($result) {
+            $result->setMediaList($mediaList);
+            return $result;
+        }
+        
+        return null; // Post not found
+    }
+
+    private function getPostsByField($field, $value) {
+
+        $posts = $this -> postModel -> fetchByField($field, $value);
+        if (!$posts) {
+            return [];
+        }
+        $postIds = [];
+        foreach ($posts as $post) {
+            $postIds[] = $post->getPostId();
+        }
+
+        if (count($postIds) > 0) {
+
+            $postIdList = implode(",", array_map('intval', $postIds));
+            $mediaMap = $this->mediaService->getMediaByPostIDs($postIdList);
+
+            foreach ($posts as $post) {
+
+                $postId = $post->getPostId();
+
+                if (isset($mediaMap[$postId])) {
+                    $post->addToMediaList($mediaMap[$postId]);
+                } else {
+                    $post->setMediaList([]);
+                }
+            }
+        }
+
         return $posts;
     }
 
+    public function getPostsByUserId($userId) {
+        return $this->getPostsByField("UserID", $userId);
+    }
+
     public function getPostsByGroupId($groupId) {
-       
+        return $this->getPostsByField("GroupID", $groupId);
     }
 
     public function getPostsByCategoryId($categoryId) {
-        
+        return $this->getPostsByField("CategoryID", $categoryId);
+    }
+    
+    public function deletePost($postId) {
+        $result = $this->postModel->delete($postId);
+        if ($result) {
+            return "Post deleted successfully.";
+        }
+        return "Failed to delete post.";
     }
 
-    public function addCommentToPost($postId, $userId, $content, $mediaList = []) {
-        
-    }
-    
-    public function followUser($followerId, $followingId) {
-        
-    }
-    
-    public function unfollowUser($followerId, $followingId) {
-       
+    public function updatePost($postId, $title, $content) {
+        $result = $this->postModel->update($postId, $title, $content);
+        if ($result) {
+            return "Post updated successfully.";
+        }
+        return "Failed to update post.";
     }
 }
 ?>
