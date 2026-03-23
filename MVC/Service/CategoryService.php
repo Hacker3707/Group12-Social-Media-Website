@@ -1,91 +1,44 @@
 <?php
-include_once "MVC/Model/Category.php";
-include_once "MVC/Module/db_module.php";
+include_once "MVC/Model/CategoryModel.php";
+include_once "Entity/Category.php";
 
 class CategoryService {
+
+    private $categoryModel;
+
+    public function __construct() {
+        $this->categoryModel = new CategoryModel();
+    }
 
     // ================= CREATE =================
     public function createCategory($categoryName) {
 
         if (empty($categoryName)) {
-            return "Category name is required";
+            return false;
         }
 
-        $link = null;
-        taoKetNoi($link);
-
-        // Check trùng tên
-        $checkQuery = "SELECT * FROM category 
-                       WHERE CategoryName = '$categoryName'";
-
-        $checkResult = chayTruyVanTraVeDL($link, $checkQuery);
-
-        if (mysqli_num_rows($checkResult) > 0) {
-            giaiPhongKetNoi($link);
-            return "Category already exists";
+        // Check trùng
+        if ($this->categoryModel->existsByName($categoryName)) {
+            return false;
         }
 
-        // Insert
-        $query = "INSERT INTO category (CategoryName)
-                  VALUES ('$categoryName')";
-
-        $result = chayTruyVanKhongTraVeDL($link, $query);
-
-        giaiPhongKetNoi($link);
-
-        return $result ? "Created successfully" : "Create failed";
+        return $this->categoryModel->insert($categoryName);
     }
 
 
     // ================= GET ALL =================
     public function getAllCategories() {
 
-        $link = null;
-        taoKetNoi($link);
+        $list = $this->categoryModel->getAll();
 
-        $query = "SELECT * FROM category";
-
-        $result = chayTruyVanTraVeDL($link, $query);
-
-        $list = [];
-
-        while ($row = mysqli_fetch_assoc($result)) {
-            $list[] = new Category(
-                $row['CategoryID'],
-                $row['CategoryName']
-            );
-        }
-
-        giaiPhongKetNoi($link);
-
-        return $list;
+        return $list ? $list : [];
     }
 
 
     // ================= GET BY ID =================
     public function getCategoryById($categoryId) {
 
-        $link = null;
-        taoKetNoi($link);
-
-        $query = "SELECT * FROM category 
-                  WHERE CategoryID = $categoryId";
-
-        $result = chayTruyVanTraVeDL($link, $query);
-
-        if ($row = mysqli_fetch_assoc($result)) {
-
-            $category = new Category(
-                $row['CategoryID'],
-                $row['CategoryName']
-            );
-
-            giaiPhongKetNoi($link);
-            return $category;
-        }
-
-        giaiPhongKetNoi($link);
-        return null;
+        return $this->categoryModel->getById($categoryId);
     }
 
 
@@ -93,50 +46,22 @@ class CategoryService {
     public function updateCategory($categoryId, $categoryName) {
 
         if (empty($categoryName)) {
-            return "Category name is required";
+            return false;
         }
-
-        $link = null;
-        taoKetNoi($link);
 
         // Check trùng (trừ chính nó)
-        $checkQuery = "SELECT * FROM category 
-                       WHERE CategoryName = '$categoryName'
-                       AND CategoryID != $categoryId";
-
-        $checkResult = chayTruyVanTraVeDL($link, $checkQuery);
-
-        if (mysqli_num_rows($checkResult) > 0) {
-            giaiPhongKetNoi($link);
-            return "Category name already exists";
+        if ($this->categoryModel->existsByName($categoryName, $categoryId)) {
+            return false;
         }
 
-        $query = "UPDATE category 
-                  SET CategoryName = '$categoryName'
-                  WHERE CategoryID = $categoryId";
-
-        $result = chayTruyVanKhongTraVeDL($link, $query);
-
-        giaiPhongKetNoi($link);
-
-        return $result ? "Updated successfully" : "Update failed";
+        return $this->categoryModel->update($categoryId, $categoryName);
     }
 
 
     // ================= DELETE =================
     public function deleteCategory($categoryId) {
 
-        $link = null;
-        taoKetNoi($link);
-
-        $query = "DELETE FROM category 
-                  WHERE CategoryID = $categoryId";
-
-        $result = chayTruyVanKhongTraVeDL($link, $query);
-
-        giaiPhongKetNoi($link);
-
-        return $result ? "Deleted successfully" : "Delete failed";
+        return $this->categoryModel->delete($categoryId);
     }
 }
 ?>

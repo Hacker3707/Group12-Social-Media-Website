@@ -1,133 +1,57 @@
 <?php
-include_once "MVC/Model/Follow.php";
-include_once "MVC/Module/db_module.php";
+include_once "MVC/Model/FollowModel.php";
+include_once "Entity/Follow.php";
 
 class FollowService {
 
-    // Follow user
-    public function followUser($followerId, $followingId) {
+    private $followModel;
 
+    public function __construct() {
+        $this->followModel = new FollowModel();
+    }
+
+    // ================= FOLLOW =================
+    public function follow($followerId, $followingId) {
+
+        // Không cho follow chính mình
         if ($followerId == $followingId) {
-            return "Cannot follow yourself";
+            return false;
         }
-
-        $link = null;
-        taoKetNoi($link);
 
         // Check đã follow chưa
-        $checkQuery = "SELECT * FROM follow 
-                       WHERE FollowerID = $followerId 
-                       AND FollowingID = $followingId";
-
-        $checkResult = chayTruyVanTraVeDL($link, $checkQuery);
-
-        if (mysqli_num_rows($checkResult) > 0) {
-            giaiPhongKetNoi($link);
-            return "Already followed";
+        if ($this->followModel->exists($followerId, $followingId)) {
+            return false;
         }
 
-        // Transaction
-        mysqli_begin_transaction($link);
-
-        try {
-
-            // Insert follow
-            $query = "INSERT INTO follow (FollowerID, FollowingID)
-                      VALUES ($followerId, $followingId)";
-
-            $result = chayTruyVanKhongTraVeDL($link, $query);
-
-            if (!$result) {
-                throw new Exception("Insert follow failed");
-            }
-
-            // Insert notification
-            $content = "started following you";
-
-            $notiQuery = "INSERT INTO notification (UserID, SenderID, Content, NotiType)
-                          VALUES ($followingId, $followerId, '$content', 'follow')";
-
-            $notiResult = chayTruyVanKhongTraVeDL($link, $notiQuery);
-
-            if (!$notiResult) {
-                throw new Exception("Insert notification failed");
-            }
-
-            mysqli_commit($link);
-            giaiPhongKetNoi($link);
-
-            return "Followed successfully";
-
-        } catch (Exception $e) {
-
-            mysqli_rollback($link);
-            giaiPhongKetNoi($link);
-
-            return "Error";
-        }
+        return $this->followModel->insert($followerId, $followingId);
     }
 
+    // ================= UNFOLLOW =================
+    public function unfollow($followerId, $followingId) {
 
-    // Unfollow
-    public function unfollowUser($followerId, $followingId) {
-
-        $link = null;
-        taoKetNoi($link);
-
-        $query = "DELETE FROM follow 
-                  WHERE FollowerID = $followerId 
-                  AND FollowingID = $followingId";
-
-        $result = chayTruyVanKhongTraVeDL($link, $query);
-
-        giaiPhongKetNoi($link);
-
-        return $result ? "Unfollowed successfully" : "Error";
+        return $this->followModel->delete($followerId, $followingId);
     }
 
-
-    // Get followers (JOIN users)
-    public function getFollowers($userId) {
-
-        $link = null;
-        taoKetNoi($link);
-
-        $query = "SELECT u.UserID, u.Username, u.AvatarFP
-                  FROM follow f
-                  JOIN users u ON f.FollowerID = u.UserID
-                  WHERE f.FollowingID = $userId";
-
-        $result = chayTruyVanTraVeDL($link, $query);
-
-        $list = [];
-
-        while ($row = mysqli_fetch_assoc($result)) {
-            $list[] = $row;
-        }
-
-        giaiPhongKetNoi($link);
-
-        return $list;
-    }
-
-
-    // Check follow
+    // ================= CHECK FOLLOW =================
     public function isFollowing($followerId, $followingId) {
 
-        $link = null;
-        taoKetNoi($link);
+        return $this->followModel->exists($followerId, $followingId);
+    }
 
-        $query = "SELECT * FROM follow 
-                  WHERE FollowerID = $followerId 
-                  AND FollowingID = $followingId";
+    // ================= GET FOLLOWERS =================
+    public function getFollowers($userId) {
 
-        $result = chayTruyVanTraVeDL($link, $query);
+        $list = $this->followModel->getFollowers($userId);
 
-        $isFollow = mysqli_num_rows($result) > 0;
+        return $list ? $list : [];
+    }
 
-        giaiPhongKetNoi($link);
+    // ================= GET FOLLOWING =================
+    public function getFollowing($userId) {
 
-        return $isFollow;
+        $list = $this->followModel->getFollowing($userId);
+
+        return $list ? $list : [];
     }
 }
 ?>
