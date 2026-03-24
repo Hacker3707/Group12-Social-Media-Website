@@ -15,16 +15,29 @@
 
 #left-sidebar {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
     background-color: rgb(244, 248, 176);
-    position: sticky;
     
-    height: fit-content;
 }
 
 #main-content {
     padding: 40px;
-    justify-content: space-between;
-    align-items: center;
     background-color: rgb(208, 222, 248);
-    
+
 }
+
+
+#post-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#button-group {
+    display: flex;
+    justify-content: flex-end;
+    margin: 20px 0;
+}
+

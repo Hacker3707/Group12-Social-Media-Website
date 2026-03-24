@@ -1,6 +1,6 @@
 <?php
 // Include module database của bạn
-include_once "Module/db_module.php";
+include_once __DIR__ . "/../../Module/db_module.php";
 
 abstract class AppModel {
     protected $link = null;

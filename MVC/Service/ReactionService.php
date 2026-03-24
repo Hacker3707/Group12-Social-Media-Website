@@ -14,10 +14,10 @@ class ReactionService
         $result = $this->reactionModel->insertReaction($userId, $postId, null, $reactionType);
 
         if (!$result) {
-            return "There's something went wrong... Cannot react!";
+            return false;
         }
 
-        return "Reacted successfully!";
+        return true;
     }
 
      public function addReactionToComment($userId, $commentId, $reactionType)
@@ -25,9 +25,9 @@ class ReactionService
         $result = $this->reactionModel->insertReaction($userId, null, $commentId, $reactionType);
         if (!$result)
         {
-            return "There's something went wrong... Cannot react!";
+            return false;
         }
-        return "Reacted successfully!";
+        return true;
     }
 
     public function removeReaction($reactionId)
@@ -35,9 +35,9 @@ class ReactionService
         $result = $this -> reactionModel -> deleteReaction($reactionId);
         if (!$result)
         {
-            return "There's something went wrong... Cannot remove reaction!";
+            return false;
         }
-        return "Removed reaction successfully!";
+        return true;
     }
 
     public function getReactionsForPost($postId)
