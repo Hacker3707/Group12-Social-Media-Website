@@ -41,4 +41,11 @@ function giaiPhongBoNho($link, $result){
     }
 }
 
+function giaiPhongKetNoi(&$link){
+    if($link){
+        mysqli_close($link);
+        $link = null;
+    }
+}
+
 ?>

@@ -4,17 +4,19 @@ class Post {
     private $UserID;
     private $GroupID;
     private $CategoryID;
+    private $Username;
     private $Title;
     private $Content;
     private array $MediaList; // Array to hold media objects (images, videos, etc.)
     private $CreatedAt;
     
 
-    public function __construct($post_id, $user_id, $group_id, $category_id, $title, $content, $created_at, $media_list = []) {
+    public function __construct($post_id, $user_id, $group_id, $category_id, $username, $title, $content, $created_at, $media_list = []) {
         $this->PostID = $post_id;
         $this->UserID = $user_id;
         $this->GroupID = $group_id;
         $this->CategoryID = $category_id;
+        $this->Username = $username;
         $this->Title = $title;
         $this->Content = $content;
         $this->MediaList = $media_list;
@@ -60,6 +62,15 @@ class Post {
     public function setMediaList($mediaList) {
         $this->MediaList = $mediaList;
     }
+
+    public function getUsername() {
+        return $this->Username;
+    }
+    
+    public function setUsername($username) {
+        $this->Username = $username;
+    }
+
 }
 
 ?>
