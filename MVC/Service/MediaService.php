@@ -24,6 +24,38 @@ class MediaService {
         return "Media created successfully.";
     }
 
+    public function getMediaByPostIDs($postIdList) {
+
+        $link = null;
+        taoKetNoi($link);
+
+        $query = "SELECT * FROM media WHERE PostID IN ($postIdList)";
+        $result = chayTruyVanTraVeDL($link, $query);
+
+        $mediaMap = [];
+
+        while ($row = mysqli_fetch_assoc($result)) {
+
+            $postId = $row['PostID'];
+
+            $media = new Media(
+                $row['MediaID'],
+                $row['UserID'],
+                $row['MediaType'],
+                $row['FilePath'],
+                $row['CreatedAt'],
+                $row['CommentID'],
+                $row['PostID']
+            );
+
+            $mediaMap[$postId][] = $media;
+        }
+
+        giaiPhongKetNoi($link);
+
+        return $mediaMap;
+    }
+
     // Thêm media cho comment
     public function createMediaForComment($UserID, $CommentID, $MediaType, $FilePath) {
         $link = null;

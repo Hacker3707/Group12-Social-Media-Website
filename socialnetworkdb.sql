@@ -78,7 +78,7 @@ CREATE TABLE `group` (
 CREATE TABLE `group_member` (
   `UserID` int(11) NOT NULL,
   `GroupID` int(11) NOT NULL,
-  `Role` ENUM('admin','moderator','member') NOT NULL DEFAULT 'member'
+  `Role` ENUM('admin', 'member') NOT NULL DEFAULT 'member'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
