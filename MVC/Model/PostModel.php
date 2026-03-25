@@ -11,10 +11,19 @@ class PostModel extends AppModel {
         $title = mysqli_real_escape_string($this->link, $title);
         $content = mysqli_real_escape_string($this->link, $content);
         $sql = "CALL createPost($userId, $groupId, $categoryId, '$title', '$content')";
-        if ($this->execute($sql)) {
-            return $this->getLastInsertId();
+        $result = mysqli_query($this->link, $sql);
+
+        if(!$result){
+            echo mysqli_error($this->link);
+            return false;
         }
-        return false;
+
+        /* flush result set của procedure */
+        while(mysqli_more_results($this->link)){
+            mysqli_next_result($this->link);
+        }
+
+        return true;
     }
 
     public function getAll() {

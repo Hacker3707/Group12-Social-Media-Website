@@ -12,7 +12,9 @@ foreach($posts as $post) { ?>
 
     <!-- Post Header -->
     <div class="d-flex justify-content-between align-items-center mb-2">
+
         <div>
+            <img src="" alt="???" class="rounded-circle mr-2">
             <strong><?= htmlspecialchars($post->getUsername()) ?></strong>
         </div>
         <small class="text-muted">
@@ -31,7 +33,23 @@ foreach($posts as $post) { ?>
         data-target="#postModal<?= $post->getPostId() ?>">
             View Post
         </button>
+
+        <button class="btn btn-sm btn-outline-primary">
+            Like
+        </button>
+
+        <div class="btn-group dropright">
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background-color: rgb(255, 241, 161); border: none;">
+            ...
+        </button>
+        <div class="dropdown-menu">
+       <button class="dropdown-item" type="button">Edit</button>
+        <button class="dropdown-item" type="button">Report</button>
+        <button class="dropdown-item delete-btn" type="button">Delete</button>
+        </div>
     </div>
+    </div>
+
 
 </div>
 

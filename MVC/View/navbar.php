@@ -13,7 +13,7 @@
         <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Link</a>
+        <a class="nav-link" href="#">Categories</a>
       </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
@@ -27,7 +27,9 @@
         </div>
       </li>
       <li class="nav-item">
-        <a class="nav-link disabled">Disabled</a>
+        <a class="nav-link disabled"><button type="button" class="btn btn-primary">
+        Notifications <span class="badge badge-light">4</span>
+        </button></a>
       </li>
     </ul>
     <form class="form-inline my-2 my-lg-0">
