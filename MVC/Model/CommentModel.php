@@ -8,10 +8,19 @@ class CommentModel extends AppModel {
         $parentCommentId = $parentCommentId === null ? "NULL" : (int)$parentCommentId;
         $content = mysqli_real_escape_string($this->link, $content);
         $sql = "CALL createComment($userId, $postId, '$content', $parentCommentId)";
-        if ($this->execute($sql)) {
-            return $this->getLastInsertId();
+        $result = mysqli_query($this->link, $sql);
+        
+        if(!$result){
+            echo mysqli_error($this->link);
+            return false;
         }
-        return false;
+
+        /* flush result set của procedure */
+        while(mysqli_more_results($this->link)){
+            mysqli_next_result($this->link);
+        }
+
+        return true;
     }
 
     public function fetchByField($field, $value) 

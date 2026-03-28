@@ -1,6 +1,6 @@
 <?php
-include_once "MVC/Model/Media.php";
-include_once "MVC/Module/db_module.php";
+include_once __DIR__ . '/../../Entity/Media.php';
+include_once __DIR__ . "/../../Module/db_module.php";
 
 class MediaModel {
 

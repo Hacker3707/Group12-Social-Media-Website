@@ -1,20 +1,32 @@
 <?php
 include_once __DIR__ . "/AppModel.php";
 include_once __DIR__ . "/../../Entity/Post.php";
+
 class PostModel extends AppModel {
 
     // Thay thế cho hàm createPost (phần logic DB)
-    public function insertPost($userId, $groupId, $categoryId, $title, $content) {
-        $groupId = $groupId === null ? "NULL" : $groupId;
-        $categoryId = $categoryId === null ? "NULL" : $categoryId;
+    public function insertPost(Post $post) {
+        $groupId = $post->getGroupId() === null ? "NULL" : intval($post->getGroupId());
+        $categoryId = $post->getCategoryId() === null ? "NULL" : intval($post->getCategoryId());
+        $userId = intval($post -> getUserId());
 
-        $title = mysqli_real_escape_string($this->link, $title);
-        $content = mysqli_real_escape_string($this->link, $content);
+        $title = mysqli_real_escape_string($this -> link, $post -> getTitle());
+        $content = mysqli_real_escape_string($this -> link, $post -> getContent());
+
         $sql = "CALL createPost($userId, $groupId, $categoryId, '$title', '$content')";
-        if ($this->execute($sql)) {
-            return $this->getLastInsertId();
+        $result = mysqli_query($this->link, $sql);
+
+        if(!$result){
+            echo mysqli_error($this->link);
+            return false;
         }
-        return false;
+
+        /* flush result set của procedure */
+        while(mysqli_more_results($this->link)){
+            mysqli_next_result($this->link);
+        }
+
+        return true;
     }
 
     public function getAll() {
@@ -38,21 +50,22 @@ class PostModel extends AppModel {
 
         while ($row = mysqli_fetch_assoc($result)) {
 
-            $posts[] = new Post(
+            $post = new Post(
                 $row['PostID'],
                 $row['UserID'],
                 $row['GroupID'],
                 $row['CategoryID'],
-                $row['Username'],
                 $row['Title'],
-                $row['Content'],
-                $row['CreatedAt'],
-                []
+                $row['Content']
             );
 
+            $post->setUsername($row['Username']);
+            $post->setCreatedAt($row['CreatedAt']);
+
+            $posts[] = $post;
         }
 
-    return $posts;
+        return $posts;
     }
 
 
@@ -68,13 +81,22 @@ class PostModel extends AppModel {
         $sql = "SELECT * FROM post WHERE $field = $value ORDER BY CreatedAt DESC";
         $result = $this->query($sql);
         while ($row = mysqli_fetch_assoc($result)) {
-            array_push($data, new Post(
-                $row['PostID'], $row['UserID'],
-                $row['GroupID'], $row['CategoryID'], 
-                $row['Title'], $row['Content'],
-                $row['CreatedAt'], []
-            ));
+
+            $post = new Post(
+                $row['PostID'],
+                $row['UserID'],
+                $row['GroupID'],
+                $row['CategoryID'],
+                $row['Title'],
+                $row['Content']
+            );
+
+            $post->setUsername($row['Username']);
+            $post->setCreatedAt($row['CreatedAt']);
+
+            $data[] = $post;
         }
+
         return $data;
     }
 
@@ -97,13 +119,21 @@ class PostModel extends AppModel {
         $result = $this->query($sql);
 
         if ($row = mysqli_fetch_assoc($result)) {
-            return new Post(
-                $row['PostID'], $row['UserID'],
-                $row['GroupID'], $row['CategoryID'],
-                $row['Title'], $row['Content'],
-                $row['CreatedAt'], []
+
+            $post = new Post(
+                $row['PostID'],
+                $row['UserID'],
+                $row['GroupID'],
+                $row['CategoryID'],
+                $row['Title'],
+                $row['Content']
             );
-        }
+
+            $post->setUsername($row['Username']);
+            $post->setCreatedAt($row['CreatedAt']);
+
+            return $post;
+        }   
 
         return false;
     }

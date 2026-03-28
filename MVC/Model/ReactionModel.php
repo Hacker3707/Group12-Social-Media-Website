@@ -1,18 +1,26 @@
 <?php 
-include_once "MVC/Model/AppModel.php";
-include_once "Entity/Reaction.php";
+include_once __DIR__ . "/AppModel.php";
+include_once __DIR__ . "/../../Entity/Reaction.php";
 
 class ReactionModel extends AppModel {
 
     public function insertReaction($userId, $postId, $commentId, $type) {
         $postId = $postId === null ? "NULL" : (int)$postId;
         $commentId = $commentId === null ? "NULL" : (int)$commentId;
-        $sql = "CALL createReaction($userId, $postId, $commentId, '$type')";
-        
-        if ($this->execute($sql)) {
-            return $this->getLastInsertId();
+        $sql = "CALL createReaction($postId, $userId, $commentId, '$type')";
+        $result = mysqli_query($this->link, $sql);
+
+        if(!$result){
+            echo mysqli_error($this->link);
+            return false;
         }
-        return false;
+
+        /* flush result set của procedure */
+        while(mysqli_more_results($this->link)){
+            mysqli_next_result($this->link);
+        }
+
+        return true;
     }
 
     public function fetchByField($field, $value) 
@@ -50,7 +58,7 @@ class ReactionModel extends AppModel {
             $reactions[] = new Reaction(
                 $row['ReactionID'], $row['PostID'],
                 $row['CommentID'], $row['UserID'],
-                $row['Type'], $row['CreatedAt']
+                $row['ReactionType'], $row['CreatedAt']
             );
         }
         return $reactions;

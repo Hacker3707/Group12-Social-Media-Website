@@ -1,0 +1,47 @@
+<?php
+include_once __DIR__ . "/../Model/ReactionModel.php";
+
+class ReactionControl {
+
+    private $reactionModel;
+
+    public function __construct() {
+        $this->reactionModel = new ReactionModel();
+    }
+
+    public function addReaction() {
+
+        $postId = $_POST['postId'];
+        //$userId = $_POST['user_id'];
+        $userId = 1; // Placeholder for testing, replace with actual user ID from session
+        $type = $_POST['type'] ?? 'like'; // Default to 'like' if type is not provided
+
+        // Validate input
+        if (empty($postId) || empty($userId)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing required fields']);
+            return;
+        }
+
+        // Create reaction
+        $result = $this->reactionModel->insertReaction($userId, $postId, null, $type);
+        echo $result ? "success" : "fail";
+        exit;
+        
+    }
+
+    public function removeReaction() {
+        $reactionId = $_POST['reactionId'];
+
+        if (empty($reactionId)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing reaction ID']);
+            return;
+        }
+
+        $result = $this->reactionModel->deleteReaction($reactionId);
+        echo $result ? "success" : "fail";
+        exit;
+    }
+}
+?>

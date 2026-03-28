@@ -55,38 +55,37 @@
 
 <script>
 
-document.getElementById("postForm").addEventListener("submit", function(e){
+  document.getElementById("postForm").addEventListener("submit", function(e){
 
-    e.preventDefault(); // chặn reload trang
+      e.preventDefault();
 
-    let formData = new FormData(this);
+      let formData = new FormData(this);
 
-    fetch("../../Module/createpost_module.php", {
-    method: "POST",
-    body: formData
-    })
-.then(response => response.text())
-.then(data => {
+      fetch("index.php?controller=post&action=createPost", {
+          method: "POST",
+          body: formData
+      })
+      .then(response => response.text())
+      .then(data => {
 
-    if(data.trim() === "success"){
+          if(data.trim().includes("success")){
+              document.getElementById("result").innerHTML =
+              "<div class='alert alert-success'>Post created successfully</div>" +
+              "<div class='alert alert-info'>Redirecting...</div>";
 
-        document.getElementById("result").innerHTML =
-        "<div class='alert alert-success'>Post created successfully</div>" +
-        "<div class='alert alert-info'>Redirecting...</div>";
+              setTimeout(function(){
+                  window.location.href = "/Group12-Social-Media-Website/MVC/View/index.php";
+              },3000);
 
-        setTimeout(function(){
-            window.location.href = "/Group12-Social-Media-Website/MVC/View/index.php";
-        },3000);
+          } else {
 
-    } else {
+              document.getElementById("result").innerHTML =
+              "<div class='alert alert-danger'>Failed to create post</div>";
 
-        document.getElementById("result").innerHTML =
-        "<div class='alert alert-danger'>Failed to create post</div>";
+          }
 
-    }
+      });
 
-});
-
-});
+  });
 
 </script>
