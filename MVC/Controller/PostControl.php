@@ -1,22 +1,34 @@
 <?php
 include_once __DIR__ . "/../Model/PostModel.php";
 include_once __DIR__ . "/AppController.php";
+include_once __DIR__ . "/../Model/ReactionModel.php";
 
 class PostControl extends AppController {
     private $postModel;
+    private $reactionModel;
 
     public function __construct() {
         $this->postModel = new PostModel();
+        $this->reactionModel = new ReactionModel();
     }
 
     public function createPost(){
 
-        $userId = 1;
+        $userId = 2;
         $groupId = null;
         $categoryId = null;
 
         $title = $_POST['title'];
         $content = $_POST['content'];
+
+        $post = new Post(
+            null,
+            $userId,
+            $groupId,
+            $categoryId,
+            $title,
+            $content
+        );
 
         $mediaList = [];
 
@@ -29,15 +41,10 @@ class PostControl extends AppController {
             $mediaList[] = $uploadPath;
         }
 
-        $result = $this->postModel->insertPost(
-            $userId,
-            $groupId,
-            $categoryId,
-            $title,
-            $content
-        );
+        $result = $this->postModel->insertPost($post);
 
         echo $result ? "success" : "fail";
+        
         exit;
     }
 
@@ -69,6 +76,11 @@ class PostControl extends AppController {
 
     public function getAllPosts() {
         $posts = $this->postModel->getAll() ?? [];
+
+        $reactions = [];
+        foreach($posts as $post) {
+            $reactions[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
+        }
         include_once __DIR__ . "/../View/home.php";
     }
 
@@ -103,8 +115,20 @@ class PostControl extends AppController {
         return [];
     }
 
-    public function deletePost($postId) {
-        return $this->postModel->deletePost($postId);
+    public function deletePost(){
+
+        $postId = $_POST['postId'] ?? null;
+
+        if(!$postId){
+            echo "fail";
+            exit;
+        }
+
+        $result = $this->postModel->delete($postId);
+
+        echo $result ? "success" : "fail";
+
+        exit;
     }
 
     public function updatePost($postId, $title, $content) {

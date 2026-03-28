@@ -27,27 +27,35 @@ foreach($posts as $post) { ?>
     <p><?= htmlspecialchars($post->getContent()) ?></p>
 
     <!-- Post Actions -->
-    <div class="mt-2">
-        <button class="btn btn-sm btn-outline-primary"
+    <div class="mt-2 d-flex align-items-center" >
+        <button class="btn btn-sm btn-outline-primary col-md-2 col-12"
         data-toggle="modal"
         data-target="#postModal<?= $post->getPostId() ?>">
             View Post
         </button>
 
-        <button class="btn btn-sm btn-outline-primary">
-            Like
+        <button class="btn btn-sm btn-outline-secondary ml-2" type="button">
+            Comment <span class="badge badge-light"><?= count($comments[$post->getPostId()] ?? []) ?></span>
         </button>
 
-        <div class="btn-group dropright">
-        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background-color: rgb(255, 241, 161); border: none;">
-            ...
-        </button>
-        <div class="dropdown-menu">
-       <button class="dropdown-item" type="button">Edit</button>
-        <button class="dropdown-item" type="button">Report</button>
-        <button class="dropdown-item delete-btn" type="button">Delete</button>
+        <div class="btn-group dropright ml-2">
+            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background-color: rgb(186, 212, 230); border: none;">
+                ...
+            </button>
+
+            <div class="dropdown-menu">
+                <button class="dropdown-item" type="button">Edit</button>
+                <button class="dropdown-item" type="button">Report</button>
+                <button class="dropdown-item delete-btn" type="button" data-postid="<?= $post->getPostId() ?>">
+                    Delete
+                </button>
+            </div>
+        
         </div>
-    </div>
+
+        <button class="btn btn-sm btn-outline-primary like-btn ml-auto" type="button" data-postid="<?= $post->getPostId() ?>">
+                Like <span class="badge badge-light like-count"><?= count($reactions[$post->getPostId()] ?? []) ?></span>
+        </button>
     </div>
 
 
@@ -86,3 +94,85 @@ tabindex="-1">
 </div>
 
 <?php } ?>
+
+
+<!-- Delete Post Script -->
+<script>
+
+document.addEventListener("click", function(e){
+
+    if(!e.target.classList.contains("delete-btn")) return;
+
+    let postId = e.target.getAttribute("data-postid");
+
+    if(!confirm("Delete this post?")) return;
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.onreadystatechange = function(){
+
+        if(xhr.readyState === 4 && xhr.status === 200){
+
+            if(xhr.responseText === "success"){
+                alert("Post deleted");
+                location.reload();
+            }
+            else{
+                alert("Delete failed");
+            }
+
+        }
+
+    };
+
+    xhr.open("POST", "index.php?controller=post&action=deletePost", true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.send("postId=" + encodeURIComponent(postId));
+
+});
+
+</script>
+
+<!-- Like Post Script -->
+<script>
+    document.addEventListener("click", function(e){
+
+    let btn = e.target.closest(".like-btn");
+    if(!btn) return;
+
+    let postId = btn.getAttribute("data-postid");
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.onreadystatechange = function(){
+
+        if(xhr.readyState === 4 && xhr.status === 200){
+
+            if(xhr.responseText === "success"){
+
+                let badge = btn.querySelector(".like-count");
+                let count = parseInt(badge.textContent);
+
+                badge.textContent = count + 1;
+
+            }
+            else{
+                alert("Like failed");
+            }
+
+        }
+
+    };
+
+    xhr.open("POST", "index.php?controller=reaction&action=addReaction", true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.send(
+        "postId=" + encodeURIComponent(postId) +
+        "&type=like"
+    );
+
+});
+</script>
+
+
+<!--  -->

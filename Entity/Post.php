@@ -11,16 +11,13 @@ class Post {
     private $CreatedAt;
     
 
-    public function __construct($post_id, $user_id, $group_id, $category_id, $username, $title, $content, $created_at, $media_list = []) {
+    public function __construct($post_id, $user_id, $group_id, $category_id, $title, $content) {
         $this->PostID = $post_id;
         $this->UserID = $user_id;
         $this->GroupID = $group_id;
         $this->CategoryID = $category_id;
-        $this->Username = $username;
         $this->Title = $title;
         $this->Content = $content;
-        $this->MediaList = $media_list;
-        $this->CreatedAt = $created_at;
     }
 
     public function getPostId() {
@@ -37,6 +34,10 @@ class Post {
 
     public function getCreatedAt() {
         return $this->CreatedAt;
+    }
+
+    public function setCreatedAt($createdAt){
+    $this->CreatedAt = $createdAt;
     }
 
     public function getTitle() {
