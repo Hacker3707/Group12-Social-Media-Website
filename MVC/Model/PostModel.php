@@ -16,7 +16,7 @@ class PostModel extends AppModel {
 
         $sql = "CALL createPost($userId,$groupId,$categoryId,'$title','$content')";
 
-        $result = mysqli_query($this->link,$sql);
+        $result = $this -> execute($sql);
 
         if(!$result){
             return false;

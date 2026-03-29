@@ -14,7 +14,7 @@ class ReactionModel extends AppModel {
 
         $sql = "CALL createReaction($postId,$userId,$commentId,'$type')";
 
-        $result = mysqli_query($this->link,$sql);
+        $result = $this -> execute($sql);
 
         if(!$result){
             echo mysqli_error($this->link);
