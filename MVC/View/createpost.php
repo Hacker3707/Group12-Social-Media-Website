@@ -57,35 +57,37 @@
 
   document.getElementById("postForm").addEventListener("submit", function(e){
 
-      e.preventDefault();
+    e.preventDefault();
 
-      let formData = new FormData(this);
+    let formData = new FormData(this);
 
-      fetch("index.php?controller=post&action=createPost", {
-          method: "POST",
-          body: formData
-      })
-      .then(response => response.text())
-      .then(data => {
+    fetch("/Group12-Social-Media-Website/index.php?controller=post&action=createPost",{
+        method:"POST",
+        body:formData
+    })
+    .then(res=>res.text())
+    .then(data=>{
 
-          if(data.trim().includes("success")){
-              document.getElementById("result").innerHTML =
-              "<div class='alert alert-success'>Post created successfully</div>" +
-              "<div class='alert alert-info'>Redirecting...</div>";
+        console.log(data);
 
-              setTimeout(function(){
-                  window.location.href = "/Group12-Social-Media-Website/MVC/View/index.php";
-              },3000);
+        if(data.trim().includes("success")){
 
-          } else {
+            document.getElementById("result").innerHTML =
+            "<div class='alert alert-success'>Post created successfully</div>";
 
-              document.getElementById("result").innerHTML =
-              "<div class='alert alert-danger'>Failed to create post</div>";
+            setTimeout(()=>{
+                window.location.href = "/Group12-Social-Media-Website/index.php?controller=post&action=showHome";
+            },1500);
 
-          }
+        }else{
 
-      });
+            document.getElementById("result").innerHTML =
+            "<div class='alert alert-danger'>Failed to create post</div>";
 
-  });
+        }
+
+    });
+
+});
 
 </script>

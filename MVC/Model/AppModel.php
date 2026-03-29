@@ -23,7 +23,7 @@ abstract class AppModel {
      * Chạy truy vấn không trả về dữ liệu (INSERT, UPDATE, DELETE)
      */
     protected function execute($sql) {
-        return chayTruyVanKhongTraVeDL($this->link, $sql);
+        return chayTruyVanKhongTraVeDL($this->link, $sql) ? true : false;
     }
 
     /**

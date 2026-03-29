@@ -113,7 +113,7 @@ document.addEventListener("click", function(e){
 
         if(xhr.readyState === 4 && xhr.status === 200){
 
-            if(xhr.responseText === "success"){
+            if(xhr.responseText.trim() === "success"){
                 alert("Post deleted");
                 location.reload();
             }
@@ -148,7 +148,7 @@ document.addEventListener("click", function(e){
 
         if(xhr.readyState === 4 && xhr.status === 200){
 
-            if(xhr.responseText === "success"){
+            if(xhr.responseText.trim() === "success"){
 
                 let badge = btn.querySelector(".like-count");
                 let count = parseInt(badge.textContent);
