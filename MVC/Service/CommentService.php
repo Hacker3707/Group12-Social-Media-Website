@@ -17,7 +17,7 @@ class CommentService
     {
         $commentId = $this->commentModel->createComment($userId, $postId, $content, $parentCommentId);
         if (!$commentId) {
-            return "Failed to add comment.";
+            return false;
         }
 
         // Handle media attachments for the comment
@@ -30,7 +30,7 @@ class CommentService
             );
         }
 
-        return "Comment added successfully.";   
+        return true;   
     }
 
     public function deleteComment($commentId)
@@ -38,10 +38,10 @@ class CommentService
         $result = $this->commentModel->deleteComment($commentId);
 
         if ($result) {
-            return "Comment deleted successfully.";
+            return true;
         }
 
-        return "Failed to delete comment.";
+        return false;
     }
 
     public function getCommentsByField($field, $value) {

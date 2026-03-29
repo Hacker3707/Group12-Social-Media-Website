@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="#">
-    <img src="../../Materials/Picture/Passo.png" alt="Logo" width="80" height="40" class="d-inline-block align-top">
+  <a class="navbar-brand" href="index.php">
+    <img src="../../Materials/Picture/Passo.png" alt="Logo" width="150" height="50" class="d-inline-block align-top">
   </a>
   
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -13,7 +13,7 @@
         <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Link</a>
+        <a class="nav-link" href="#">Categories</a>
       </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
@@ -27,7 +27,9 @@
         </div>
       </li>
       <li class="nav-item">
-        <a class="nav-link disabled">Disabled</a>
+        <a class="nav-link disabled"><button type="button" class="btn btn-primary">
+        Notifications <span class="badge badge-light">?</span>
+        </button></a>
       </li>
     </ul>
     <form class="form-inline my-2 my-lg-0">

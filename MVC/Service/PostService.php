@@ -1,10 +1,6 @@
 <?php
-include_once "MVC/Model/PostModel.php";
-include_once "MVC/Model/Comment.php";
-include_once "MVC/Model/Follow.php";
-include_once "MVC/Model/Category.php";
-include_once "MVC/Module/db_module.php";
-include_once "MVC/Service/MediaService.php";
+include_once __DIR__ . "/../Model/PostModel.php";
+include_once __DIR__ . "/MediaService.php";
 
 class PostService {
 
@@ -26,20 +22,24 @@ class PostService {
             $content
         );
 
-        if (!$postId) {
-            return "Failed to create post.";
+        if (!isset($postId)) {
+            return false;
         }
 
-        foreach ($mediaList as $media) {
-            $this->mediaService->createMediaForPost(
-                $userId,
-                $postId,
-                $media->getMediaType(),
-                $media->getFilePath()
-            );
+        if (!empty($mediaList)) {
+
+            foreach ($mediaList as $media) {
+
+                $this->mediaService->createMediaForPost(
+                    $userId,
+                    $postId,
+                    $media->getMediaType(),
+                    $media->getFilePath()
+                );
+            }
         }
 
-        return "Post created successfully.";
+        return true;
     }   
 
     public function getPostById($postId) {
@@ -85,6 +85,10 @@ class PostService {
         return $posts;
     }
 
+    public function getAllPosts() {
+        return $this->postModel->getAll();
+    }
+
     public function getPostsByUserId($userId) {
         return $this->getPostsByField("UserID", $userId);
     }
@@ -100,17 +104,18 @@ class PostService {
     public function deletePost($postId) {
         $result = $this->postModel->delete($postId);
         if ($result) {
-            return "Post deleted successfully.";
+            return true;
         }
-        return "Failed to delete post.";
+        return false;
     }
 
     public function updatePost($postId, $title, $content) {
         $result = $this->postModel->update($postId, $title, $content);
         if ($result) {
-            return "Post updated successfully.";
+            return true;
         }
-        return "Failed to update post.";
+        return false;
     }
 }
+
 ?>

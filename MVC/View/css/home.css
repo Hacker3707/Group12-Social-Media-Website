@@ -5,32 +5,46 @@
     
 }
 
-#upper-bar {
+#navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-
     background-color: azure;
 }
 
 #left-sidebar {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
     background-color: rgb(244, 248, 176);
-    
+
 }
 
 #main-content {
-    display: flex;
+    padding: 40px;
     justify-content: space-between;
     align-items: center;
     background-color: rgb(208, 222, 248);
     
 }
 
-.nav-item {
-    margin: 5px;
-    justify-content: center;
-    align-items: center;
+#create-post-btn {
+    position: fixed; /* Giữ nút ở vị trí cố định so với cửa sổ trình duyệt */
+    bottom: 20px;    /* Cách mép dưới màn hình 20px */
+    right: 20px;     /* Cách mép phải màn hình 20px */
+    width: 150px;     /* Chiều rộng của nút */
+    height: 60px;    /* Chiều cao của nút */
+    border-radius: 60px; /* Bo tròn các góc của nút */
+    align-items: center; /* Căn giữa nội dung theo chiều dọc */
+    justify-content: space-between;
+    padding: 15px 20px;
+    font-size: 17px; /* Kích thước chữ */
+    font-weight: bold; /* In đậm chữ */
+}
+
+#create-post-btn:hover {
+    background-color: #0056b3; /* Màu nền khi hover */
+    color: white; /* Màu chữ khi hover */
+}
+
+.like-btn {
+    margin-left: auto; /* Đẩy nút Like về phía bên phải */
 }
