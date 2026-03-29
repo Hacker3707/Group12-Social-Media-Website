@@ -53,6 +53,11 @@ class PostControl extends AppController {
     public function showHome(){
 
         $posts = $this->postModel->getAll() ?? [];
+        
+        $reactions = [];
+        foreach($posts as $post) {
+            $reactions[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
+        }
 
         include __DIR__ . "/../View/home.php";
     }
