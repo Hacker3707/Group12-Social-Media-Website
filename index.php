@@ -4,7 +4,7 @@ $controllerName = $_GET['controller'] ?? 'post';
 $actionName = $_GET['action'] ?? 'getAllPosts';
 
 $controllerClassName = ucfirst($controllerName)."Control";
-include_once "../Controller/$controllerClassName.php";
+include_once "MVC/Controller/$controllerClassName.php";
 
 $controller = new $controllerClassName();
 $controller -> $actionName();

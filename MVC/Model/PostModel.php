@@ -6,22 +6,22 @@ class PostModel extends AppModel {
 
     // Thay thế cho hàm createPost (phần logic DB)
     public function insertPost(Post $post) {
+
         $groupId = $post->getGroupId() === null ? "NULL" : intval($post->getGroupId());
         $categoryId = $post->getCategoryId() === null ? "NULL" : intval($post->getCategoryId());
-        $userId = intval($post -> getUserId());
+        $userId = intval($post->getUserId());
 
-        $title = mysqli_real_escape_string($this -> link, $post -> getTitle());
-        $content = mysqli_real_escape_string($this -> link, $post -> getContent());
+        $title = mysqli_real_escape_string($this->link,$post->getTitle());
+        $content = mysqli_real_escape_string($this->link,$post->getContent());
 
-        $sql = "CALL createPost($userId, $groupId, $categoryId, '$title', '$content')";
-        $result = mysqli_query($this->link, $sql);
+        $sql = "CALL createPost($userId,$groupId,$categoryId,'$title','$content')";
+
+        $result = mysqli_query($this->link,$sql);
 
         if(!$result){
-            echo mysqli_error($this->link);
             return false;
         }
 
-        /* flush result set của procedure */
         while(mysqli_more_results($this->link)){
             mysqli_next_result($this->link);
         }

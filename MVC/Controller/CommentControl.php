@@ -15,7 +15,7 @@ class CommentControl {
         $comment = new Comment(null, $postId, $userId, $content);
         $this->commentModel->createComment($comment);
 
-        header("Location: index.php");
+        header("Location: ./index.php");
     }
 
 
