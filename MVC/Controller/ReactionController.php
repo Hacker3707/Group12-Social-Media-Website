@@ -1,7 +1,7 @@
 <?php
 include_once __DIR__ . "/../Model/ReactionModel.php";
 
-class ReactionControl {
+class ReactionController {
 
     private $reactionModel;
 
