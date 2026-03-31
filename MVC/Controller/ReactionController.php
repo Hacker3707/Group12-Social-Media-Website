@@ -1,7 +1,7 @@
 <?php
 include_once __DIR__ . "/../Model/ReactionModel.php";
 
-class ReactionControl {
+class ReactionController {
 
     private $reactionModel;
 
@@ -16,6 +16,8 @@ class ReactionControl {
         $userId = 1; // Placeholder for testing, replace with actual user ID from session
         $type = $_POST['type'] ?? 'like'; // Default to 'like' if type is not provided
 
+        $reaction = new Reaction(null, $postId, null, $userId, $type);
+
         // Validate input
         if (empty($postId) || empty($userId)) {
             http_response_code(400);
@@ -24,7 +26,7 @@ class ReactionControl {
         }
 
         // Create reaction
-        $result = $this->reactionModel->insertReaction($userId, $postId, null, $type);
+        $result = $this->reactionModel->insertReaction($reaction);
         echo $result ? "success" : "fail";
         exit;
         

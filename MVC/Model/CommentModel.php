@@ -8,10 +8,9 @@ class CommentModel extends AppModel {
         $parentCommentId = $parentCommentId === null ? "NULL" : (int)$parentCommentId;
         $content = mysqli_real_escape_string($this->link, $content);
         $sql = "CALL createComment($userId, $postId, '$content', $parentCommentId)";
-        $result = mysqli_query($this->link, $sql);
-        
+        $result = $this -> execute($sql);
+
         if(!$result){
-            echo mysqli_error($this->link);
             return false;
         }
 

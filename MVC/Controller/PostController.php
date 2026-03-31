@@ -1,9 +1,10 @@
+
 <?php
 include_once __DIR__ . "/../Model/PostModel.php";
 include_once __DIR__ . "/AppController.php";
 include_once __DIR__ . "/../Model/ReactionModel.php";
 
-class PostControl extends AppController {
+class PostController extends AppController {
     private $postModel;
     private $reactionModel;
 
@@ -52,6 +53,11 @@ class PostControl extends AppController {
     public function showHome(){
 
         $posts = $this->postModel->getAll() ?? [];
+        
+        $reactions = [];
+        foreach($posts as $post) {
+            $reactions[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
+        }
 
         include __DIR__ . "/../View/home.php";
     }
