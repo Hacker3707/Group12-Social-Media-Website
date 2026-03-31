@@ -1,19 +1,33 @@
 <?php 
-include_once "MVC/Model/AppModel.php";
-include_once "Entity/Reaction.php";
+include_once __DIR__ . "/AppModel.php";
+include_once __DIR__ . "/../../Entity/Reaction.php";
+include_once __DIR__ . "/../../Module/db_module.php";
 
 class ReactionModel extends AppModel {
 
-    public function insertReaction($userId, $postId, $commentId, $type) {
-        $postId = $postId === null ? "NULL" : (int)$postId;
-        $commentId = $commentId === null ? "NULL" : (int)$commentId;
-        $sql = "CALL createReaction($userId, $postId, $commentId, '$type')";
-        
-        if ($this->execute($sql)) {
-            return $this->getLastInsertId();
+    public function insertReaction(Reaction $reaction) {
+
+        $postId = $reaction->getPostId() ?? "NULL";
+        $commentId = $reaction->getCommentId() ?? "NULL";
+        $userId = intval($reaction->getUserId());
+        $type = mysqli_real_escape_string($this->link, $reaction->getType());
+
+        $sql = "CALL createReaction($postId,$userId,$commentId,'$type')";
+
+        $result = $this -> execute($sql);
+
+        if(!$result){
+            echo mysqli_error($this->link);
+            return false;
         }
-        return false;
-    }
+
+        while(mysqli_more_results($this->link)){
+            mysqli_next_result($this->link);
+        }
+
+        return true;
+}
+
 
     public function fetchByField($field, $value) 
     {
@@ -50,7 +64,7 @@ class ReactionModel extends AppModel {
             $reactions[] = new Reaction(
                 $row['ReactionID'], $row['PostID'],
                 $row['CommentID'], $row['UserID'],
-                $row['Type'], $row['CreatedAt']
+                $row['ReactionType'], $row['CreatedAt']
             );
         }
         return $reactions;

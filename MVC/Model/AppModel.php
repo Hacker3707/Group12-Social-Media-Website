@@ -1,6 +1,6 @@
 <?php
 // Include module database của bạn
-include_once "Module/db_module.php";
+include_once __DIR__ . "/../../Module/db_module.php";
 
 abstract class AppModel {
     protected $link = null;
@@ -23,7 +23,7 @@ abstract class AppModel {
      * Chạy truy vấn không trả về dữ liệu (INSERT, UPDATE, DELETE)
      */
     protected function execute($sql) {
-        return chayTruyVanKhongTraVeDL($this->link, $sql);
+        return chayTruyVanKhongTraVeDL($this->link, $sql) ? true : false;
     }
 
     /**
