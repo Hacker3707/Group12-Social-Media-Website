@@ -1,6 +1,5 @@
-
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="index.php">
+  <a class="navbar-brand" href="index.php">
     <img src="Materials/Picture/Passo.png" alt="Logo" width="150" height="50" class="d-inline-block align-top">
   </a>
   
@@ -33,9 +32,35 @@
         </button></a>
       </li>
     </ul>
+    
     <form class="form-inline my-2 my-lg-0">
       <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" id="search-form">
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
     </form>
+
+    <div class="ml-3 d-flex align-items-center">
+        <?php if (isset($_SESSION['user_id'])): ?>
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                    Chào, <strong><?= htmlspecialchars($_SESSION['username']) ?></strong>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" href="index.php?controller=user&action=edit&id=<?= $_SESSION['user_id'] ?>">Hồ sơ cá nhân</a>
+                    
+                    <?php if($_SESSION['role'] === 'admin'): ?>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item text-info" href="index.php?controller=user&action=list">Quản lý hệ thống</a>
+                    <?php endif; ?>
+                    
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item text-danger" href="index.php?controller=user&action=logout">Đăng xuất</a>
+                </div>
+            </div>
+        <?php else: ?>
+            <a href="index.php?controller=user&action=login" class="btn btn-outline-primary mr-2">Login</a>
+            <a href="index.php?controller=user&action=register" class="btn btn-primary">Register</a>
+        <?php endif; ?>
+    </div>
+
   </div>
 </nav>

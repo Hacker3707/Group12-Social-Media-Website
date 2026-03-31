@@ -1,4 +1,5 @@
 <?php
+session_start();
 
 $controllerName = $_GET['controller'] ?? 'post';
 $actionName = $_GET['action'] ?? 'showHome';
