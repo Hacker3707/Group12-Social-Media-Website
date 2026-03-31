@@ -1,7 +1,7 @@
 <?php
 
 $controllerName = $_GET['controller'] ?? 'post';
-$actionName = $_GET['action'] ?? 'showHome';
+$actionName = $_GET['action'] ?? 'home';
 
 $controllerClassName = ucfirst($controllerName)."Controller";
 include_once "MVC/Controller/$controllerClassName.php";

@@ -3,24 +3,33 @@
 include_once __DIR__ . "/../Model/PostModel.php";
 include_once __DIR__ . "/AppController.php";
 include_once __DIR__ . "/../Model/ReactionModel.php";
-
+include_once __DIR__ . "/../Service/PostService.php";
+include_once __DIR__ . "/../../Entity/Media.php";
 class PostController extends AppController {
     private $postModel;
     private $reactionModel;
+    private $postService;
 
     public function __construct() {
+       $this->postService = new PostService();
         $this->postModel = new PostModel();
         $this->reactionModel = new ReactionModel();
     }
 
     public function createPost(){
 
+       
         $userId = 2;
         $groupId = null;
         $categoryId = null;
 
         $title = $_POST['title'];
         $content = $_POST['content'];
+        $price = $_POST['price'] ?? null;
+        $condition = $_POST['condition'] ?? 'good';
+        $location = $_POST['location'] ?? 'other';
+        $brand = $_POST['brand'] ?? null;
+        $status = 'selling';
 
         $post = new Post(
             null,
@@ -28,7 +37,12 @@ class PostController extends AppController {
             $groupId,
             $categoryId,
             $title,
-            $content
+            $content,
+            $price,
+            $condition,
+            $location,
+            $brand,
+            $status
         );
 
         $mediaList = [];
@@ -39,13 +53,17 @@ class PostController extends AppController {
 
             move_uploaded_file($_FILES['media']['tmp_name'], $uploadPath);
 
-            $mediaList[] = $uploadPath;
+           $media = new Media(null, $userId, null, "image", $uploadPath);
+            $mediaList[] = $media;
         }
 
-        $result = $this->postModel->insertPost($post);
-
-        echo $result ? "success" : "fail";
+       $result = $this->postService->createPost($post, $mediaList);
         
+       if(!$result){
+    echo "fail";
+    die(mysqli_error($this->postService->postModel->getConnection()));
+}
+echo "success";
         exit;
     }
 
@@ -138,7 +156,34 @@ class PostController extends AppController {
     }
 
     public function updatePost($postId, $title, $content) {
-        return $this->postModel->updatePost($postId, $title, $content);
+          $postId = $_POST['postId'] ?? null;
+
+        if(!$postId){
+            echo "fail";
+            exit;
+        }
+
+        $title = $_POST['title'] ?? null;
+        $content = $_POST['content'] ?? null;
+        $price = $_POST['price'] ?? null;
+        $condition = $_POST['condition'] ?? 'good';
+        $location = $_POST['location'] ?? 'other';
+        $brand = $_POST['brand'] ?? null;
+        $status = $_POST['status'] ?? 'selling';
+
+        $result = $this->postModel->update(
+            $postId,
+            $title,
+            $content,
+            $price,
+            $condition,
+            $location,
+            $brand,
+            $status
+        );
+
+        echo $result ? "success" : "fail";
+        exit;
     }
 }
 ?>

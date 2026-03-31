@@ -41,5 +41,8 @@ abstract class AppModel {
             giaiPhongKetNoi($this->link);
         }
     }
+    public function getConnection(){
+    return $this->link;
+}
 }
 ?>

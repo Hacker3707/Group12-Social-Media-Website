@@ -13,24 +13,24 @@
 
         <div class="row" id = "navbar">
             <div class= "col-md-12 col-12">
-                <?php include 'MVC/View/navbar.php'; ?>
+                <?php include(__DIR__ . "/navbar.php");; ?>
             </div>
         </div>
 
         <div class="row" id = "middle-content">
             <div class= "col-md-2 col-12" id = "left-sidebar">
-                <?php include 'MVC/View/leftsidebar.php'; ?>
+                <?php include(__DIR__ . "/leftsidebar.php");; ?>
             </div>
             <div class= "col-md-10 col-12" id = "main-content">
                 <?php
-                include_once "MVC/View/postview.php";
+                include_once(__DIR__ . "/postview.php");
                 ?>
             </div>
         </div>
 
         <div class="row" id = "lower-bar">
             <div class= "col-md-1 col-12">
-            <a href="MVC/View/createpost_view.php" class="btn btn-primary" id="create-post-btn">
+            <a href="/Group12-Social-Media-Website/MVC/View/createpost_view.php" class="btn btn-primary" id="create-post-btn">
                 + Create Post
             </a>
             </div>
