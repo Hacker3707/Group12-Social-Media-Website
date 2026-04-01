@@ -106,22 +106,19 @@ class PostService {
         return false;
     }
 
-    public function updatePost($postId, $title, $content) {
-        $result = $this->postModel->update( 
-            $post->getPostId(),
-            $post->getTitle(),
-            $post->getContent(),
-            $post->getPrice(),
-            $post->getCondition(),
-            $post->getLocation(),
-            $post->getBrand(),
-            $post->getStatus()
-            );
-        if ($result) {
-            return true;
-        }
-        return false;
-    }
+   public function updatePost($postId, $title, $content, $price, $condition, $location, $brand, $status) {
+
+    return $this->postModel->update(
+        $postId,
+        $title,
+        $content,
+        $price,
+        $condition,
+        $location,
+        $brand,
+        $status
+    );
+}
 }
 
 ?>

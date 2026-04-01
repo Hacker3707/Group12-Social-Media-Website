@@ -3,15 +3,12 @@
 include_once __DIR__ . "/../Model/PostModel.php";
 include_once __DIR__ . "/AppController.php";
 include_once __DIR__ . "/../Model/ReactionModel.php";
-include_once __DIR__ . "/../Service/PostService.php";
 include_once __DIR__ . "/../../Entity/Media.php";
 class PostController extends AppController {
     private $postModel;
     private $reactionModel;
-    private $postService;
 
     public function __construct() {
-       $this->postService = new PostService();
         $this->postModel = new PostModel();
         $this->reactionModel = new ReactionModel();
     }
@@ -57,14 +54,15 @@ class PostController extends AppController {
             $mediaList[] = $media;
         }
 
-       $result = $this->postService->createPost($post, $mediaList);
+       $result = $this->postModel->insertPost($post);
         
-       if(!$result){
-    echo "fail";
-    die(mysqli_error($this->postService->postModel->getConnection()));
-}
-echo "success";
-        exit;
+        if(!$result){
+        echo "fail";
+        die(mysqli_error($this->postModel->getConnection()));
+        }
+
+        echo "success";
+                exit;
     }
 
     // render page
@@ -155,8 +153,8 @@ echo "success";
         exit;
     }
 
-    public function updatePost($postId, $title, $content) {
-          $postId = $_POST['postId'] ?? null;
+    public function updatePost() {
+        $postId = $_POST['postId'] ?? null;
 
         if(!$postId){
             echo "fail";
@@ -171,8 +169,11 @@ echo "success";
         $brand = $_POST['brand'] ?? null;
         $status = $_POST['status'] ?? 'selling';
 
-        $result = $this->postModel->update(
+        $post = new Post(
             $postId,
+            null,
+            null,
+            null,
             $title,
             $content,
             $price,
@@ -181,6 +182,8 @@ echo "success";
             $brand,
             $status
         );
+
+        $result = $this->postModel->update($post);
 
         echo $result ? "success" : "fail";
         exit;

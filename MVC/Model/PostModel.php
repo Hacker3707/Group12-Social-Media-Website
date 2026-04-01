@@ -121,12 +121,29 @@ class PostModel extends AppModel {
         return $this->execute($sql);
     }
 
-    public function update($postId, $title, $content) {
-        $title = mysqli_real_escape_string($this->link, $title);
-        $content = mysqli_real_escape_string($this->link, $content);
-        $sql = "UPDATE post SET Title = '$title', Content = '$content' WHERE PostID = $postId";
-        return $this->execute($sql);
-    }
+   public function update(Post $post) {
+
+    $title = mysqli_real_escape_string($this->link, $post->getTitle());
+    $content = mysqli_real_escape_string($this->link, $post->getContent());
+    $condition = mysqli_real_escape_string($this->link, $post->getCondition());
+    $location = mysqli_real_escape_string($this->link, $post->getLocation());
+    $brand = $post->getBrand() ? "'" . mysqli_real_escape_string($this->link, $post->getBrand()) . "'" : "NULL";
+    $status = mysqli_real_escape_string($this->link, $post->getStatus());
+    $price = $post->getPrice() ? intval($post->getPrice()) : "NULL";
+
+    $sql = "UPDATE post SET 
+        Title = '$title',
+        Content = '$content',
+        Price = $price,
+        ProductCondition = '$condition',
+        Location = '$location',
+        Brand = $brand,
+        PostStatus = '$status'
+        WHERE PostID = $postId";
+
+    return $this->execute($sql);
+}
+
 
     public function getById($postId) {
         $postId = (int)$postId;
