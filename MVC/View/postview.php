@@ -24,8 +24,27 @@ foreach($posts as $post) { ?>
 
     <!-- Post Content -->
     <h5><?= htmlspecialchars($post->getTitle()) ?></h5>
-    <p><?= htmlspecialchars($post->getContent()) ?></p>
+    
+    <p><?= nl2br(htmlspecialchars($post->getContent())) ?></p>
 
+   <!-- Extra Info -->
+   <div class="text-muted small mt-2">
+
+    <?php if($post->getPrice() !== null): ?>
+        💰 Price: <?= number_format($post->getPrice()) ?> VND <br>
+    <?php endif; ?>
+
+    📦 Condition: <?= htmlspecialchars($post->getCondition()) ?> <br>
+
+    📍 Location: <?= htmlspecialchars($post->getLocation()) ?> <br>
+
+    <?php if($post->getBrand()): ?>
+        🏷️ Brand: <?= htmlspecialchars($post->getBrand()) ?> <br>
+    <?php endif; ?>
+
+    📌 Status: <?= htmlspecialchars($post->getStatus()) ?>
+
+   </div>
     <!-- Post Actions -->
     <div class="mt-2 d-flex align-items-center" >
         <button class="btn btn-sm btn-outline-primary col-md-2 col-12"
@@ -57,6 +76,29 @@ foreach($posts as $post) { ?>
                 Like <span class="badge badge-light like-count"><?= count($reactions[$post->getPostId()] ?? []) ?></span>
         </button>
     </div>
+    <div class="mt-2">
+
+    <?php if($post->getPrice() !== null): ?>
+        <span class="badge badge-success">
+            💰 <?= number_format($post->getPrice()) ?> VND
+        </span>
+    <?php endif; ?>
+
+    <span class="badge badge-info">
+        <?= $post->getCondition() ?>
+    </span>
+
+    <span class="badge badge-secondary">
+        <?= $post->getLocation() ?>
+    </span>
+
+    <?php if($post->getBrand()): ?>
+        <span class="badge badge-dark">
+            <?= $post->getBrand() ?>
+        </span>
+    <?php endif; ?>
+
+</div>
 
 
 </div>
@@ -131,6 +173,7 @@ document.addEventListener("click", function(e){
 
 });
 
+
 </script>
 
 <!-- Like Post Script -->
@@ -175,4 +218,3 @@ document.addEventListener("click", function(e){
 </script>
 
 
-<!--  -->

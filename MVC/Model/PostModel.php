@@ -14,38 +14,32 @@ class PostModel extends AppModel {
         $title = mysqli_real_escape_string($this->link,$post->getTitle());
         $content = mysqli_real_escape_string($this->link,$post->getContent());
 
-        $sql = "CALL createPost($userId,$groupId,$categoryId,'$title','$content')";
+        $price = $post->getPrice() === null ? "NULL" : intval($post->getPrice());
+        $condition = mysqli_real_escape_string($this->link, $post->getCondition());
+        $location = mysqli_real_escape_string($this->link, $post->getLocation());
+        $brand = $post->getBrand() ? "'" . mysqli_real_escape_string($this->link, $post->getBrand()) . "'" : "NULL";
+        $status = mysqli_real_escape_string($this->link, $post->getStatus());
 
-        $result = $this -> execute($sql);
+        // ❗ KHÔNG dùng stored procedure nữa (vì thiếu field mới)
+        $sql = "INSERT INTO post 
+                (UserID, GroupID, CategoryID, Title, Content, Price, ProductCondition, Location, Brand, PostStatus)
+                VALUES 
+                ($userId, $groupId, $categoryId, '$title', '$content', $price, '$condition', '$location', $brand, '$status')";
 
-        if(!$result){
-            return false;
-        }
-
-        while(mysqli_more_results($this->link)){
-            mysqli_next_result($this->link);
-        }
-
-        return true;
+        return $this->execute($sql);
     }
 
     public function getAll() {
 
+        
         $sql = "SELECT 
-                    p.PostID,
-                    p.UserID,
-                    p.GroupID,
-                    p.CategoryID,
-                    p.Title,
-                    p.Content,
-                    p.CreatedAt,
+                    p.*,
                     u.Username
                 FROM post p
                 JOIN users u ON p.UserID = u.UserID
                 ORDER BY p.CreatedAt DESC";
 
         $result = $this->query($sql);
-
         $posts = [];
 
         while ($row = mysqli_fetch_assoc($result)) {
@@ -56,7 +50,12 @@ class PostModel extends AppModel {
                 $row['GroupID'],
                 $row['CategoryID'],
                 $row['Title'],
-                $row['Content']
+                $row['Content'],
+                $row['Price'],
+                $row['ProductCondition'],
+                $row['Location'],
+                $row['Brand'],
+                $row['PostStatus']
             );
 
             $post->setUsername($row['Username']);
@@ -67,19 +66,30 @@ class PostModel extends AppModel {
 
         return $posts;
     }
+    
 
 
     // Thay thế cho getPostsByField
     public function fetchByField($field, $value) 
     {
+        
+
         $allowed = ['UserID','GroupID','CategoryID'];
-        if (!in_array($field,$allowed)) {
+        if (!in_array($field, $allowed)) {
             return false;
         }
+
         $value = mysqli_real_escape_string($this->link, $value);
-        $data = array();
-        $sql = "SELECT * FROM post WHERE $field = $value ORDER BY CreatedAt DESC";
+        $data = [];
+
+        $sql = "SELECT p.*, u.Username 
+                FROM post p
+                JOIN users u ON p.UserID = u.UserID
+                WHERE p.$field = $value
+                ORDER BY p.CreatedAt DESC";
+
         $result = $this->query($sql);
+
         while ($row = mysqli_fetch_assoc($result)) {
 
             $post = new Post(
@@ -88,7 +98,12 @@ class PostModel extends AppModel {
                 $row['GroupID'],
                 $row['CategoryID'],
                 $row['Title'],
-                $row['Content']
+                $row['Content'],
+                $row['Price'],
+                $row['ProductCondition'],
+                $row['Location'],
+                $row['Brand'],
+                $row['PostStatus']
             );
 
             $post->setUsername($row['Username']);
@@ -106,16 +121,36 @@ class PostModel extends AppModel {
         return $this->execute($sql);
     }
 
-    public function update($postId, $title, $content) {
-        $title = mysqli_real_escape_string($this->link, $title);
-        $content = mysqli_real_escape_string($this->link, $content);
-        $sql = "UPDATE post SET Title = '$title', Content = '$content' WHERE PostID = $postId";
-        return $this->execute($sql);
-    }
+   public function update(Post $post) {
+
+    $title = mysqli_real_escape_string($this->link, $post->getTitle());
+    $content = mysqli_real_escape_string($this->link, $post->getContent());
+    $condition = mysqli_real_escape_string($this->link, $post->getCondition());
+    $location = mysqli_real_escape_string($this->link, $post->getLocation());
+    $brand = $post->getBrand() ? "'" . mysqli_real_escape_string($this->link, $post->getBrand()) . "'" : "NULL";
+    $status = mysqli_real_escape_string($this->link, $post->getStatus());
+    $price = $post->getPrice() ? intval($post->getPrice()) : "NULL";
+
+    $sql = "UPDATE post SET 
+        Title = '$title',
+        Content = '$content',
+        Price = $price,
+        ProductCondition = '$condition',
+        Location = '$location',
+        Brand = $brand,
+        PostStatus = '$status'
+        WHERE PostID = $postId";
+
+    return $this->execute($sql);
+}
+
 
     public function getById($postId) {
         $postId = (int)$postId;
-        $sql = "SELECT * FROM post WHERE PostID = $postId";
+        $sql = "SELECT p.*, u.Username 
+        FROM post p
+        JOIN users u ON p.UserID = u.UserID
+        WHERE p.PostID = $postId";
         $result = $this->query($sql);
 
         if ($row = mysqli_fetch_assoc($result)) {
@@ -126,7 +161,12 @@ class PostModel extends AppModel {
                 $row['GroupID'],
                 $row['CategoryID'],
                 $row['Title'],
-                $row['Content']
+                $row['Content'],
+                $row['Price'],
+                $row['ProductCondition'],
+                $row['Location'],
+                $row['Brand'],
+                $row['PostStatus']
             );
 
             $post->setUsername($row['Username']);

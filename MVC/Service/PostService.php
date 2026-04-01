@@ -12,26 +12,23 @@ class PostService {
         $this->mediaService = new MediaService();
     }
 
-    public function createPost($userId, $groupId, $categoryId, $title, $content, $mediaList = []) {
+     public function createPost(Post $post, $mediaList = []) {
 
-        $postId = $this->postModel->insertPost(
-            $userId,
-            $groupId,
-            $categoryId,
-            $title,
-            $content
-        );
+        $result = $this->postModel->insertPost($post);
 
-        if (!isset($postId)) {
+        if (!$result) {
             return false;
         }
+
+        // ❗ lấy ID vừa insert
+        $postId = mysqli_insert_id($this->postModel->getConnection());
 
         if (!empty($mediaList)) {
 
             foreach ($mediaList as $media) {
 
                 $this->mediaService->createMediaForPost(
-                    $userId,
+                    $post->getUserId(),
                     $postId,
                     $media->getMediaType(),
                     $media->getFilePath()
@@ -109,13 +106,19 @@ class PostService {
         return false;
     }
 
-    public function updatePost($postId, $title, $content) {
-        $result = $this->postModel->update($postId, $title, $content);
-        if ($result) {
-            return true;
-        }
-        return false;
-    }
+   public function updatePost($postId, $title, $content, $price, $condition, $location, $brand, $status) {
+
+    return $this->postModel->update(
+        $postId,
+        $title,
+        $content,
+        $price,
+        $condition,
+        $location,
+        $brand,
+        $status
+    );
+}
 }
 
 ?>
