@@ -123,8 +123,6 @@ document.getElementById("postForm").addEventListener("submit", function(e){
 
     e.preventDefault();
 
-    alert("submit chạy"); // test
-
     let formData = new FormData(this);
 
     fetch("/Group12-Social-Media-Website/index.php?controller=post&action=createPost",{
