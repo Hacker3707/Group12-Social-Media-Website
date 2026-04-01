@@ -1,5 +1,5 @@
 <?php 
-class CommentControl {
+class CommentController {
     private $commentModel;
 
     public function __construct() {
@@ -18,6 +18,11 @@ class CommentControl {
         header("Location: ./index.php");
     }
 
-
+    public function deleteComment() {
+        $commentId = $_POST['comment_id'];
+        $this->commentModel->deleteComment($commentId);
+    
+        header("Location: ./index.php");
+    }
 }
 ?>

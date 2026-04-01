@@ -1,44 +1,63 @@
 <?php
-// Include module database của bạn
-include_once __DIR__ . "/../../Module/db_module.php";
 
 abstract class AppModel {
     protected $link = null;
 
     public function __construct() {
-        // Tự động kết nối khi Model được khởi tạo
         if ($this->link === null) {
-            taoKetNoi($this->link);
+            $this -> taoKetNoi();
         }
     }
 
-    /**
-     * Chạy truy vấn trả về dữ liệu (SELECT)
-     */
+    public function taoKetNoi() {
+        $this->link = mysqli_connect("localhost", "root", "", "passo");
+
+        if(!$this->link){
+            die("Không thể kết nối CSDL: ".mysqli_connect_error());
+        }
+
+        mysqli_set_charset($this->link, "utf8");
+    }
+
+    // SELECT
     protected function query($sql) {
-        return chayTruyVanTraVeDL($this->link, $sql);
+        $result = mysqli_query($this->link, $sql);
+
+        if(!$result){
+            die("Lỗi truy vấn: ".mysqli_error($this->link));
+        }
+
+        return $result;
     }
 
-    /**
-     * Chạy truy vấn không trả về dữ liệu (INSERT, UPDATE, DELETE)
-     */
+    // INSERT UPDATE DELETE
     protected function execute($sql) {
-        return chayTruyVanKhongTraVeDL($this->link, $sql) ? true : false;
+        $result = mysqli_query($this->link, $sql);
+
+        if(!$result){
+            die("Lỗi truy vấn: ".mysqli_error($this->link));
+        }
+
+        return true;
     }
 
-    /**
-     * Lấy ID vừa mới Insert (Rất cần cho PostID)
-     */
+    // Lấy ID vừa insert
     protected function getLastInsertId() {
         return mysqli_insert_id($this->link);
     }
 
-    /**
-     * Tự động đóng kết nối khi đối tượng bị hủy (Giải phóng bộ nhớ)
-     */
+    // Destructor
     public function __destruct() {
-        if ($this->link !== null) {
-            giaiPhongKetNoi($this->link);
+        if($this->link){
+            mysqli_close($this->link);
+            $this->link = null;
+        }
+    }
+
+    // Giải phóng bộ nhớ sau khi sử dụng kết quả truy vấn
+    public function giaiPhongBoNho($result) {
+        if($result instanceof mysqli_result){
+        mysqli_free_result($result);
         }
     }
 }

@@ -3,7 +3,7 @@
     <a class="nav-link active" href="#"><img src="../../Materials/Picture/Passo.png" class="rounded-circle" width="30" height="30" alt="..."></a>
   </li>
   <li class="nav-item">
-    <a class="nav-link active" href="#">Profile</a>
+    <a class="nav-link active" href="MVC/View/profile_view.php">Profile</a>
   </li>
   <li class="nav-item">
     <a class="nav-link" href="#">Groups</a>

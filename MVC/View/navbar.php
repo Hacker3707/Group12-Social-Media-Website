@@ -1,7 +1,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="index.php">
-    <img src="Materials/Picture/Passo.png" alt="Logo" width="150" height="50" class="d-inline-block align-top">
+    <a class="navbar-brand" href="/Group12-Social-Media-Website/index.php?controller=post&action=showHome">
+    <img src="/Group12-Social-Media-Website/Materials/Picture/Passo.png" alt="Logo" width="150" height="50" class="d-inline-block align-top">
   </a>
   
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
