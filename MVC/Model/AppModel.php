@@ -60,5 +60,8 @@ abstract class AppModel {
         mysqli_free_result($result);
         }
     }
+    public function getConnection(){
+    return $this->link;
+}
 }
 ?>

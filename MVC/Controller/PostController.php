@@ -3,7 +3,7 @@
 include_once __DIR__ . "/../Model/PostModel.php";
 include_once __DIR__ . "/AppController.php";
 include_once __DIR__ . "/../Model/ReactionModel.php";
-
+include_once __DIR__ . "/../../Entity/Media.php";
 class PostController extends AppController {
     private $postModel;
     private $reactionModel;
@@ -15,12 +15,18 @@ class PostController extends AppController {
 
     public function createPost(){
 
+       
         $userId = 2;
         $groupId = null;
         $categoryId = null;
 
         $title = $_POST['title'];
         $content = $_POST['content'];
+        $price = $_POST['price'] ?? null;
+        $condition = $_POST['condition'] ?? 'good';
+        $location = $_POST['location'] ?? 'other';
+        $brand = $_POST['brand'] ?? null;
+        $status = 'selling';
 
         $post = new Post(
             null,
@@ -28,7 +34,12 @@ class PostController extends AppController {
             $groupId,
             $categoryId,
             $title,
-            $content
+            $content,
+            $price,
+            $condition,
+            $location,
+            $brand,
+            $status
         );
 
         $mediaList = [];
@@ -39,14 +50,19 @@ class PostController extends AppController {
 
             move_uploaded_file($_FILES['media']['tmp_name'], $uploadPath);
 
-            $mediaList[] = $uploadPath;
+           $media = new Media(null, $userId, null, "image", $uploadPath);
+            $mediaList[] = $media;
         }
 
-        $result = $this->postModel->insertPost($post);
-
-        echo $result ? "success" : "fail";
+       $result = $this->postModel->insertPost($post);
         
-        exit;
+        if(!$result){
+        echo "fail";
+        die(mysqli_error($this->postModel->getConnection()));
+        }
+
+        echo "success";
+                exit;
     }
 
     // render page
@@ -137,8 +153,40 @@ class PostController extends AppController {
         exit;
     }
 
-    public function updatePost($postId, $title, $content) {
-        return $this->postModel->updatePost($postId, $title, $content);
+    public function updatePost() {
+        $postId = $_POST['postId'] ?? null;
+
+        if(!$postId){
+            echo "fail";
+            exit;
+        }
+
+        $title = $_POST['title'] ?? null;
+        $content = $_POST['content'] ?? null;
+        $price = $_POST['price'] ?? null;
+        $condition = $_POST['condition'] ?? 'good';
+        $location = $_POST['location'] ?? 'other';
+        $brand = $_POST['brand'] ?? null;
+        $status = $_POST['status'] ?? 'selling';
+
+        $post = new Post(
+            $postId,
+            null,
+            null,
+            null,
+            $title,
+            $content,
+            $price,
+            $condition,
+            $location,
+            $brand,
+            $status
+        );
+
+        $result = $this->postModel->update($post);
+
+        echo $result ? "success" : "fail";
+        exit;
     }
 }
 ?>
