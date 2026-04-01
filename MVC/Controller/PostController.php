@@ -18,7 +18,7 @@ class PostController extends AppController {
        
         $userId = 2;
         $groupId = null;
-        $categoryId = null;
+       $categoryId = !empty($_POST['category_id']) ? intval($_POST['category_id']) : null;
 
         $title = $_POST['title'];
         $content = $_POST['content'];
@@ -128,14 +128,19 @@ class PostController extends AppController {
         return [];
     }
 
-    public function getPostsByCategoryId($categoryId) {
-        if (isset($_GET['category_id'])) {
-            $categoryId = $_GET['category_id'];
-            $posts = $this->postModel->fetchByField('CategoryID', $categoryId);
-            include_once "../View/postview.php";
-        }
-        return [];
+    public function getPostsByCategoryId() {
+
+    if (isset($_GET['category_id'])) {
+
+        $categoryId = $_GET['category_id'];
+
+        $posts = $this->postModel->fetchByField('CategoryID', $categoryId);
+
+        include_once __DIR__ . "/../View/home.php";
     }
+
+    return [];
+}
 
     public function deletePost(){
 

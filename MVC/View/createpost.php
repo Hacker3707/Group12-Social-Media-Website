@@ -19,6 +19,21 @@
       <label>📌 Title</label>
       <input type="text" name="title" class="form-control" placeholder="Post title">
     </div>
+    <!-- 📝 CATEGORY -->
+<div class="form-group">
+  <label>📂 Category</label>
+  <select name="category_id" class="form-control category-select">
+      <option value="">-- Choose category --</option>
+          <option value="1">👕 Clothes</option>
+          <option value="2">👟 Shoes</option>
+          <option value="3">💻 Electronics</option>
+          <option value="4">🧸 Toys</option>
+          <option value="5">📚 Books</option>
+          <option value="6">🪑 Furniture</option>
+          <option value="7">💄 Cosmetic</option>
+          <option value="8">📦 Other</option>
+  </select>
+</div>
 
     <div class="form-group">
       <label>📄 Content</label>
@@ -110,6 +125,7 @@
     </a>
 </div>
 
+
 </div>
 </form>
 
@@ -123,11 +139,17 @@ document.getElementById("postForm").addEventListener("submit", function(e){
 
     e.preventDefault();
 
-    alert("submit chạy"); // test
+    alert("submit chạy");
 
     let formData = new FormData(this);
 
-    fetch("/Group12-Social-Media-Website/index.php?controller=post&action=createPost",{
+    // ✅ validate phải nằm TRONG function
+    if(!formData.get("category_id")){
+        alert("Please choose category");
+        return;
+    }
+
+    fetch("../../index.php?controller=post&action=createPost",{
         method:"POST",
         body:formData
     })
@@ -142,7 +164,7 @@ document.getElementById("postForm").addEventListener("submit", function(e){
             "<div class='alert alert-success'>Post created successfully</div>";
 
             setTimeout(()=>{
-                window.location.href = "/Group12-Social-Media-Website/index.php?controller=post&action=showHome";
+                window.location.href = "../../index.php?controller=post&action=showHome";
             },1500);
 
         }else{
@@ -152,8 +174,12 @@ document.getElementById("postForm").addEventListener("submit", function(e){
 
         }
 
+    })
+    .catch(err=>{
+        console.error("ERROR:", err);
     });
 
 });
+
 
 </script>

@@ -1,12 +1,12 @@
 <?php
-include_once "MVC/Service/CategoryService.php";
+include_once "MVC/Model/CategoryModel.php";
 
 class CategoryController {
 
-    private $service;
+    private $model;
 
     public function __construct() {
-        $this->service = new CategoryService();
+        $this->model = new CategoryModel();
     }
 
     // gọi từ index.php
@@ -34,7 +34,7 @@ class CategoryController {
 
             $categoryName = $_POST['categoryName'];
 
-            $result = $this->service->createCategory($categoryName);
+            $result = $this->model->createCategory($categoryName);
 
             echo "<script>alert('$result'); window.location.href='index.php?controller=category&action=list';</script>";
         }
@@ -44,7 +44,7 @@ class CategoryController {
     // ================= LIST =================
     public function list() {
 
-        $categories = $this->service->getAllCategories();
+        $categories = $this->model->getAllCategories();
 
         echo "<h2>Category List</h2>";
 
@@ -61,7 +61,7 @@ class CategoryController {
 
             $categoryId = (int)$_GET['id'];
 
-            $result = $this->service->deleteCategory($categoryId);
+            $result = $this->model->deleteCategory($categoryId);
 
             echo "<script>alert('$result'); window.location.href='index.php?controller=category&action=list';</script>";
         }
@@ -75,7 +75,7 @@ class CategoryController {
 
             $categoryId = (int)$_GET['id'];
 
-            $category = $this->service->getCategoryById($categoryId);
+            $category = $this->model->getCategoryById($categoryId);
 
             if ($category == null) {
                 echo "Category not found";
@@ -103,7 +103,7 @@ class CategoryController {
             $categoryId = (int)$_POST['categoryId'];
             $categoryName = $_POST['categoryName'];
 
-            $result = $this->service->updateCategory($categoryId, $categoryName);
+            $result = $this->model->updateCategory($categoryId, $categoryName);
 
             echo "<script>alert('$result'); window.location.href='index.php?controller=category&action=list';</script>";
         }

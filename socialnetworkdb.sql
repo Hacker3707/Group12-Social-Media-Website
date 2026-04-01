@@ -629,3 +629,33 @@ UNIQUE (CategoryName);
 
 DROP TABLE IF EXISTS `photo`;
 DROP TABLE IF EXISTS `video`;
+--------------------------------
+ALTER TABLE post
+ADD COLUMN Price INT DEFAULT NULL,
+
+ADD COLUMN ProductCondition ENUM(
+    'new',
+    'like_new',
+    'very_good',
+    'good',
+    'fair',
+    'for_parts'
+) DEFAULT 'good',
+
+ADD COLUMN Location ENUM(
+    'hcm',
+    'hanoi',
+    'danang',
+    'cantho',
+    'haiphong',
+    'other'
+) DEFAULT 'other',
+
+ADD COLUMN Brand VARCHAR(100) DEFAULT NULL,
+
+ADD COLUMN PostStatus ENUM(
+    'selling',
+    'reserved',
+    'sold',
+    'hidden'
+) DEFAULT 'selling';
