@@ -11,8 +11,6 @@ class GroupController {
     private $categoryModel;
 
     public function __construct() {
-        // Cần có dòng này (và include file GroupModel) để các hàm bên dưới gọi được Database
-        include_once "MVC/Model/GroupModel.php";
         $this->groupModel = new GroupModel();
         $this->memberModel = new GroupMemberModel();
         $this->categoryModel = new CategoryModel();
@@ -24,31 +22,29 @@ class GroupController {
         if (method_exists($this, $action)) {
             $this->$action();
         } else {
-            echo "Invalid action";
+            $this->redirect('index.php', 'Hành động không hợp lệ!');
         }
+    }
+
+    // ================= HELPER: CHUYỂN HƯỚNG =================
+    protected function redirect($url, $message = null) {
+        if ($message) $_SESSION['flash_message'] = $message;
+        header("Location: $url");
+        exit();
+    }
+
+    protected function back($message = null) {
+        if ($message) $_SESSION['flash_message'] = $message;
+        $referer = $_SERVER['HTTP_REFERER'] ?? 'index.php';
+        header("Location: $referer");
+        exit();
     }
 
     // ================= ACTION: LIST =================
     public function list() {
         $groups = $this->groupModel->getAll();
-        echo "<h2>Quản lý Nhóm</h2>";
-        echo "<a href='index.php?controller=group&action=add'>+ Tạo nhóm mới</a><br><br>";
-        echo "<table border='1' cellpadding='10' style='border-collapse: collapse;'>";
-        echo "<tr><th>ID</th><th>Tên nhóm</th><th>Quyền riêng tư</th><th>Danh mục</th><th>Thao tác</th></tr>";
-        foreach ($groups as $g) {
-            echo "<tr>
-                    <td>{$g->getGroupId()}</td>
-                    <td><b>{$g->getGroupName()}</b></td>
-                    <td>" . ucfirst($g->getPrivacy()) . "</td>
-                    <td>{$g->getCategoryId()}</td> 
-                    <td>
-                        <a href='index.php?controller=group&action=viewMembers&id={$g->getGroupId()}'>Thành viên</a> | 
-                        <a href='index.php?controller=group&action=edit&id={$g->getGroupId()}'>Sửa</a> | 
-                        <a href='index.php?controller=group&action=delete&id={$g->getGroupId()}' onclick='return confirm(\"Xóa nhóm này?\")'>Xóa</a>
-                    </td>
-                  </tr>";
-        }
-        echo "</table>";
+        // Không dùng echo HTML ở đây nữa, chuyển sang gọi View
+        include_once "MVC/View/Group/list.php"; 
     }
 
     // ================= ACTION: CREATE =================
@@ -62,22 +58,16 @@ class GroupController {
             $groupName = $_POST['group_name'];
             $privacy = $_POST['privacy'];
 
-            // Dùng Entity Group để chứa dữ liệu
-            // Giả định Description đang trống và CategoryID = NULL
             $group = new Group(null, $groupName, $privacy);
             $group->setDescription("Chào mừng đến với $groupName");
 
-            // Gọi Model để lưu thật vào DB và lấy ID thật
             $newGroupId = $this->groupModel->insert($group); 
 
             if ($newGroupId) {
-                // Tự động cho người tạo làm thành viên đầu tiên luôn (Tùy chọn)
                 $this->groupModel->joinGroup($_SESSION['user_id'], $newGroupId, 'admin');
-
-                // Chuyển hướng sang đúng ID thật
-                echo "<script>alert('Tạo nhóm thành công!'); window.location.href='index.php?controller=group&action=detail&id=$newGroupId';</script>";
+                $this->redirect("index.php?controller=group&action=detail&id=$newGroupId", "Tạo nhóm thành công!");
             } else {
-                echo "<script>alert('Lỗi khi lưu vào Database!'); window.history.back();</script>";
+                $this->back("Lỗi khi lưu vào Database!");
             }
         }
     }
@@ -87,26 +77,23 @@ class GroupController {
         $groupId = $_GET['id'] ?? 0;
         $userId = $_SESSION['user_id'] ?? 0;
         
-        // 1. LẤY DỮ LIỆU THẬT TỪ DATABASE
         $group = $this->groupModel->getById($groupId);
         
-        // 2. Nếu nhóm không tồn tại (ai đó gõ bậy ID lên URL) -> Đuổi về trang chủ
         if (!$group) {
-            echo "<script>alert('Nhóm này không tồn tại hoặc đã bị xóa!'); window.location.href='index.php';</script>";
-            return;
+            $this->redirect('index.php', 'Nhóm này không tồn tại hoặc đã bị xóa!');
         }
 
-        // 3. Lấy số liệu thật
         $memberCount = $this->groupModel->getMemberCount($groupId);
         $joinStatus = $this->groupModel->getJoinStatus($userId, $groupId);
         $userRole = $this->groupModel->getUserRole($userId, $groupId);
         
-        // Gọi giao diện
         include_once "MVC/View/Group/detail.php";
     }
 
     public function toggleFollow() {
-        if (!isset($_SESSION['user_id'])) return;
+        if (!isset($_SESSION['user_id'])) {
+            $this->redirect('index.php?controller=user&action=login', 'Vui lòng đăng nhập!');
+        }
 
         if (isset($_POST['group_id'])) {
             $userId = (int)$_SESSION['user_id'];
@@ -115,19 +102,16 @@ class GroupController {
             $status = $this->groupModel->getJoinStatus($userId, $groupId);
 
             if ($status) {
-                // Nếu đang 'pending' hoặc 'approved' -> Bấm nút là Hủy/Rời nhóm
                 $this->groupModel->leaveGroup($userId, $groupId);
+                $this->redirect("index.php?controller=group&action=detail&id=$groupId");
             } else {
-                // Nếu CHƯA THAM GIA -> Kiểm tra Privacy của nhóm
                 $group = $this->groupModel->getById($groupId);
                 $newStatus = ($group['Privacy'] === 'private') ? 'pending' : 'approved';
                 $this->groupModel->joinGroup($userId, $groupId, 'member', $newStatus);
                 
-                if ($newStatus === 'pending') {
-                    echo "<script>alert('Đã gửi yêu cầu tham gia! Vui lòng chờ Admin duyệt.');</script>";
-                }
+                $msg = ($newStatus === 'pending') ? 'Đã gửi yêu cầu tham gia! Vui lòng chờ Admin duyệt.' : '';
+                $this->redirect("index.php?controller=group&action=detail&id=$groupId", $msg);
             }
-            echo "<script>window.location.href='index.php?controller=group&action=detail&id=$groupId';</script>";
         }
     }
 
@@ -136,10 +120,8 @@ class GroupController {
         $groupId = $_GET['id'] ?? 0;
         $userId = $_SESSION['user_id'] ?? 0;
 
-        // Chặn nếu không phải Admin
         if ($this->groupModel->getUserRole($userId, $groupId) !== 'admin') {
-            echo "<script>alert('Bạn không có quyền chỉnh sửa nhóm này!'); window.history.back();</script>";
-            return;
+            $this->back("Bạn không có quyền chỉnh sửa nhóm này!");
         }
 
         $group = $this->groupModel->getById($groupId);
@@ -152,16 +134,16 @@ class GroupController {
             $userId = $_SESSION['user_id'] ?? 0;
 
             if ($this->groupModel->getUserRole($userId, $groupId) !== 'admin') {
-                echo "<script>alert('Lỗi quyền truy cập!'); window.history.back();</script>"; return;
+                $this->back("Lỗi quyền truy cập!");
             }
 
             $name = $_POST['group_name'];
             $desc = $_POST['description'];
             $privacy = $_POST['privacy'];
-            $categoryId = 0; // Tạm thời để 0 hoặc lấy từ form nếu bạn có làm danh mục
+            $categoryId = 0; 
 
             $this->groupModel->update($groupId, $name, $desc, $privacy, $categoryId);
-            echo "<script>alert('Cập nhật thông tin nhóm thành công!'); window.location.href='index.php?controller=group&action=detail&id=$groupId';</script>";
+            $this->redirect("index.php?controller=group&action=detail&id=$groupId", "Cập nhật thông tin nhóm thành công!");
         }
     }
 
@@ -170,12 +152,11 @@ class GroupController {
         $userId = $_SESSION['user_id'] ?? 0;
 
         if ($this->groupModel->getUserRole($userId, $groupId) !== 'admin') {
-            echo "<script>alert('Chỉ quản trị viên mới được vào trang này!'); window.history.back();</script>"; return;
+            $this->back("Chỉ quản trị viên mới được vào trang này!");
         }
 
         $group = $this->groupModel->getById($groupId);
         $members = $this->groupModel->getGroupMembers($groupId);
-        // THÊM DÒNG NÀY: Lấy danh sách đang chờ duyệt
         $pendingMembers = $this->groupModel->getPendingMembers($groupId); 
         
         include_once "MVC/View/Group/members.php";
@@ -188,7 +169,7 @@ class GroupController {
         $currentUserId = $_SESSION['user_id'] ?? 0;
 
         if ($this->groupModel->getUserRole($currentUserId, $groupId) !== 'admin') {
-            echo "<script>alert('Lỗi quyền truy cập!'); window.history.back();</script>"; return;
+            $this->back("Lỗi quyền truy cập!");
         }
 
         if ($action === 'kick' || $action === 'reject') {
@@ -205,80 +186,54 @@ class GroupController {
             $msg = "Đã giáng cấp!";
         }
 
-        echo "<script>alert('$msg'); window.location.href='index.php?controller=group&action=manageMembers&id=$groupId';</script>";
+        $this->redirect("index.php?controller=group&action=manageMembers&id=$groupId", $msg);
     }
 
-    // ================= ACTION: VIEW MEMBERS =================
+    // ================= ACTION: VIEW MEMBERS (Dành cho Admin tổng) =================
     public function viewMembers() {
         if (isset($_GET['id'])) {
             $groupId = (int)$_GET['id'];
             $members = $this->memberModel->getMembers($groupId);
-
-            echo "<h2>Thành viên của nhóm #$groupId</h2>";
-            echo "<table border='1' cellpadding='5'>";
-            echo "<tr><th>Username</th><th>Vai trò</th><th>Thao tác</th></tr>";
-            foreach ($members as $m) {
-                echo "<tr>
-                        <td>{$m['Username']}</td>
-                        <td>{$m['Role']}</td>
-                        <td>
-                            <a href='index.php?controller=group&action=removeUser&groupId=$groupId&userId={$m['UserID']}' onclick='return confirm(\"Trục xuất thành viên này?\")'>Xóa khỏi nhóm</a>
-                        </td>
-                      </tr>";
-            }
-            echo "</table><br><a href='index.php?controller=group&action=list'>Quay lại</a>";
+            include_once "MVC/View/Group/members.php";
         }
     }
 
-    // ================= ACTION: REMOVE USER =================
     public function removeUser() {
         if (isset($_GET['groupId']) && isset($_GET['userId'])) {
             $result = $this->memberModel->removeMember($_GET['userId'], $_GET['groupId']);
             $msg = $result ? "Đã xóa thành viên!" : "Lỗi thao tác.";
-            echo "<script>alert('$msg'); window.location.href='index.php?controller=group&action=viewMembers&id={$_GET['groupId']}';</script>";
+            $this->redirect("index.php?controller=group&action=viewMembers&id={$_GET['groupId']}", $msg);
         }
     }
 
-    // ================= ACTION: XÓA NHÓM (Chỉ Admin mới được xóa) =================
+    // ================= ACTION: XÓA NHÓM =================
     public function deleteGroup() {
         if (!isset($_SESSION['user_id'])) return;
 
         $groupId = (int)($_GET['id'] ?? 0);
         $userId = (int)$_SESSION['user_id'];
 
-        // Kiểm tra xem User này có phải là 'admin' của nhóm không
         if ($this->groupModel->getUserRole($userId, $groupId) === 'admin') {
             $this->groupModel->delete($groupId);
-            
-            // Note: Nhờ bạn thiết kế DB có ON DELETE CASCADE, khi xóa Group, 
-            // toàn bộ thành viên trong group_member cũng sẽ tự động được MySQL dọn dẹp sạch sẽ!
-            echo "<script>alert('Đã xóa nhóm vĩnh viễn!'); window.location.href='index.php?controller=group&action=myGroups';</script>";
+            $this->redirect('index.php?controller=group&action=myGroups', 'Đã xóa nhóm vĩnh viễn!');
         } else {
-            echo "<script>alert('Lỗi: Bạn không phải quản trị viên của nhóm này!'); window.history.back();</script>";
+            $this->back('Lỗi: Bạn không phải quản trị viên của nhóm này!');
         }
     }
 
-    // ================= ACTION: KHÁM PHÁ / TÌM KIẾM NHÓM =================
     public function discover() {
         $keyword = $_GET['q'] ?? '';
         $groups = $this->groupModel->searchGroups($keyword);
         include_once "MVC/View/Group/discover.php";
     }
 
-    // ================= ACTION: HIỂN THỊ DANH SÁCH NHÓM CỦA TÔI =================
     public function myGroups() {
-        // Kiểm tra xem đã đăng nhập chưa
         if (!isset($_SESSION['user_id'])) {
-            echo "<script>alert('Vui lòng đăng nhập để xem nhóm!'); window.location.href='index.php?controller=user&action=login';</script>";
-            return;
+            $this->redirect('index.php?controller=user&action=login', 'Vui lòng đăng nhập để xem nhóm!');
         }
 
         $userId = $_SESSION['user_id'];
-
-        // Lấy danh sách nhóm THẬT từ Database
         $myGroups = $this->groupModel->getGroupsByUser($userId);
-
-        // Gọi file giao diện hiển thị
         include_once "MVC/View/Group/my_groups.php";
     }
 }

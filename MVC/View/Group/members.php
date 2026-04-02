@@ -61,10 +61,10 @@
                             <?php if ($mem['Role'] === 'member'): ?>
                                 <button type="submit" name="action_type" value="promote" class="btn btn-sm btn-outline-success mr-2 font-weight-bold">Thêm quyền quản trị viên</button>
                             <?php else: ?>
-                                <button type="submit" name="action_type" value="demote" class="btn btn-sm btn-outline-warning mr-2 font-weight-bold" onclick="return confirm('Hủy quyền Admin của người này?');">Hủy quyền quản trị viên</button>
+                                <button type="submit" name="action_type" value="demote" class="btn btn-sm btn-outline-warning mr-2 font-weight-bold" onclick="return confirm('Hủy quyền quản trị viên của người này?');">Hủy quyền quản trị viên</button>
                             <?php endif; ?>
                             
-                            <button type="submit" name="action_type" value="kick" class="btn btn-sm btn-danger font-weight-bold" onclick="return confirm('Đuổi người này khỏi nhóm?');">Đuổi khỏi nhóm</button>
+                            <button type="submit" name="action_type" value="kick" class="btn btn-sm btn-danger font-weight-bold" onclick="return confirm('Xóa người này khỏi nhóm?');">Xóa khỏi nhóm</button>
                         </form>
                     <?php endif; ?>
                 </div>
