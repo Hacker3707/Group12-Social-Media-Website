@@ -20,9 +20,9 @@
       <input type="text" name="title" class="form-control" placeholder="Post title">
     </div>
    <!-- 📝 CATEGORY -->
-<div class="form-group">
-  <label>📂 Category</label>
-  <select name="category_id" class="form-control category-select">
+    <div class="form-group">
+    <label>📂 Category</label>
+    <select name="category_id" class="form-control category-select">
        <option value="">-- Choose category --</option>
 
     <?php foreach ($categories as $cat): ?>

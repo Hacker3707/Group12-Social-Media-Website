@@ -26,5 +26,11 @@
             </div>
         </div>
         
+        <div class="row" id = "footer">
+            <div class= "col-md-12 col-12">
+                <p class="text-center">© 2026 Passo Social Media. All rights reserved.</p>
+            </div>
+        </div>
+
     </div>
 </body>
