@@ -40,3 +40,9 @@
     justify-content: flex-end;
     margin: 20px 0;
 }
+
+#footer {
+    background-color: rgb(123, 172, 202);
+    padding: 20px;
+    text-align: center;
+}
