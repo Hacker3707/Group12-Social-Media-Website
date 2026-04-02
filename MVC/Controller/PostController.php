@@ -4,6 +4,7 @@ include_once __DIR__ . "/../Model/PostModel.php";
 include_once __DIR__ . "/AppController.php";
 include_once __DIR__ . "/../Model/ReactionModel.php";
 include_once __DIR__ . "/../../Entity/Media.php";
+include_once __DIR__ . "/../Model/CategoryModel.php";
 class PostController extends AppController {
     private $postModel;
     private $reactionModel;
@@ -11,6 +12,7 @@ class PostController extends AppController {
     public function __construct() {
         $this->postModel = new PostModel();
         $this->reactionModel = new ReactionModel();
+        $this->categoryModel = new CategoryModel();
     }
 
     public function createPost(){
@@ -91,6 +93,9 @@ class PostController extends AppController {
             case "home":
                 $this->showHome();
                 break;
+            case "create":
+            $this->showCreateForm();
+             break;
 
         }
 
@@ -157,6 +162,13 @@ class PostController extends AppController {
 
         exit;
     }
+    public function showCreateForm(){
+    $categories = $this->categoryModel->getAll(); // 👈 lấy từ DB
+
+    include __DIR__ . "/../View/createpost_view.php";
+    
+die();
+}
 
     public function updatePost() {
         $postId = $_POST['postId'] ?? null;

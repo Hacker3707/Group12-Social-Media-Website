@@ -19,19 +19,18 @@
       <label>📌 Title</label>
       <input type="text" name="title" class="form-control" placeholder="Post title">
     </div>
-    <!-- 📝 CATEGORY -->
+   <!-- 📝 CATEGORY -->
 <div class="form-group">
   <label>📂 Category</label>
   <select name="category_id" class="form-control category-select">
-      <option value="">-- Choose category --</option>
-          <option value="1">👕 Clothes</option>
-          <option value="2">👟 Shoes</option>
-          <option value="3">💻 Electronics</option>
-          <option value="4">🧸 Toys</option>
-          <option value="5">📚 Books</option>
-          <option value="6">🪑 Furniture</option>
-          <option value="7">💄 Cosmetic</option>
-          <option value="8">📦 Other</option>
+       <option value="">-- Choose category --</option>
+
+    <?php foreach ($categories as $cat): ?>
+        <option value="<?= $cat->getCategoryID() ?>">
+            <?= $cat->getCategoryName() ?>
+        </option>
+    <?php endforeach; ?>
+
   </select>
 </div>
 
@@ -139,7 +138,6 @@ document.getElementById("postForm").addEventListener("submit", function(e){
 
     e.preventDefault();
 
-    alert("submit chạy");
 
     let formData = new FormData(this);
 
@@ -149,7 +147,7 @@ document.getElementById("postForm").addEventListener("submit", function(e){
         return;
     }
 
-    fetch("../../index.php?controller=post&action=createPost",{
+    fetch("/Group12-Social-Media-Website/index.php?controller=post&action=createPost",{
         method:"POST",
         body:formData
     })
@@ -164,7 +162,7 @@ document.getElementById("postForm").addEventListener("submit", function(e){
             "<div class='alert alert-success'>Post created successfully</div>";
 
             setTimeout(()=>{
-                window.location.href = "../../index.php?controller=post&action=showHome";
+                window.location.href = "/Group12-Social-Media-Website/index.php?controller=post&action=showHome";
             },1500);
 
         }else{
