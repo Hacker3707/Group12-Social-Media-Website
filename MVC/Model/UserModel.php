@@ -99,4 +99,27 @@ class UserModel extends AppModel {
         $result = $this->query($sql);
         return mysqli_num_rows($result) > 0;
     }
+
+    // ================= QUÊN MẬT KHẨU: KIỂM TRA USER =================
+    public function verifyUserForReset($username, $email) {
+        $username = mysqli_real_escape_string($this->link, $username);
+        $email = mysqli_real_escape_string($this->link, $email);
+        
+        $sql = "SELECT * FROM users WHERE Username = '$username' AND Email = '$email'";
+        $result = $this->query($sql);
+        
+        if ($row = mysqli_fetch_assoc($result)) {
+            return $row;
+        }
+        return null;
+    }
+
+    // ================= QUÊN MẬT KHẨU: CẬP NHẬT PASS MỚI =================
+    public function updatePassword($userId, $newPassword) {
+        $userId = (int)$userId;
+        $newPassword = mysqli_real_escape_string($this->link, $newPassword);
+        
+        $sql = "UPDATE users SET AccountPassword = '$newPassword' WHERE UserID = $userId";
+        return $this->execute($sql);
+    }
 }
