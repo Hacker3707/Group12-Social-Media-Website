@@ -5,7 +5,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js" integrity="sha384-+sLIOodYLS7CIrQpBjl+C7nPvqq+FbNUBDunl/OZv93DB7Ln/533i8e/mZXLi/P+" crossorigin="anonymous"></script>
-    <link rel="stylesheet" type="text/css" href="css/createpost.css">
+    <link rel="stylesheet" type="text/css" href="MVC/View/CSS/createpost.css">
 
 </head>
 <body>
@@ -26,5 +26,11 @@
             </div>
         </div>
         
+        <div class="row" id = "footer">
+            <div class= "col-md-12 col-12">
+                <p class="text-center">© 2026 Passo Social Media. All rights reserved.</p>
+            </div>
+        </div>
+
     </div>
 </body>

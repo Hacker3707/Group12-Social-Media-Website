@@ -672,3 +672,14 @@ ALTER TABLE groups MODIFY GroupID int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE group_member 
 ADD COLUMN Status ENUM('pending', 'approved') NOT NULL DEFAULT 'approved';
+
+-- INSERT NEW CATEGORIES --
+INSERT INTO category (CategoryName) VALUES
+('Clothes'),
+('Shoes'),
+('Electronics'),
+('Toys'),
+('Books'),
+('Furniture'),
+('Cosmetic'),
+('Other');
