@@ -48,3 +48,9 @@
 .like-btn {
     margin-left: auto; /* Đẩy nút Like về phía bên phải */
 }
+
+#footer {
+    background-color: rgb(123, 172, 202);
+    padding: 20px;
+    text-align: center;
+}
