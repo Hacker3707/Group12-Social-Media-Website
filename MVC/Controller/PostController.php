@@ -18,9 +18,9 @@ class PostController extends AppController {
     public function createPost(){
 
        
-        $userId = 2;
+        $userId = $_SESSION['user_id'];
         $groupId = null;
-       $categoryId = !empty($_POST['category_id']) ? intval($_POST['category_id']) : null;
+        $categoryId = !empty($_POST['category_id']) ? intval($_POST['category_id']) : null;
 
         $title = $_POST['title'];
         $content = $_POST['content'];
