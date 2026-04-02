@@ -7,13 +7,12 @@ class Reaction {
     private $Type; // e.g., 'like', 'love', 'haha', etc.
     private $CreatedAt;
 
-    public function __construct($reaction_id, $post_id, $comment_id, $user_id, $type, $created_at) {
+    public function __construct($reaction_id, $post_id, $comment_id, $user_id, $type) {
         $this->ReactionID = $reaction_id;
         $this->PostID = $post_id;
         $this->UserID = $user_id;
         $this->CommentID = $comment_id;
         $this->Type = $type;
-        $this->CreatedAt = $created_at;
     }
 
     public function getReactionId() {

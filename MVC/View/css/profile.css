@@ -1,0 +1,62 @@
+#home-container {
+    justify-content: space-around;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    
+}
+
+#navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: azure;
+}
+
+#main-content {
+    padding: 40px;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgb(208, 222, 248);
+    
+}
+
+#profile-banner {
+    width: 100%;
+    height: 200px;
+    background-color: rgb(244, 248, 176);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#profile-picture {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: -75px; /* Đẩy ảnh đại diện lên trên banner */
+}
+
+#profile-navbar {
+    display: flex;
+    justify-content: center;
+    background-color: rgb(214, 246, 255);
+    padding: 10px 0;
+}
+
+#profile-info {
+    background-color: rgb(255, 255, 255);
+    padding: 20px;
+}
+
+#edit-profile-btn {
+    margin-left: auto; /* Đẩy nút Edit Profile về phía bên phải */
+    padding: 10px 20px;
+    background-color: rgb(43, 131, 255);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}

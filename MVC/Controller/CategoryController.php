@@ -85,7 +85,7 @@ class CategoryController {
             // form sửa
             echo "
                 <h2>Edit Category</h2>
-                <form method='POST' action='index.php?controller=category&action=update'>
+                <form method='POST' action='Group12-Social-Media-Website/index.php?controller=category&action=update'>
                     <input type='hidden' name='categoryId' value='{$category->getCategoryID()}'>
                     <input type='text' name='categoryName' value='{$category->getCategoryName()}'>
                     <button type='submit'>Update</button>
