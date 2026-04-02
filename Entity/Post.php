@@ -14,6 +14,7 @@ class Post {
     private $Location;
     private $Brand;
     private $PostStatus;
+    private $CategoryName;
     
 
     public function __construct(
@@ -133,6 +134,13 @@ class Post {
 
     public function setStatus($status) {
         $this->PostStatus = $status;
+    }
+      public function getCategoryName() {
+    return $this->CategoryName;
+     }
+
+    public function setCategoryName($name) {
+    $this->CategoryName = $name;
     }
 
 }

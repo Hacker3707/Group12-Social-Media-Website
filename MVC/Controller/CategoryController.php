@@ -1,12 +1,12 @@
 <?php
-include_once "MVC/Service/CategoryService.php";
+include_once "MVC/Model/CategoryModel.php";
 
 class CategoryController {
 
-    private $service;
+    private $model;
 
     public function __construct() {
-        $this->service = new CategoryService();
+        $this->model = new CategoryModel();
     }
 
     // gọi từ index.php
@@ -34,22 +34,21 @@ class CategoryController {
 
             $categoryName = $_POST['categoryName'];
 
-            $result = $this->service->createCategory($categoryName);
+            $result = $this->model->createCategory($categoryName);
 
-            echo "<script>alert('$result'); window.location.href='index.php?controller=category&action=list';</script>";
+              header("Location: index.php?controller=category&action=list");
+        exit;
         }
+        
     }
 
 
     // ================= LIST =================
     public function list() {
 
-        $categories = $this->service->getAllCategories();
+        $categories = $this->model->getAll();
 
-        echo "<h2>Category List</h2>";
-
-        foreach ($categories as $cat) {
-            echo $cat . "<br>"; // dùng __toString()
+         include "MVC/View/category_view.php";
         }
     }
 
@@ -61,13 +60,12 @@ class CategoryController {
 
             $categoryId = (int)$_GET['id'];
 
-            $result = $this->service->deleteCategory($categoryId);
+            $result = $this->model->delete($categoryId);
 
-            echo "<script>alert('$result'); window.location.href='index.php?controller=category&action=list';</script>";
-        }
+            header("Location: index.php?controller=category&action=list");
+        exit;
     }
-
-
+    }
     // ================= EDIT (LOAD DATA) =================
     public function edit() {
 
@@ -75,22 +73,14 @@ class CategoryController {
 
             $categoryId = (int)$_GET['id'];
 
-            $category = $this->service->getCategoryById($categoryId);
+            $category = $this->model->getById($categoryId);
 
             if ($category == null) {
                 echo "Category not found";
                 return;
             }
 
-            // form sửa
-            echo "
-                <h2>Edit Category</h2>
-                <form method='POST' action='Group12-Social-Media-Website/index.php?controller=category&action=update'>
-                    <input type='hidden' name='categoryId' value='{$category->getCategoryID()}'>
-                    <input type='text' name='categoryName' value='{$category->getCategoryName()}'>
-                    <button type='submit'>Update</button>
-                </form>
-            ";
+           include "MVC/View/category_view.php";
         }
     }
 
@@ -103,10 +93,11 @@ class CategoryController {
             $categoryId = (int)$_POST['categoryId'];
             $categoryName = $_POST['categoryName'];
 
-            $result = $this->service->updateCategory($categoryId, $categoryName);
+            $result = $this->model->update($categoryId, $categoryName);
 
-            echo "<script>alert('$result'); window.location.href='index.php?controller=category&action=list';</script>";
+            header("Location: index.php?controller=category&action=list");
+        exit;
         }
     }
-}
+
 ?>

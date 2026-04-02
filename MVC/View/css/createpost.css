@@ -40,3 +40,13 @@
     justify-content: flex-end;
     margin: 20px 0;
 }
+.category-select {
+    border-radius: 8px;
+    padding: 8px;
+    transition: 0.2s;
+}
+
+.category-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 5px rgba(13,110,253,0.3);
+}
