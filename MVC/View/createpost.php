@@ -19,6 +19,20 @@
       <label>📌 Title</label>
       <input type="text" name="title" class="form-control" placeholder="Post title">
     </div>
+   <!-- 📝 CATEGORY -->
+<div class="form-group">
+  <label>📂 Category</label>
+  <select name="category_id" class="form-control category-select">
+       <option value="">-- Choose category --</option>
+
+    <?php foreach ($categories as $cat): ?>
+        <option value="<?= $cat->getCategoryID() ?>">
+            <?= $cat->getCategoryName() ?>
+        </option>
+    <?php endforeach; ?>
+
+  </select>
+</div>
 
     <div class="form-group">
       <label>📄 Content</label>
@@ -110,6 +124,7 @@
     </a>
 </div>
 
+
 </div>
 </form>
 
@@ -123,7 +138,14 @@ document.getElementById("postForm").addEventListener("submit", function(e){
 
     e.preventDefault();
 
+
     let formData = new FormData(this);
+
+    // ✅ validate phải nằm TRONG function
+    if(!formData.get("category_id")){
+        alert("Please choose category");
+        return;
+    }
 
     fetch("/Group12-Social-Media-Website/index.php?controller=post&action=createPost",{
         method:"POST",
@@ -150,8 +172,12 @@ document.getElementById("postForm").addEventListener("submit", function(e){
 
         }
 
+    })
+    .catch(err=>{
+        console.error("ERROR:", err);
     });
 
 });
+
 
 </script>

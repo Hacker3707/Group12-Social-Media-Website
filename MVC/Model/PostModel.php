@@ -2,6 +2,7 @@
 include_once __DIR__ . "/AppModel.php";
 include_once __DIR__ . "/../../Entity/Post.php";
 
+
 class PostModel extends AppModel {
 
     // Thay thế cho hàm createPost (phần logic DB)
@@ -34,13 +35,16 @@ class PostModel extends AppModel {
         
         $sql = "SELECT 
                     p.*,
-                    u.Username
+                    u.Username,
+                    c.CategoryName
                 FROM post p
                 JOIN users u ON p.UserID = u.UserID
+                LEFT JOIN category c ON p.CategoryID = c.CategoryID
                 ORDER BY p.CreatedAt DESC";
 
         $result = $this->query($sql);
         $posts = [];
+
 
         while ($row = mysqli_fetch_assoc($result)) {
 
@@ -60,6 +64,7 @@ class PostModel extends AppModel {
 
             $post->setUsername($row['Username']);
             $post->setCreatedAt($row['CreatedAt']);
+               $post->setCategoryName($row['CategoryName'] ?? 'No Category');
 
             $posts[] = $post;
         }
@@ -82,9 +87,10 @@ class PostModel extends AppModel {
         $value = mysqli_real_escape_string($this->link, $value);
         $data = [];
 
-        $sql = "SELECT p.*, u.Username 
+        $sql = "SELECT p.*, u.Username, c.CategoryName
                 FROM post p
                 JOIN users u ON p.UserID = u.UserID
+                LEFT JOIN category c ON p.CategoryID = c.CategoryID
                 WHERE p.$field = $value
                 ORDER BY p.CreatedAt DESC";
 
@@ -108,6 +114,7 @@ class PostModel extends AppModel {
 
             $post->setUsername($row['Username']);
             $post->setCreatedAt($row['CreatedAt']);
+            $post->setCategoryName($row['CategoryName'] ?? 'No Category');
 
             $data[] = $post;
         }
