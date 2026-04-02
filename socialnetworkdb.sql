@@ -629,9 +629,13 @@ UNIQUE (CategoryName);
 
 DROP TABLE IF EXISTS `photo`;
 DROP TABLE IF EXISTS `video`;
---------------------------------
+
 ALTER TABLE post
 ADD COLUMN Price INT DEFAULT NULL,
+
+--
+-- UPDATE 01/04/2026 (LẦN 4): Thêm cột mới cho bảng post
+--
 
 ADD COLUMN ProductCondition ENUM(
     'new',
@@ -659,3 +663,12 @@ ADD COLUMN PostStatus ENUM(
     'sold',
     'hidden'
 ) DEFAULT 'selling';
+
+--
+-- UPDATE 02/04/2026 (LẦN 5): Thêm tăng tự động GroupID, thêm cột cho bảng group_member
+--
+
+ALTER TABLE groups MODIFY GroupID int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE group_member 
+ADD COLUMN Status ENUM('pending', 'approved') NOT NULL DEFAULT 'approved';
