@@ -13,14 +13,23 @@ foreach($posts as $post) { ?>
     <!-- Post Header -->
     <div class="d-flex justify-content-between align-items-center mb-2">
 
-        <div>
-            <img src="" alt="???" class="rounded-circle mr-2">
-            <strong><?= htmlspecialchars($post->getUsername()) ?></strong>
-        </div>
+<div>
+    <img src="" alt="???" class="rounded-circle mr-2">
+
+    <strong><?= htmlspecialchars($post->getUsername()) ?></strong>
+
+    <?php if($post->getCategoryName()): ?>
+        <span style="margin: 0 5px;">›</span>
+        <a href="index.php?controller=post&action=getPostsByCategoryId&category_id=<?= $post->getCategoryId() ?>"
+           style="color: gray; text-decoration: none;">
+            <?= htmlspecialchars($post->getCategoryName()) ?>
+        </a>
+    <?php endif; ?>
+</div>
         <small class="text-muted">
             <?= $post->getCreatedAt() ?>
         </small>
-    </div>
+ </div>
 
     <!-- Post Content -->
     <h5><?= htmlspecialchars($post->getTitle()) ?></h5>
