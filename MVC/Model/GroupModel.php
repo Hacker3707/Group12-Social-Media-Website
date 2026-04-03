@@ -175,6 +175,28 @@ class GroupModel extends AppModel {
         return $list;
     }
 
+    public function findGroups($keyword = "") {
+        $keyword = mysqli_real_escape_string($this->link, $keyword);
+        $sql = "SELECT * FROM groups 
+                WHERE GroupName LIKE '%$keyword%' OR Description LIKE '%$keyword%' 
+                ORDER BY GroupID DESC";
+        $result = $this->query($sql);
+        $list = [];
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $group = new Group(
+                    $row['GroupID'],
+                    $row['GroupName'],
+                    $row['Privacy']
+                );
+                $group->setDescription($row['Description']);
+                $group->setCategoryId($row['CategoryID']);
+                $list[] = $group;
+            }
+        }
+        return $list;
+    }
+
     // 4. THỰC HIỆN RỜI NHÓM
     public function leaveGroup($userId, $groupId) {
         $userId = (int)$userId;
@@ -229,5 +251,6 @@ class GroupModel extends AppModel {
                 WHERE UserID = $userId AND GroupID = $groupId";
         return $this->execute($sql);
     }
+
 }
 ?>

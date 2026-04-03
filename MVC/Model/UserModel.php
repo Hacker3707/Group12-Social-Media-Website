@@ -122,4 +122,26 @@ class UserModel extends AppModel {
         $sql = "UPDATE users SET AccountPassword = '$newPassword' WHERE UserID = $userId";
         return $this->execute($sql);
     }
+
+    public function searchUsers($keyword) {
+        $keyword = mysqli_real_escape_string($this->link, $keyword);
+        $sql = "SELECT * FROM users WHERE Username LIKE '%$keyword%' OR Email LIKE '%$keyword%'";
+        $result = $this->query($sql);
+        $list = [];
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            $user = new User(
+                $row['UserID'],
+                $row['Username'],
+                $row['Email'],
+                $row['UserRole'],
+                $row['AccountStatus']
+            );
+            $user->setBio($row['Bio']);
+            $user->setPhone($row['Phone']);
+            $user->setAvatarFP($row['AvatarFP']);
+            $list[] = $user;
+        }
+        return $list;
+    }
 }
