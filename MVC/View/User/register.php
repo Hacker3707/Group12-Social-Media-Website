@@ -42,4 +42,12 @@
         </div>
     </div>
 </body>
+
+<?php if (isset($_SESSION['flash_message'])): ?>
+        <script>
+            alert("<?= htmlspecialchars($_SESSION['flash_message']) ?>");
+        </script>
+        <?php unset($_SESSION['flash_message']); ?>
+    <?php endif; ?>
+    
 </html>

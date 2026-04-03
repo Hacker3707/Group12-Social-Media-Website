@@ -1,4 +1,14 @@
 <?php
+// BẮT ĐẦU: KHU VỰC HIỂN THỊ THÔNG BÁO (FLASH MESSAGE)
+// Đoạn code này được đặt ở đầu hoặc cuối file dùng chung để luôn chạy và kiểm tra thông báo
+if (isset($_SESSION['flash_message'])): ?>
+    <script>
+        alert("<?= htmlspecialchars($_SESSION['flash_message']) ?>");
+    </script>
+    <?php unset($_SESSION['flash_message']); // Hiển thị xong thì xóa luôn để không bị lặp lại ?>
+<?php endif; 
+// KẾT THÚC: KHU VỰC HIỂN THỊ THÔNG BÁO
+
 // 1. Lấy thông tin controller và action hiện tại từ URL
 $currentController = $_GET['controller'] ?? '';
 $currentAction     = $_GET['action'] ?? '';
@@ -7,7 +17,7 @@ $currentAction     = $_GET['action'] ?? '';
 if (!($currentController === 'user' && ($currentAction === 'register' || $currentAction === 'login'))): 
 ?>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
   <a class="navbar-brand" href="index.php">
     <img src="Materials/Picture/Passo.png" alt="Logo" width="150" height="50" class="d-inline-block align-top">
   </a>
@@ -18,9 +28,9 @@ if (!($currentController === 'user' && ($currentAction === 'register' || $curren
 
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     
-    <ul class="navbar-nav mr-auto">
+    <ul class="navbar-nav mr-auto align-items-center">
       <li class="nav-item active">
-        <a class="nav-link" href="/Group12-Social-Media-Website/index.php?controller=post&action=showHome">Home <span class="sr-only">(current)</span></a>
+        <a class="nav-link" href="index.php?controller=post&action=showHome">Home <span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="#">Categories</a>
@@ -37,30 +47,35 @@ if (!($currentController === 'user' && ($currentAction === 'register' || $curren
         </div>
       </li>
       <li class="nav-item">
-        <a class="nav-link disabled">
-          <button type="button" class="btn btn-primary">
-            Notifications <span class="badge badge-light">?</span>
+        <a class="nav-link disabled" href="#">
+          <button type="button" class="btn btn-primary font-weight-bold">
+            Notifications <span class="badge badge-light ml-1">?</span>
           </button>
         </a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="index.php?controller=group&action=create">
-          <button type="button" class="btn btn-light rounded-circle shadow-sm" title="Tạo nhóm mới">
-            <i class="fas fa-plus">Create Group</i>
+      <li class="nav-item ml-2">
+        <a class="nav-link p-0" href="index.php?controller=group&action=create">
+          <button type="button" class="btn btn-outline-secondary rounded-pill font-italic" title="Tạo nhóm mới">
+            Create Group
           </button>
         </a>
       </li>
     </ul>
     
     <form class="form-inline my-2 my-lg-0" action="index.php" method="GET">
-      <input type="hidden" name="controller" value="group">
-      <input type="hidden" name="action" value="discover">
+      <input type="hidden" name="controller" value="search">
+      <input type="hidden" name="action" value="find">
     
-      <input class="form-control mr-sm-2" type="search" name="q" placeholder="Tìm kiếm nhóm..." aria-label="Search" id="search-form">
-      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Tìm kiếm</button>
+      <input class="form-control mr-sm-2"
+      type="search"
+      name="searchResults"
+      placeholder="Search..."
+      value="<?= htmlspecialchars($keyword ?? '') ?>">
+
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
     </form>
 
-    <div class="ml-3 d-flex align-items-center">
+    <div class="ml-4 d-flex align-items-center">
         <?php if (isset($_SESSION['user_id'])): ?>
             <div class="dropdown">
                 <button class="btn btn-outline-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">

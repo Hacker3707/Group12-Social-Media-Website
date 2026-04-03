@@ -87,5 +87,45 @@ class CategoryModel extends AppModel {
 
         return mysqli_num_rows($result) > 0;
     }
+
+    public function getAllWithPostCount() {
+
+        $sql = "SELECT c.CategoryID, c.CategoryName, COUNT(p.PostID) as PostCount
+                FROM category c
+                LEFT JOIN post p ON c.CategoryID = p.CategoryID
+                GROUP BY c.CategoryID, c.CategoryName
+                ORDER BY c.CategoryName ASC";
+        $result = $this->query($sql);
+        $list = [];
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            $list[] = new Category(
+                $row['CategoryID'],
+                $row['CategoryName'],
+                $row['PostCount']
+            );
+        }
+        return $list;
+    }
+
+    public function searchCategories($keyword) {
+
+        $keyword = mysqli_real_escape_string($this->link, $keyword);
+
+        $sql = "SELECT * FROM category WHERE CategoryName LIKE '%$keyword%'";
+
+        $result = $this->query($sql);
+
+        $list = [];
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            $list[] = new Category(
+                $row['CategoryID'],
+                $row['CategoryName']
+            );
+        }
+
+        return $list;
+    }
 }
 ?>

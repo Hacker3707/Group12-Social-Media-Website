@@ -13,26 +13,18 @@
 
         <div class="row" id = "navbar">
             <div class= "col-md-12 col-12">
-                <?php include(__DIR__ . "/navbar.php");; ?>
+                <?php include_once __DIR__ . "/../navbar.php"; ?>
             </div>
         </div>
 
         <div class="row" id = "middle-content">
             <div class= "col-md-2 col-12" id = "left-sidebar">
-                <?php include(__DIR__ . "/leftsidebar.php");; ?>
+                <?php include_once __DIR__ . "/../leftsidebar.php"; ?>
             </div>
             <div class= "col-md-10 col-12" id = "main-content">
                 <?php
-                include_once(__DIR__ . "/postview.php");
+                include_once __DIR__ . "/../userlist_view.php";
                 ?>
-            </div>
-        </div>
-
-        <div class="row" id = "lower-bar">
-            <div class= "col-md-1 col-12">
-            <a href="index.php?controller=post&action=showCreateForm" class="btn btn-primary" id="create-post-btn">
-                + Create Post
-            </a>
             </div>
         </div>
 

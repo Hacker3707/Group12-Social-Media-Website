@@ -48,7 +48,10 @@ class PostController extends AppController {
 
         if(isset($_FILES['media']) && $_FILES['media']['error'] == 0){
 
-            $uploadPath = "../../uploads/" . basename($_FILES['media']['name']);
+            $ext = pathinfo($_FILES['media']['name'], PATHINFO_EXTENSION);
+            $fileName = uniqid() . "." . $ext;
+
+            $uploadPath = "uploads/" . $fileName;
 
             move_uploaded_file($_FILES['media']['tmp_name'], $uploadPath);
 
@@ -162,13 +165,14 @@ class PostController extends AppController {
 
         exit;
     }
-    public function showCreateForm(){
-    $categories = $this->categoryModel->getAll(); // 👈 lấy từ DB
 
-    include __DIR__ . "/../View/createpost_view.php";
-    
-die();
-}
+    public function showCreateForm(){
+        $categories = $this->categoryModel->getAll(); // 👈 lấy từ DB
+
+        include __DIR__ . "/../View/createpost_view.php";
+        
+        die();
+    }
 
     public function updatePost() {
         $postId = $_POST['postId'] ?? null;
@@ -205,5 +209,22 @@ die();
         echo $result ? "success" : "fail";
         exit;
     }
+
+    public function detail() {
+
+        $postId = $_GET['id'] ?? 0;
+        $userId = $_SESSION['user_id'] ?? 0;
+        
+        $post = $this->postModel->getById($postId);
+        
+        if (!$post) {
+            $this->redirect('index.php', 'Bài viết này không tồn tại hoặc đã bị xóa!');
+        }
+
+        $reactions = $this->reactionModel->selectReactionsForPost($postId);
+
+        include_once "MVC/View/home.php";
+    }
+
 }
 ?>
