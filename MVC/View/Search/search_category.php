@@ -13,26 +13,24 @@
 
         <div class="row" id = "navbar">
             <div class= "col-md-12 col-12">
-                <?php include(__DIR__ . "/navbar.php");; ?>
+                <?php include_once __DIR__ . "/../navbar.php"; ?>
             </div>
         </div>
 
         <div class="row" id = "middle-content">
             <div class= "col-md-2 col-12" id = "left-sidebar">
-                <?php include(__DIR__ . "/leftsidebar.php");; ?>
+                <?php include_once __DIR__ . "/../leftsidebar.php"; ?>
             </div>
             <div class= "col-md-10 col-12" id = "main-content">
                 <?php
-                include_once(__DIR__ . "/postview.php");
+                if (isset($keyword)) {
+                    echo "<h2>Search Results for Category: " . htmlspecialchars($keyword) . "</h2>";
+                    echo "<br>";
+                }
                 ?>
-            </div>
-        </div>
-
-        <div class="row" id = "lower-bar">
-            <div class= "col-md-1 col-12">
-            <a href="/Group12-Social-Media-Website/index.php?controller=post&action=showCreateForm" class="btn btn-primary" id="create-post-btn">
-                + Create Post
-            </a>
+                <?php
+                include_once __DIR__ . "/../categorylist_view.php";
+                ?>
             </div>
         </div>
 

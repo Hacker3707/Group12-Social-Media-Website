@@ -184,5 +184,43 @@ class PostModel extends AppModel {
 
         return false;
     }
+
+    public function searchPosts($keyword) {
+        $keyword = mysqli_real_escape_string($this->link, $keyword);
+        $sql = "SELECT p.*, u.Username, c.CategoryName
+                FROM post p
+                JOIN users u ON p.UserID = u.UserID
+                LEFT JOIN category c ON p.CategoryID = c.CategoryID
+                WHERE p.Title LIKE '%$keyword%' OR p.Content LIKE '%$keyword%'
+                ORDER BY p.CreatedAt DESC";
+
+        $result = $this->query($sql);
+        $posts = [];
+
+        while ($row = mysqli_fetch_assoc($result)) {
+
+            $post = new Post(
+                $row['PostID'],
+                $row['UserID'],
+                $row['GroupID'],
+                $row['CategoryID'],
+                $row['Title'],
+                $row['Content'],
+                $row['Price'],
+                $row['ProductCondition'],
+                $row['Location'],
+                $row['Brand'],
+                $row['PostStatus']
+            );
+
+            $post->setUsername($row['Username']);
+            $post->setCreatedAt($row['CreatedAt']);
+            $post->setCategoryName($row['CategoryName'] ?? 'No Category');
+
+            $posts[] = $post;
+        }
+
+        return $posts;
+    }
 }
 ?>
