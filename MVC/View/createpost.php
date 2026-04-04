@@ -181,3 +181,85 @@ document.getElementById("postForm").addEventListener("submit", function(e){
 
 
 </script>
+<!-- ================= THAY THẾ TOÀN BỘ THẺ <script> ĐẦU TIÊN TRONG createpost.php =================
+     (đoạn script xử lý submit form postForm) -->
+
+<script>
+
+console.log("JS loaded");
+
+document.getElementById("postForm").addEventListener("submit", function(e){
+
+    e.preventDefault();
+
+    let formData = new FormData(this);
+
+    if(!formData.get("category_id")){
+        alert("Please choose category");
+        return;
+    }
+
+    // BƯỚC 1: Tạo post trước
+    fetch("/index.php?controller=post&action=createPost", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.text())
+    .then(data => {
+
+        console.log("Response:", data);
+
+        // ✅ Response giờ là "success:123" (123 là post_id)
+        if (data.trim().startsWith("success")) {
+
+            let postId = data.split(":")[1]; // Lấy post_id
+
+            let mediaFile = document.querySelector('[name=media]');
+
+            // BƯỚC 2: Nếu có file ảnh/video thì upload tiếp
+            if (mediaFile && mediaFile.files.length > 0) {
+
+                let mediaData = new FormData();
+                mediaData.append("media",   mediaFile.files[0]);
+                mediaData.append("post_id", postId);
+
+                fetch("/index.php?controller=media&action=uploadForPost", {
+                    method: "POST",
+                    body: mediaData
+                })
+                .then(res => res.text())
+                .then(mediaRes => {
+                    console.log("Media upload:", mediaRes);
+                    showSuccessAndRedirect();
+                })
+                .catch(err => {
+                    console.error("Media upload error:", err);
+                    showSuccessAndRedirect(); // Vẫn redirect dù upload ảnh lỗi
+                });
+
+            } else {
+                // Không có ảnh thì redirect luôn
+                showSuccessAndRedirect();
+            }
+
+        } else {
+            document.getElementById("result").innerHTML =
+                "<div class='alert alert-danger'>Failed to create post</div>";
+        }
+
+    })
+    .catch(err => {
+        console.error("ERROR:", err);
+    });
+
+});
+
+function showSuccessAndRedirect() {
+    document.getElementById("result").innerHTML =
+        "<div class='alert alert-success'>Post created successfully</div>";
+    setTimeout(() => {
+        window.location.href = "/index.php?controller=post&action=showHome";
+    }, 1500);
+}
+
+</script>

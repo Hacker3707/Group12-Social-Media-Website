@@ -224,3 +224,6 @@ class PostModel extends AppModel {
     }
 }
 ?>
+public function getLastInsertId() {
+    return parent::getLastInsertId();
+}
