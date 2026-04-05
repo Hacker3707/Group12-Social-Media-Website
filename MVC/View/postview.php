@@ -93,7 +93,7 @@ foreach($posts as $post) { ?>
 
             <i class="bi bi-heart-fill"></i>
             <span class="badge badge-light like-count">
-            <?= count($reactions[$postId] ?? []) ?>
+            <?= count($reactions_forPost[$postId] ?? []) ?>
             </span>
 
             </button>
@@ -106,7 +106,7 @@ foreach($posts as $post) { ?>
 
             <i class="bi bi-heart"></i>
             <span class="badge badge-light like-count">
-            <?= count($reactions[$postId] ?? []) ?>
+            <?= count($reactions_forPost[$postId] ?? []) ?>
             </span>
 
             </button>
@@ -152,7 +152,10 @@ tabindex="-1">
 
         <div class="modal-header">
             <h5 class="modal-title">
-                <?= htmlspecialchars($post->getTitle()) ?>
+                <img src="" alt="???" class="rounded-circle mr-2" width="40" height="40">
+                <a href="index.php?controller=user&action=profile&id=<?= $post->getUserId() ?>">
+                    <?= htmlspecialchars($post->getUsername()) ?>
+                </a>
             </h5>
 
             <button type="button" class="close" data-dismiss="modal">
@@ -161,6 +164,7 @@ tabindex="-1">
         </div>
 
         <div class="modal-body">
+            <h3><?= htmlspecialchars($post->getTitle()) ?></h3>
             <p><?= htmlspecialchars($post->getContent()) ?></p>
 
             <div class="d-flex align-items-center mt-4">
@@ -168,17 +172,33 @@ tabindex="-1">
                 Posted at <?= $post->getCreatedAt() ?>
                 </small>
 
-                <button id="btn-forModal" 
-                    class="btn btn-sm btn-outline-primary like-btn ml-auto justify-content-end" 
-                    type="button" 
-                    data-postid="<?= $post->getPostId() ?>">
+                <?php if($isSameUser[$postId] ?? false): ?>
 
-                    <i class="bi bi-heart"></i> 
-                    <span class="badge badge-light like-count">
-                    <?= count($reactions[$post->getPostId()] ?? []) ?>
-                    </span>
+                    <button class="btn-forModal btn-sm btn-outline-primary like-btn ml-auto"
+                        type="button"
+                        data-postid="<?= $postId ?>">
 
-                </button>
+                        <i class="bi bi-heart-fill"></i>
+                        <span class="badge badge-light like-count">
+                        <?= count($reactions_forPost[$postId] ?? []) ?>
+                        </span>
+
+                    </button>
+
+                <?php else: ?>
+
+                    <button class="btn-forModal btn-sm btn-outline-primary like-btn ml-auto"
+                        type="button"
+                        data-postid="<?= $postId ?>">
+
+                        <i class="bi bi-heart"></i>
+                        <span class="badge badge-light like-count">
+                        <?= count($reactions_forPost[$postId] ?? []) ?>
+                        </span>
+
+                    </button>
+
+                <?php endif; ?>
 
             </div>
 
@@ -191,11 +211,45 @@ tabindex="-1">
             <?php if (!empty($comments[$post->getPostId()])): ?>
                 <?php foreach ($comments[$post->getPostId()] as $c): ?>
                     
-                    <div class="comment-item mb-2">
-                        <strong><?= htmlspecialchars($username) ?></strong>
-                        <p class="mb-1"><?= htmlspecialchars($c->getContent()) ?></p>
-                        <small class="text-muted"><?= $c->getCreatedAt() ?></small>
+                    <div class="comment-item mb-2 d-flex justify-content-between align-items-end">
+                        <div>
+                            <strong><a href="index.php?controller=user&action=profile&id=<?= $c->getUserId() ?>">
+                                <?=htmlspecialchars($c->getUsername())?></a>
+                            <small>commented:</small></strong>
+                            <p class="mb-1"><?= htmlspecialchars($c->getContent()) ?></p>
+                            <small class="text-muted"><?= $c->getCreatedAt() ?></small>
+                        </div>
+                        <?php if($isSameUser_reactCmt[$c->getCommentId()] ?? false): ?>
+
+                            <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-auto "
+                                type="button"
+                                data-commentid="<?= $c->getCommentId() ?>">
+
+                                <i class="bi bi-heart-fill like-icon"></i>
+                                <span class="badge badge-light like-count-cmt">
+                                <?= count($reactions_forComment[$c->getCommentId()] ?? []) ?>
+                                </span>
+
+                            </button>
+
+                        <?php else: ?>
+
+                            <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-auto"
+                                type="button"
+                                data-commentid="<?= $c->getCommentId() ?>">
+
+                                <i class="bi bi-heart like-icon"></i>
+                                <span class="badge badge-light like-count-cmt">
+                                <?= count($reactions_forComment[$c->getCommentId()] ?? []) ?>
+                                </span>
+
+                            </button>
+
+                        <?php endif; ?>
+
                     </div>
+
+                    <hr style="margin: 10px 15px; color: #ddd;">
 
                 <?php endforeach; ?>
             <?php else: ?>
@@ -209,9 +263,9 @@ tabindex="-1">
 
         </div>
 
-        <hr>
+        
 
-        <form class="comment-form mt-2">
+        <form class="comment-form mt-2" style="padding: 10px 15px;">
 
             <input type="hidden"
                 name="postId"
@@ -295,20 +349,28 @@ document.addEventListener("click", function(e){
 
         if(xhr.readyState === 4 && xhr.status === 200){
 
+            console.log(xhr.responseText);    
+
             if(xhr.responseText.trim() === "success"){
 
-                let badge = btn.querySelector(".like-count");
-                let count = parseInt(badge.textContent);
-                let icon = btn.querySelector("i");
+                document.querySelectorAll(`.like-btn[data-postid="${postId}"]`).forEach(button => {
 
-                icon.classList.remove("bi-heart");
-                icon.classList.add("bi-heart-fill");
+                    let badge = button.querySelector(".like-count");
+                    let icon = button.querySelector("i");
 
-                badge.textContent = count + 1;
+                    if(icon.classList.contains("bi-heart")){
+                        icon.classList.remove("bi-heart");
+                        icon.classList.add("bi-heart-fill");
+                        badge.textContent = parseInt(badge.textContent) + 1;
+                    }
+                    else{
+                        icon.classList.remove("bi-heart-fill");
+                        icon.classList.add("bi-heart");
+                        badge.textContent = Math.max(0, parseInt(badge.textContent) - 1);
+                    }
 
-            }
-            else{
-                alert("Like failed");
+                });
+
             }
 
         }
@@ -369,3 +431,56 @@ document.addEventListener("submit", function(e){
 });
 </script>
 
+<!-- Like Comment Script -->
+<script>
+    console.log("comment like script loaded");
+    document.addEventListener("click", function(e){
+    
+    let btn = e.target.closest(".like-btn-cmt");
+    if(!btn) return;
+
+    let commentId = btn.getAttribute("data-commentid");
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.onreadystatechange = function(){
+
+        if(xhr.readyState === 4 && xhr.status === 200){
+
+            console.log(xhr.responseText);    
+
+            if(xhr.responseText.trim() === "success"){
+
+                let badge = btn.querySelector(".like-count-cmt");
+                let icon = btn.querySelector("i");
+
+                if(icon.classList.contains("bi-heart")){
+                    icon.classList.remove("bi-heart");
+                    icon.classList.add("bi-heart-fill");
+                    badge.textContent = parseInt(badge.textContent) + 1;
+                }
+                else{
+                    icon.classList.remove("bi-heart-fill");
+                    icon.classList.add("bi-heart");
+                    badge.textContent = Math.max(0, parseInt(badge.textContent) - 1);
+                }
+
+            }
+            else{
+                alert("Failed to react to comment");
+            }
+
+        }
+
+    };
+
+    xhr.open("POST", "index.php?controller=reaction&action=addReaction", true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.send(
+        "commentId=" + encodeURIComponent(commentId) +
+        "&type=like"
+    );
+
+});
+
+</script>

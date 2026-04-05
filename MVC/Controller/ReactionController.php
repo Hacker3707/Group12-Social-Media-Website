@@ -11,17 +11,18 @@ class ReactionController {
 
     public function addReaction() {
 
-        $postId = $_POST['postId'];
+        $postId = $_POST['postId'] ?? null;
         //$userId = $_POST['user_id'];
         $userId = $_SESSION['user_id'] ?? null;
+        $commentId = $_POST['commentId'] ?? null;
         $type = $_POST['type'] ?? 'like'; // Default to 'like' if type is not provided
 
-        $reaction = new Reaction(null, $postId, null, $userId, $type);
+        $reaction = new Reaction(null, $postId, $commentId, $userId, $type);
 
         // Validate input
-        if (empty($postId) || empty($userId)) {
+        if (empty($userId) || (empty($postId) && empty($commentId))) {
             http_response_code(400);
-            echo json_encode(['error' => 'Missing required fields']);
+            echo "fail";
             return;
         }
 

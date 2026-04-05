@@ -11,7 +11,7 @@
 <body>
     <div class="container-fluid" id = "home-container">
 
-        <div class="row" id = "upper-bar">
+        <div class="row" id = "navbar">
             <div class= "col-md-12 col-12">
                 <?php include 'navbar.php'; ?>
             </div>

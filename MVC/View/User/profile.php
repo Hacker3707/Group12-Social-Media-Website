@@ -41,7 +41,11 @@
     </style>
 </head>
 <body>
-    <?php include 'MVC/View/navbar.php'; ?>
+    <div class="row" id = "navbar">
+        <div class= "col-md-12 col-12">
+            <?php include 'MVC/View/navbar.php'; ?>
+        </div>
+    </div>
 
     <div class="profile-header">
         <div class="container">

@@ -84,16 +84,16 @@ class PostController extends AppController {
         $posts = $this->postModel->getAll() ?? [];
 
         $userid = $_SESSION['user_id'] ?? null;
-        
+
         if ($userid) {
             $username = $this->userModel->getUsernameById($userid);
         } else {
             $username = "Guest"; 
         }               
         
-        $reactions = [];
+        $reactions_forPost = [];
         foreach($posts as $post) {
-            $reactions[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
+            $reactions_forPost[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
         }
 
         $isSameUser = [];
@@ -103,7 +103,7 @@ class PostController extends AppController {
             $postId = $post->getPostId();
             $isSameUser[$postId] = false;
 
-            foreach(($reactions[$postId] ?? []) as $reaction){
+            foreach(($reactions_forPost[$postId] ?? []) as $reaction){
                 if($reaction->getUserId() == $userid){
                     $isSameUser[$postId] = true;
                     break;
@@ -115,6 +115,41 @@ class PostController extends AppController {
         $comments = [];
         foreach($posts as $post) {
             $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
+        }
+
+        $reactions_forComment = [];
+
+        foreach($comments as $postComments){
+
+            foreach($postComments as $comment){
+
+                $commentId = $comment->getCommentId();
+
+                $reactions_forComment[$commentId] =
+                    $this->reactionModel->selectReactionsForComment($commentId);
+
+            }
+
+        }
+
+        $isSameUser_reactCmt = [];
+
+        foreach($comments as $postComments){
+
+            foreach($postComments as $comment){
+
+                $commentId = $comment->getCommentId();
+                $isSameUser_reactCmt[$commentId] = false;
+
+                foreach(($reactions_forComment[$commentId] ?? []) as $reaction){
+                    if($reaction->getUserId() == $userid){
+                        $isSameUser_reactCmt[$commentId] = true;
+                        break;
+                    }
+                }
+
+            }
+
         }
 
         include_once __DIR__ . "/../View/home.php";

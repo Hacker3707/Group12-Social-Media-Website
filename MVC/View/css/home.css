@@ -6,10 +6,16 @@
 }
 
 #navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: azure;
+    position: sticky;
+    top: 0;
+    background: azure;
+    z-index: 1000;
+}
+
+.flex-column {
+    position: sticky;
+    top: 100px;
+    height: fit-content;
 }
 
 #left-sidebar {
@@ -47,6 +53,17 @@
 
 .like-btn {
     margin-left: auto; /* Đẩy nút Like về phía bên phải */
+}
+
+.like-btn-cmt {
+    margin-left: auto; /* Đẩy nút Like về phía bên phải */
+}
+
+.btn-forModal {
+    background-color: rgb(255, 255, 255);
+    border-radius: 5px;
+    color: rgb(11, 97, 255);
+    font-weight: bold;
 }
 
 #footer {

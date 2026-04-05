@@ -33,14 +33,27 @@ class CommentModel extends AppModel {
         $value = mysqli_real_escape_string($this->link, $value);
         $value = (int)$value;
         $data = array();
-        $sql = "SELECT * FROM comment WHERE $field = $value ORDER BY CreatedAt DESC";
+        $sql = "SELECT 
+            c.CommentID,
+            c.CommentParentID,
+            c.PostID,
+            c.UserID,
+            c.Content,
+            c.CreatedAt,
+            u.Username
+        FROM comment c
+        JOIN users u ON c.UserID = u.UserID
+        WHERE c.$field = $value
+        ORDER BY c.CreatedAt DESC";
         $result = $this->query($sql);
         while ($row = mysqli_fetch_assoc($result)) {
-            array_push($data, new Comment(
+            $comment = new Comment(
                 $row['CommentID'], $row['CommentParentID'],
                 $row['PostID'], $row['UserID'],
                 $row['Content'], $row['CreatedAt'], []
-            ));
+            );
+            $comment->setUsername($row['Username']);
+            array_push($data, $comment);
         }
         return $data;
     }   
