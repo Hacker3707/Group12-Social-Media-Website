@@ -47,9 +47,8 @@ class CategoryController {
     public function list() {
 
         $categories = $this->model->getAll();
-
-         include "MVC/View/category_view.php";
-        }
+        include "MVC/View/category_view.php";
+        
     }
 
 
@@ -64,7 +63,7 @@ class CategoryController {
 
             header("Location: index.php?controller=category&action=list");
         exit;
-    }
+        }
     }
     // ================= EDIT (LOAD DATA) =================
     public function edit() {
@@ -99,5 +98,5 @@ class CategoryController {
         exit;
         }
     }
-
+}
 ?>

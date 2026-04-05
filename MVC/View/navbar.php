@@ -63,10 +63,15 @@ if (!($currentController === 'user' && ($currentAction === 'register' || $curren
     </ul>
     
     <form class="form-inline my-2 my-lg-0" action="index.php" method="GET">
-      <input type="hidden" name="controller" value="group">
-      <input type="hidden" name="action" value="discover">
+      <input type="hidden" name="controller" value="search">
+      <input type="hidden" name="action" value="find">
     
-      <input class="form-control mr-sm-2" type="search" name="q" placeholder="Search..." aria-label="Search" id="search-form">
+      <input class="form-control mr-sm-2"
+      type="search"
+      name="searchResults"
+      placeholder="Search..."
+      value="<?= htmlspecialchars($keyword ?? '') ?>">
+
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
     </form>
 

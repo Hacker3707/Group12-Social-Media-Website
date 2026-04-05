@@ -118,7 +118,7 @@ foreach($posts as $post) { ?>
 id="postModal<?= $post->getPostId() ?>"
 tabindex="-1">
 
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
 
       <div class="modal-header">
@@ -131,13 +131,22 @@ tabindex="-1">
         </button>
       </div>
 
-      <div class="modal-body">
-        <p><?= htmlspecialchars($post->getContent()) ?></p>
+        <div class="modal-body">
+            <p><?= htmlspecialchars($post->getContent()) ?></p>
 
-        <small class="text-muted">
-            Posted at <?= $post->getCreatedAt() ?>
-        </small>
-      </div>
+            <div class="d-flex align-items-center mt-4">
+                <small class="text-muted ">
+                Posted at <?= $post->getCreatedAt() ?>
+                </small>
+
+                <button id="btn-forModal" class="btn btn-sm btn-outline-primary like-btn ml-auto justify-content-end" type="button" data-postid="<?= $post->getPostId() ?>">
+                        Like <span class="badge badge-light like-count"><?= count($reactions[$post->getPostId()] ?? []) ?></span>
+                </button>
+
+            </div>
+
+        </div>
+
 
     </div>
   </div>
@@ -225,5 +234,4 @@ document.addEventListener("click", function(e){
 
 });
 </script>
-
 

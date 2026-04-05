@@ -683,3 +683,55 @@ INSERT INTO category (CategoryName) VALUES
 ('Furniture'),
 ('Cosmetic'),
 ('Other');
+
+-- TEST DATA --
+
+INSERT INTO category (CategoryName) VALUES
+('Sports');
+
+INSERT INTO users 
+(Username, Email, AccountPassword, AvatarFP, Phone, Bio)
+VALUES
+('alice', 'alice@gmail.com', '$2y$10$alicepasshash', 'avatar1.jpg', '0900000001', 'Love fashion and books'),
+('bob', 'bob@gmail.com', '$2y$10$bobpasshash', 'avatar2.jpg', '0900000002', 'Tech enthusiast'),
+('charlie', 'charlie@gmail.com', '$2y$10$charliepasshash', 'avatar3.jpg', '0900000003', 'Gaming lover'),
+('david', 'david@gmail.com', '$2y$10$davidpasshash', 'avatar4.jpg', '0900000004', 'Selling electronics'),
+('emma', 'emma@gmail.com', '$2y$10$emmapasshash', 'avatar5.jpg', '0900000005', 'Book collector'),
+('frank', 'frank@gmail.com', '$2y$10$frankpasshash', 'avatar6.jpg', '0900000006', 'Toy trader'),
+('grace', 'grace@gmail.com', '$2y$10$gracepasshash', 'avatar7.jpg', '0900000007', 'Cosmetic lover'),
+('henry', 'henry@gmail.com', '$2y$10$henrypasshash', 'avatar8.jpg', '0900000008', 'Furniture reseller'),
+('ivy', 'ivy@gmail.com', '$2y$10$ivypasshash', 'avatar9.jpg', '0900000009', 'Sport equipment seller');
+
+INSERT INTO groups
+(CategoryID, GroupName, Description, Privacy)
+VALUES
+(1, 'Fashion Market', 'Buy and sell clothes', 'public'),
+(2, 'Sneaker Exchange', 'Sneaker trading group', 'public'),
+(3, 'Tech Trading', 'Electronics marketplace', 'public'),
+(4, 'Toy Collectors', 'Group for toy collectors', 'public'),
+(5, 'Book Market', 'Buy and sell books', 'public'),
+(6, 'Furniture Deals', 'Used furniture market', 'public'),
+(7, 'Beauty Products', 'Cosmetic trading group', 'public'),
+(8, 'Misc Marketplace', 'Everything else', 'public'),
+(9, 'Sports Gear Market', 'Sports equipment trading', 'public');
+
+INSERT INTO group_member (UserID, GroupID, Role, Status) VALUES
+(1,1,'admin','approved'),
+(2,3,'admin','approved'),
+(3,2,'admin','approved'),
+(4,3,'member','approved'),
+(5,5,'admin','approved'),
+(6,4,'admin','approved'),
+(7,7,'admin','approved'),
+(8,6,'admin','approved'),
+(9,9,'admin','approved'),
+
+(1,2,'member','approved'),
+(2,1,'member','approved'),
+(3,3,'member','approved'),
+(4,4,'member','approved'),
+(5,1,'member','approved'),
+(6,8,'member','approved'),
+(7,5,'member','approved'),
+(8,3,'member','approved'),
+(9,7,'member','approved');

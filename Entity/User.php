@@ -38,6 +38,7 @@ class User
     // Các hàm cho Bio và Phone (nếu cần dùng dưới dạng Object)
     public function getBio(): ?string { return $this->bio; }
     public function getPhone(): ?string { return $this->phone; }
+    public function getAvatarFP(): ?string { return $this->avatarFp; }
 
     // ================= SETTERS =================
     public function setUsername(string $username): void { $this->username = $username; }
@@ -46,5 +47,6 @@ class User
     public function setAccountStatus(string $status): void { $this->accountStatus = $status; }
     public function setBio(?string $bio): void { $this->bio = $bio; }
     public function setPhone(?string $phone): void { $this->phone = $phone; }
+    public function setAvatarFP(?string $avatarFp): void { $this->avatarFp = $avatarFp; }
 }
 ?>
