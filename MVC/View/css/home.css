@@ -61,3 +61,21 @@
     -webkit-box-orient:vertical;
     overflow:hidden;
 }
+
+.no-cmt {
+    display: flex;
+    justify-content: center;
+    height: 100%;
+}
+
+.crow {
+    display: flex;
+    justify-content: center;
+    width: 150px;         /* Required */
+    height: 90px;        /* Required */
+    object-fit: cover;    /* Scales and crops to fit the box */
+    object-position: top; /* Focuses on the top of the image */
+    align-items: center;
+    margin: 0 auto;
+
+}

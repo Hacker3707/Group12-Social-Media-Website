@@ -16,7 +16,9 @@ foreach($posts as $post) { ?>
 <div>
     <img src="" alt="???" class="rounded-circle mr-2">
 
-    <strong><?= htmlspecialchars($post->getUsername()) ?></strong>
+    <a href="index.php?controller=user&action=profile&user_id=<?= $post->getUserId() ?>">
+        <strong><?= htmlspecialchars($post->getUsername()) ?></strong>
+    </a>
 
     <?php if($post->getCategoryName()): ?>
         <span style="margin: 0 5px;">›</span>
@@ -81,9 +83,36 @@ foreach($posts as $post) { ?>
         
         </div>
 
-        <button class="btn btn-sm btn-outline-primary like-btn ml-auto" type="button" data-postid="<?= $post->getPostId() ?>">
-                Like <span class="badge badge-light like-count"><?= count($reactions[$post->getPostId()] ?? []) ?></span>
-        </button>
+        <?php $postId = $post->getPostId(); ?> 
+
+        <?php if(!empty($isSameUser[$postId])): ?>
+
+            <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
+            type="button"
+            data-postid="<?= $postId ?>">
+
+            <i class="bi bi-heart-fill"></i>
+            <span class="badge badge-light like-count">
+            <?= count($reactions[$postId] ?? []) ?>
+            </span>
+
+            </button>
+
+        <?php else: ?>
+
+            <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
+            type="button"
+            data-postid="<?= $postId ?>">
+
+            <i class="bi bi-heart"></i>
+            <span class="badge badge-light like-count">
+            <?= count($reactions[$postId] ?? []) ?>
+            </span>
+
+            </button>
+
+        <?php endif; ?>
+
     </div>
     <div class="mt-2">
 
@@ -121,15 +150,15 @@ tabindex="-1">
   <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
 
-      <div class="modal-header">
-        <h5 class="modal-title">
-            <?= htmlspecialchars($post->getTitle()) ?>
-        </h5>
+        <div class="modal-header">
+            <h5 class="modal-title">
+                <?= htmlspecialchars($post->getTitle()) ?>
+            </h5>
 
-        <button type="button" class="close" data-dismiss="modal">
-        &times;
-        </button>
-      </div>
+            <button type="button" class="close" data-dismiss="modal">
+            &times;
+            </button>
+        </div>
 
         <div class="modal-body">
             <p><?= htmlspecialchars($post->getContent()) ?></p>
@@ -139,13 +168,70 @@ tabindex="-1">
                 Posted at <?= $post->getCreatedAt() ?>
                 </small>
 
-                <button id="btn-forModal" class="btn btn-sm btn-outline-primary like-btn ml-auto justify-content-end" type="button" data-postid="<?= $post->getPostId() ?>">
-                        Like <span class="badge badge-light like-count"><?= count($reactions[$post->getPostId()] ?? []) ?></span>
+                <button id="btn-forModal" 
+                    class="btn btn-sm btn-outline-primary like-btn ml-auto justify-content-end" 
+                    type="button" 
+                    data-postid="<?= $post->getPostId() ?>">
+
+                    <i class="bi bi-heart"></i> 
+                    <span class="badge badge-light like-count">
+                    <?= count($reactions[$post->getPostId()] ?? []) ?>
+                    </span>
+
                 </button>
 
             </div>
 
         </div>
+
+        <hr style="margin: 0 15px; color: #ddd;">
+
+        <div class="comment-list mt-3" style="padding: 0 15px; overflow-y: auto;">
+
+            <?php if (!empty($comments[$post->getPostId()])): ?>
+                <?php foreach ($comments[$post->getPostId()] as $c): ?>
+                    
+                    <div class="comment-item mb-2">
+                        <strong><?= htmlspecialchars($username) ?></strong>
+                        <p class="mb-1"><?= htmlspecialchars($c->getContent()) ?></p>
+                        <small class="text-muted"><?= $c->getCreatedAt() ?></small>
+                    </div>
+
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="text-center mt-3">
+                    <small class="text-muted d-block mb-2">No comments yet</small>
+                    <img src="Materials/Picture/no-comment.jpg"
+                        style="opacity:0.5;"
+                        class="img-fluid crow">
+                </div>
+            <?php endif; ?>
+
+        </div>
+
+        <hr>
+
+        <form class="comment-form mt-2">
+
+            <input type="hidden"
+                name="postId"
+                value="<?= $post->getPostId() ?>">
+
+            <div class="input-group">
+                <input type="text"
+                    name="commentContent"
+                    class="form-control"
+                    placeholder="Write a comment...">
+
+                <div class="input-group-append">
+                    <button class="btn btn-primary"
+                            type="submit">
+                        Comment
+                    </button>
+                </div>
+            </div>
+
+        </form>
 
 
     </div>
@@ -213,6 +299,10 @@ document.addEventListener("click", function(e){
 
                 let badge = btn.querySelector(".like-count");
                 let count = parseInt(badge.textContent);
+                let icon = btn.querySelector("i");
+
+                icon.classList.remove("bi-heart");
+                icon.classList.add("bi-heart-fill");
 
                 badge.textContent = count + 1;
 
@@ -230,6 +320,50 @@ document.addEventListener("click", function(e){
     xhr.send(
         "postId=" + encodeURIComponent(postId) +
         "&type=like"
+    );
+
+});
+</script>
+
+<!-- Comment Script -->
+<script>
+document.addEventListener("submit", function(e){
+
+    let form = e.target;
+
+    if(!form.classList.contains("comment-form")) return;
+
+    e.preventDefault(); // chặn reload
+
+    if (!confirm("Post this comment?")) return;
+
+    let postId = form.postId.value;
+    let content = form.commentContent.value;
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.onreadystatechange = function(){
+
+        if(xhr.readyState === 4 && xhr.status === 200){
+
+            if(xhr.responseText.trim() === "success"){
+                alert("Comment posted");
+                location.reload();
+            }
+            else{
+                alert("Failed to post comment");
+            }
+
+        }
+
+    };
+
+    xhr.open("POST", "index.php?controller=comment&action=addComment", true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+    xhr.send(
+        "postId=" + encodeURIComponent(postId) +
+        "&content=" + encodeURIComponent(content)
     );
 
 });
