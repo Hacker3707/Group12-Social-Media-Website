@@ -13,7 +13,7 @@ class ReactionController {
 
         $postId = $_POST['postId'];
         //$userId = $_POST['user_id'];
-        $userId = 1; // Placeholder for testing, replace with actual user ID from session
+        $userId = $_SESSION['user_id'] ?? null;
         $type = $_POST['type'] ?? 'like'; // Default to 'like' if type is not provided
 
         $reaction = new Reaction(null, $postId, null, $userId, $type);

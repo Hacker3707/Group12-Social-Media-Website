@@ -85,7 +85,7 @@ foreach($posts as $post) { ?>
 
         <?php $postId = $post->getPostId(); ?> 
 
-        <?php if(!empty($isSameUser[$postId])): ?>
+        <?php if($isSameUser[$postId] ?? false): ?>
 
             <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
             type="button"
