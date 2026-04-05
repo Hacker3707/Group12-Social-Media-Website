@@ -1,52 +1,46 @@
 <?php
-class User
-{
-    private ?int $userId;
-    private string $username;
-    private string $email;
-    private ?string $password;
-    private ?string $avatarFp;
-    private ?string $phone;
-    private ?string $bio;
-    private string $userRole;
-    private string $accountStatus;
-    private ?string $createdAt;
+// abstract: Lớp trừu tượng, không thể dùng lệnh "new User()"
+abstract class User {
+    // protected: Cho phép các lớp con (Admin, Member) sử dụng các biến này
+    protected ?int $userId;
+    protected string $username;
+    protected string $email;
+    protected string $accountPassword; // Sửa theo đúng tên cột CSDL của bạn
+    protected ?string $avatarFp;       // Sửa theo đúng tên cột CSDL của bạn
+    protected ?string $phone;
+    protected ?string $bio;
+    protected string $userRole;
+    protected string $accountStatus;
 
     public function __construct(
-        ?int $userId = null,
-        string $username = '',
-        string $email = '',
-        string $userRole = 'user',
-        string $accountStatus = 'active'
+        ?int $userId, string $username, string $email, string $accountPassword, 
+        string $userRole, string $accountStatus = 'active', 
+        ?string $avatarFp = null, ?string $phone = null, ?string $bio = null
     ) {
         $this->userId = $userId;
         $this->username = $username;
         $this->email = $email;
+        $this->accountPassword = $accountPassword;
         $this->userRole = $userRole;
         $this->accountStatus = $accountStatus;
+        $this->avatarFp = $avatarFp;
+        $this->phone = $phone;
+        $this->bio = $bio;
     }
 
     // ================= GETTERS =================
     public function getUserId(): ?int { return $this->userId; }
     public function getUsername(): string { return $this->username; }
     public function getEmail(): string { return $this->email; }
+    public function getAccountPassword(): string { return $this->accountPassword; }
     public function getUserRole(): string { return $this->userRole; }
-    
-    // ĐÂY LÀ HÀM BỊ THIẾU GÂY RA LỖI:
     public function getAccountStatus(): string { return $this->accountStatus; }
-
-    // Các hàm cho Bio và Phone (nếu cần dùng dưới dạng Object)
-    public function getBio(): ?string { return $this->bio; }
+    public function getAvatarFp(): ?string { return $this->avatarFp; }
     public function getPhone(): ?string { return $this->phone; }
-    public function getAvatarFP(): ?string { return $this->avatarFp; }
+    public function getBio(): ?string { return $this->bio; }
 
-    // ================= SETTERS =================
-    public function setUsername(string $username): void { $this->username = $username; }
-    public function setEmail(string $email): void { $this->email = $email; }
-    public function setUserRole(string $role): void { $this->userRole = $role; }
-    public function setAccountStatus(string $status): void { $this->accountStatus = $status; }
-    public function setBio(?string $bio): void { $this->bio = $bio; }
-    public function setPhone(?string $phone): void { $this->phone = $phone; }
-    public function setAvatarFP(?string $avatarFp): void { $this->avatarFp = $avatarFp; }
+    // ================= ABSTRACT METHODS =================
+    // Mọi lớp con BẮT BUỘC phải code nội dung cho hàm này
+    abstract public function canManageSystem(): bool;
 }
 ?>
