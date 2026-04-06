@@ -11,8 +11,6 @@
         .cover-photo img { width: 100%; height: 100%; object-fit: cover; }
         
         .profile-header { background: #fff; padding-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .avatar-container { position: relative; margin-top: -100px; text-align: center; margin-bottom: 15px; }
-        .avatar-container img { width: 168px; height: 168px; border-radius: 50%; border: 4px solid #fff; background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2); object-fit: cover; }
         
         .profile-name { font-size: 2rem; font-weight: 700; margin-bottom: 0; }
         .profile-bio { color: #65676b; font-size: 1.1rem; }
@@ -42,10 +40,35 @@
 .follow-btn.following:hover {
     background: #d8dadf;
 }
+
+        .avatar-container {
+            width: 168px;
+            height: 168px;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            margin-top: -100px;
+            margin-bottom: 15px;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: #fff;
+        }
+
+        .avatar-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            border: 4px solid #fff;
+        }
     </style>
 </head>
 <body>
-    <?php include 'MVC/View/navbar.php'; ?>
+    <div class="row" id = "navbar">
+        <div class= "col-md-12 col-12">
+            <?php include 'MVC/View/navbar.php'; ?>
+        </div>
+    </div>
 
     <div class="profile-header">
         <div class="container">
@@ -54,7 +77,7 @@
             </div>
             
             <div class="avatar-container">
-                <img src="<?= !empty($user['AvatarFP']) ? $user['AvatarFP'] : 'https://via.placeholder.com/168/007bff/ffffff?text='.strtoupper(substr($user['Username'], 0, 1)) ?>" alt="Avatar">
+                <img class="img-fluid" src="<?= !empty($user['AvatarFP']) ? $user['AvatarFP'] : 'https://via.placeholder.com/168/007bff/ffffff?text='.strtoupper(substr($user['Username'], 0, 1)) ?>" alt="Avatar">
             </div>
             
             <div class="text-center">
