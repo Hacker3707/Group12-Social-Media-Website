@@ -5,26 +5,31 @@
     
 }
 
-#upper-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+#navbar {
+    position: sticky;
+    top: 0;
+    background: azure;
+    z-index: 1000;
+}
 
-    background-color: azure;
+.flex-column {
+    position: sticky;
+    top: 100px;
+    height: fit-content;
 }
 
 #left-sidebar {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
     background-color: rgb(244, 248, 176);
-    
+
 }
 
 #main-content {
     padding: 40px;
+    justify-content: space-between;
+    align-items: center;
     background-color: rgb(208, 222, 248);
-
+    
 }
 
 #post-content {

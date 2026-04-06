@@ -144,4 +144,16 @@ class UserModel extends AppModel {
         }
         return $list;
     }
+
+    public function getUsernameById($userId) {
+        $userId = (int)$userId;
+        $sql = "SELECT Username FROM users WHERE UserID = $userId";
+        $result = $this->query($sql);
+
+        if ($row = mysqli_fetch_assoc($result)) {
+            return $row['Username'];
+        }
+        return null;
+        
+    }
 }

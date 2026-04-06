@@ -78,7 +78,6 @@ class PostModel extends AppModel {
     public function fetchByField($field, $value) 
     {
         
-
         $allowed = ['UserID','GroupID','CategoryID'];
         if (!in_array($field, $allowed)) {
             return false;
