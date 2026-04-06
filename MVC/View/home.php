@@ -31,7 +31,7 @@
 
         <div class="row" id = "lower-bar">
             <div class= "col-md-1 col-12">
-            <a href="/Group12-Social-Media-Website/index.php?controller=post&action=showCreateForm" class="btn btn-primary" id="create-post-btn">
+            <a href="index.php?controller=post&action=showCreateForm" class="btn btn-primary" id="create-post-btn">
                 + Create Post
             </a>
             </div>

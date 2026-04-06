@@ -1,3 +1,9 @@
+DELIMITER $$
+
+CREATE PROCEDURE FollowUser(
+    IN p_FollowerID INT,
+    IN p_FollowingID INT
+)
 BEGIN
     DECLARE follow_count INT;
 
@@ -17,9 +23,9 @@ BEGIN
         ELSE
             INSERT INTO Follow (FollowerID, FollowingID)
             VALUES (p_FollowerID, p_FollowingID);
-
-            SELECT 'Followed successfully' AS Message;
         END IF;
 
     END IF;
-END
+END $$
+
+DELIMITER ;

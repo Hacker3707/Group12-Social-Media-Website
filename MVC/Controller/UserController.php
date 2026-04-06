@@ -16,7 +16,7 @@ class UserController {
         if (method_exists($this, $action)) {
             $this->$action();
         } else {
-            $this->redirect('index.php', 'Hành động không hợp lệ!');
+            $this->redirect('/Group12-Social-Media-Website/index.php', 'Hành động không hợp lệ!');
         }
     }
 
@@ -54,7 +54,7 @@ class UserController {
                 $_SESSION['username'] = $user['Username'];
                 $_SESSION['role'] = $user['UserRole']; 
 
-                $this->redirect('index.php', 'Đăng nhập thành công!');
+                $this->redirect('/Group12-Social-Media-Website/index.php', 'Đăng nhập thành công!');
             } else {
                 $this->back('Sai tài khoản, mật khẩu hoặc tài khoản bị khóa!');
             }
@@ -136,7 +136,7 @@ class UserController {
 
             if ($result) {
                 $_SESSION['username'] = $username; 
-                $this->redirect("index.php?controller=user&action=profile&id=$userId", 'Cập nhật hồ sơ cá nhân thành công!');
+                $this->redirect("/Group12-Social-Media-Website/index.php?controller=user&action=profile&id=$userId", 'Cập nhật hồ sơ cá nhân thành công!');
             } else {
                 $this->back('Chưa có thay đổi nào được lưu hoặc có lỗi xảy ra.');
             }
@@ -148,7 +148,7 @@ class UserController {
             $id = (int)$_GET['id'];
             $result = $this->userModel->delete($id);
             $msg = $result ? "Đã chuyển trạng thái user sang Deleted!" : "Lỗi khi xóa.";
-            $this->redirect('index.php?controller=user&action=list', $msg);
+            $this->redirect('/Group12-Social-Media-Website/index.php?controller=user&action=list', $msg);
         }
     }
 
@@ -156,7 +156,7 @@ class UserController {
         $id = $_GET['id'] ?? ($_SESSION['user_id'] ?? null);
 
         if (!$id) {
-            $this->redirect('index.php?controller=user&action=login', 'Vui lòng đăng nhập!');
+            $this->redirect('/Group12-Social-Media-Website/index.php?controller=user&action=login', 'Vui lòng đăng nhập!');
         }
 
         $user = $this->userModel->getById((int)$id);
@@ -183,7 +183,7 @@ class UserController {
             if ($user) {
                 $result = $this->userModel->updatePassword($user['UserID'], $newPassword);
                 if ($result) {
-                    $this->redirect('index.php?controller=user&action=login', 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.');
+                    $this->redirect('/Group12-Social-Media-Website/index.php?controller=user&action=login', 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.');
                 } else {
                     $this->back('Lỗi hệ thống khi cập nhật mật khẩu.');
                 }

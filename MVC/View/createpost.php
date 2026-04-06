@@ -119,7 +119,7 @@
         🚀 Post
     </button>
 
-    <a href="/Group12-Social-Media-Website/index.php?controller=post&action=showHome" class="btn btn-secondary">
+    <a href="/index.php?controller=post&action=showHome" class="btn btn-secondary">
         Cancel
     </a>
 </div>
