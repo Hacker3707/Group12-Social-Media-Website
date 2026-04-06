@@ -36,10 +36,10 @@ class FollowController extends AppController {
             $this->jsonResponse(["status" => "already"]);
         }
 
-        $this->followModel->insert($followerId, $followingId);
+        $this->followModel->followUser($followerId, $followingId);
 
-      $list = $this->followModel->getFollowers($followingId) ?? [];
-    $count = count($list);
+      
+    $count = $this->followModel->countFollowers($followingId);
 
         $this->jsonResponse([
             "status" => "followed",
@@ -61,9 +61,9 @@ class FollowController extends AppController {
             $this->jsonResponse(["status" => "error", "message" => "invalid_data"]);
         }
 
-        $this->followModel->delete($followerId, $followingId);
+       $this->followModel->unfollowUser($followerId, $followingId);
 
-        $count = count($this->followModel->getFollowers($followingId));
+        $count = $this->followModel->countFollowers($followingId);
 
         $this->jsonResponse([
             "status" => "unfollowed",
@@ -98,6 +98,7 @@ class FollowController extends AppController {
 
         include __DIR__ . "/../View/following.php";
     }
+    
 
     
 }
