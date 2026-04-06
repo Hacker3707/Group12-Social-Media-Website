@@ -1,4 +1,6 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 session_start();
 
 // 1. Kiểm tra trạng thái đăng nhập (đã có session user_id chưa?)
@@ -33,4 +35,5 @@ if (file_exists($controllerPath)) {
 } else {
     die("Lỗi: Controller '$controllerClassName' không tồn tại!");
 }
+
 ?>
