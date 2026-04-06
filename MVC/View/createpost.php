@@ -179,6 +179,7 @@ document.getElementById("postForm").addEventListener("submit", function(e){
 
     let formData = new FormData(this);
 
+<<<<<<< HEAD
     if (!formData.get("category_id")) {
         alert("Please choose category");
         return;
@@ -193,6 +194,14 @@ document.getElementById("postForm").addEventListener("submit", function(e){
     fetch("/index.php?controller=post&action=createPost", {
         method: "POST",
         body: formData
+=======
+    // ✅ validate phải nằm TRONG function
+    
+
+    fetch("/Group12-Social-Media-Website/index.php?controller=post&action=createPost",{
+        method:"POST",
+        body:formData
+>>>>>>> cc5d4737e1dd0ca54472c87729d68a76af82467d
     })
     .then(res => res.text())
     .then(data => {
@@ -232,9 +241,23 @@ document.getElementById("postForm").addEventListener("submit", function(e){
 
         } else {
             document.getElementById("result").innerHTML =
+<<<<<<< HEAD
                 "<div class='alert alert-danger'>Failed to create post. Please try again.</div>";
             submitBtn.disabled = false;
             submitBtn.textContent = "🚀 Post";
+=======
+            "<div class='alert alert-success'>Post created successfully</div>";
+
+            setTimeout(()=>{
+                window.location.href = "/Group12-Social-Media-Website/index.php?controller=post&action=showHome";
+            },1500);
+
+        }else{
+
+            document.getElementById("result").innerHTML =
+            "<div class='alert alert-danger'>Failed to create post</div>";
+
+>>>>>>> cc5d4737e1dd0ca54472c87729d68a76af82467d
         }
 
     })

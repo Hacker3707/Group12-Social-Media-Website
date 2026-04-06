@@ -29,7 +29,7 @@ class PostModel extends AppModel {
 
         return $this->execute($sql);
     }
-
+ 
     public function getAll() {
 
         

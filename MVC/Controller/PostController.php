@@ -296,7 +296,7 @@ echo "success:" . $newPostId;
         $post = $this->postModel->getById($postId);
         
         if (!$post) {
-            $this->redirect('index.php', 'Bài viết này không tồn tại hoặc đã bị xóa!');
+            $this->redirect('/Group12-Social-Media-Website/index.php', 'Bài viết này không tồn tại hoặc đã bị xóa!');
         }
 
         $reactions = $this->reactionModel->selectReactionsForPost($postId);

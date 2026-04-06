@@ -4,81 +4,97 @@ include_once "Entity/Follow.php";
 
 class FollowModel extends AppModel {
 
-    public function insert($followerId, $followingId) {
+  public function followUser($followerId, $followingId) {
 
-        $followerId = (int)$followerId;
-        $followingId = (int)$followingId;
+    $followerId = (int)$followerId;
+    $followingId = (int)$followingId;
 
-        $sql = "INSERT INTO follow (FollowerID, FollowingID)
-                VALUES ($followerId, $followingId)";
+    $sql = "CALL FollowUser($followerId, $followingId)";
+    
+    $result = $this->execute($sql);
 
-        return $this->execute($sql);
-    }
+    mysqli_next_result($this->link); // 🔥 QUAN TRỌNG
 
-    public function delete($followerId, $followingId) {
+    return $result;
+}
 
-        $followerId = (int)$followerId;
-        $followingId = (int)$followingId;
+  public function unfollowUser($followerId, $followingId) {
 
-        $sql = "DELETE FROM follow
-                WHERE FollowerID = $followerId 
-                AND FollowingID = $followingId";
+    $sql = "CALL UnfollowUser($followerId, $followingId)";
+    
+    $result = $this->execute($sql);
 
-        return $this->execute($sql);
-    }
+    mysqli_next_result($this->link);
+
+    return $result;
+}
 
     public function exists($followerId, $followingId) {
 
         $followerId = (int)$followerId;
         $followingId = (int)$followingId;
 
-        $sql = "SELECT * FROM follow
-                WHERE FollowerID = $followerId 
-                AND FollowingID = $followingId";
+      $sql = "SELECT 1 FROM follow
+        WHERE FollowerID = $followerId 
+        AND FollowingID = $followingId
+        LIMIT 1";
+               
 
         $result = $this->query($sql);
 
         return mysqli_num_rows($result) > 0;
     }
 
-    public function getFollowers($userId) {
+   public function getFollowers($userId) {
 
-        $userId = (int)$userId;
+    $sql = "CALL GetFollowers($userId)";
+    $result = $this->query($sql);
 
-        $sql = "SELECT * FROM follow WHERE FollowingID = $userId";
+    $list = [];
 
-        $result = $this->query($sql);
-
-        $list = [];
-
-        while ($row = mysqli_fetch_assoc($result)) {
-            $list[] = new Follow(
-                $row['FollowerID'],
-                $row['FollowingID']
-            );
-        }
-
-        return $list;
+    while ($row = mysqli_fetch_assoc($result)) {
+        $list[] = new Follow(
+            $row['UserID'],  //follower
+            $userId         //following
+        );
     }
+
+    mysqli_next_result($this->link); // 🔥 BẮT BUỘC
+
+    return $list;
+}
 
     public function getFollowing($userId) {
 
-        $userId = (int)$userId;
+    $sql = "CALL GetFollowing($userId)";
+    $result = $this->query($sql);
 
-        $sql = "SELECT * FROM follow WHERE FollowerID = $userId";
+    $list = [];
 
-        $result = $this->query($sql);
-
-        $list = [];
-
-        while ($row = mysqli_fetch_assoc($result)) {
-            $list[] = new Follow(
-                $row['FollowerID'],
-                $row['FollowingID']
-            );
-        }
-
-        return $list;
+    while ($row = mysqli_fetch_assoc($result)) {
+        $list[] = new Follow(
+            $userId,
+            $row['UserID']
+        );
     }
+
+    mysqli_next_result($this->link);
+
+    return $list;
+}
+public function countFollowers($userId) {
+
+    $userId = (int)$userId;
+
+    $sql = "CALL CountFollowers($userId)";
+    $result = $this->query($sql);
+
+    $row = mysqli_fetch_assoc($result);
+
+    // 🔥 clear result để tránh lỗi CALL tiếp theo
+    mysqli_next_result($this->link);
+
+    return $row['total'] ?? 0;
+}
 }
 ?>
