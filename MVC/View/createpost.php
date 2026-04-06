@@ -142,10 +142,7 @@ document.getElementById("postForm").addEventListener("submit", function(e){
     let formData = new FormData(this);
 
     // ✅ validate phải nằm TRONG function
-    if(!formData.get("category_id")){
-        alert("Please choose category");
-        return;
-    }
+    
 
     fetch("/Group12-Social-Media-Website/index.php?controller=post&action=createPost",{
         method:"POST",
