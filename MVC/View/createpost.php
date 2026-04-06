@@ -147,7 +147,7 @@ document.getElementById("postForm").addEventListener("submit", function(e){
         return;
     }
 
-    fetch("/index.php?controller=post&action=createPost",{
+    fetch("/Group12-Social-Media-Website/index.php?controller=post&action=createPost",{
         method:"POST",
         body:formData
     })
@@ -162,7 +162,7 @@ document.getElementById("postForm").addEventListener("submit", function(e){
             "<div class='alert alert-success'>Post created successfully</div>";
 
             setTimeout(()=>{
-                window.location.href = "/index.php?controller=post&action=showHome";
+                window.location.href = "/Group12-Social-Media-Website/index.php?controller=post&action=showHome";
             },1500);
 
         }else{
