@@ -6,10 +6,10 @@
 }
 
 #navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: azure;
+    position: sticky;
+    top: 0;
+    background: azure;
+    z-index: 1000;
 }
 
 #main-content {
