@@ -58,9 +58,6 @@ class UserController {
                 $_SESSION['username'] = $user['Username'];
                 $_SESSION['role'] = $user['UserRole']; 
 
-<<<<<<< main
-                $this->redirect('/Group12-Social-Media-Website/index.php', 'Đăng nhập thành công!');
-=======
                 // 2. PHÂN LUỒNG ĐIỀU HƯỚNG (ĐIỂM SỬA CHÍNH Ở ĐÂY)
                 if ($user['UserRole'] === 'admin') {
                     // Nếu là Admin -> Cho bay thẳng vào trang Quản lý (Dashboard)
@@ -70,7 +67,6 @@ class UserController {
                     $this->redirect('index.php', 'Đăng nhập thành công!');
                 }
 
->>>>>>> Thanh-Dat
             } else {
                 $this->back('Sai tài khoản, mật khẩu hoặc tài khoản của bạn đã bị khóa/xóa!');
             }
@@ -213,10 +209,6 @@ class UserController {
             $result = $this->userModel->update($userId, $username, $email, $bio, $phone);
 
             if ($result) {
-<<<<<<< main
-                $_SESSION['username'] = $username; 
-                $this->redirect("/Group12-Social-Media-Website/index.php?controller=user&action=profile&id=$userId", 'Cập nhật hồ sơ cá nhân thành công!');
-=======
                 if ($_SESSION['user_id'] == $userId) {
                     $_SESSION['username'] = $username; 
                 }
@@ -225,25 +217,12 @@ class UserController {
                                 ? "index.php?controller=user&action=list" 
                                 : "index.php?controller=user&action=profile&id=$userId";
                 $this->redirect($redirectUrl, 'Cập nhật hồ sơ thành công!');
->>>>>>> Thanh-Dat
             } else {
                 $this->back('Chưa có thay đổi nào được lưu hoặc có lỗi xảy ra.');
             }
         }
     }
 
-<<<<<<< main
-    public function delete() {
-        if (isset($_GET['id'])) {
-            $id = (int)$_GET['id'];
-            $result = $this->userModel->delete($id);
-            $msg = $result ? "Đã chuyển trạng thái user sang Deleted!" : "Lỗi khi xóa.";
-            $this->redirect('/Group12-Social-Media-Website/index.php?controller=user&action=list', $msg);
-        }
-    }
-
-=======
->>>>>>> Thanh-Dat
     public function profile() {
         $id = $_GET['id'] ?? ($_SESSION['user_id'] ?? null);
 
