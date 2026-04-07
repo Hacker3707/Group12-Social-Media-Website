@@ -1,4 +1,3 @@
-
 <?php
 include_once __DIR__ . "/../Model/PostModel.php";
 include_once __DIR__ . "/AppController.php";
@@ -7,6 +6,7 @@ include_once __DIR__ . "/../../Entity/Media.php";
 include_once __DIR__ . "/../Model/CategoryModel.php";
 include_once __DIR__ . "/../Model/CommentModel.php";
 include_once __DIR__ . "/../Model/UserModel.php";
+include_once __DIR__ . "/../Model/MediaModel.php";
 
 class PostController extends AppController {
     private $postModel;
@@ -14,178 +14,157 @@ class PostController extends AppController {
     private $categoryModel;
     private $commentModel;
     private $userModel;
+    private $mediaModel;
 
     public function __construct() {
-        $this->postModel = new PostModel();
+        $this->postModel     = new PostModel();
         $this->reactionModel = new ReactionModel();
         $this->categoryModel = new CategoryModel();
-        $this->commentModel = new CommentModel();
-        $this->userModel = new UserModel();
+        $this->commentModel  = new CommentModel();
+        $this->userModel     = new UserModel();
+        $this->mediaModel    = new MediaModel();
     }
 
     public function createPost(){
 
-       
-        $userId = $_SESSION['user_id'];
-        $groupId = null;
+        $userId     = $_SESSION['user_id'];
+        $groupId    = null;
         $categoryId = !empty($_POST['category_id']) ? intval($_POST['category_id']) : null;
 
-        $title = $_POST['title'];
-        $content = $_POST['content'];
-        $price = $_POST['price'] ?? null;
+        $title     = $_POST['title'];
+        $content   = $_POST['content'];
+        $price     = !empty($_POST['price']) ? $_POST['price'] : null;
         $condition = $_POST['condition'] ?? 'good';
-        $location = $_POST['location'] ?? 'other';
-        $brand = $_POST['brand'] ?? null;
-        $status = 'selling';
+        $location  = $_POST['location']  ?? 'other';
+        $brand     = !empty($_POST['brand']) ? $_POST['brand'] : null;
+        $status    = 'selling';
 
         $post = new Post(
-            null,
-            $userId,
-            $groupId,
-            $categoryId,
-            $title,
-            $content,
-            $price,
-            $condition,
-            $location,
-            $brand,
-            $status
+            null, $userId, $groupId, $categoryId,
+            $title, $content, $price, $condition, $location, $brand, $status
         );
 
-        $mediaList = [];
+        $result = $this->postModel->insertPost($post);
 
-        if(isset($_FILES['media']) && $_FILES['media']['error'] == 0){
-
-            $ext = pathinfo($_FILES['media']['name'], PATHINFO_EXTENSION);
-            $fileName = uniqid() . "." . $ext;
-
-            $uploadPath = "uploads/" . $fileName;
-
-            move_uploaded_file($_FILES['media']['tmp_name'], $uploadPath);
-
-            $media = new Media(null, $userId, null, "image", $uploadPath);
-            $mediaList[] = $media;
+        if (!$result) {
+            echo "fail";
+            exit;
         }
 
-       $result = $this->postModel->insertPost($post);
-        
-        if(!$result){
-        echo "fail";
-        die(mysqli_error($this->postModel->getConnection()));
+        $newPostId = $this->postModel->getLastInsertId();
+
+        // Lưu ảnh vào bảng media nếu có file upload
+        if (isset($_FILES['media']) && $_FILES['media']['error'] == 0) {
+
+            $mimeType  = mime_content_type($_FILES['media']['tmp_name']);
+            $mediaType = 'photo';
+            if (str_starts_with($mimeType, 'video/')) {
+                $mediaType = 'video';
+            }
+
+            $uploadDir = __DIR__ . "/../../../uploads/";
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $safeName = time() . "_" . $userId . "_" . basename($_FILES['media']['name']);
+            $destPath = $uploadDir . $safeName;
+            $dbPath   = "uploads/" . $safeName;
+
+            if (move_uploaded_file($_FILES['media']['tmp_name'], $destPath)) {
+                $this->mediaModel->insertMediaForPost($userId, $newPostId, $mediaType, $dbPath);
+            }
         }
-$newPostId = $this->postModel->getLastInsertId();
-echo "success:" . $newPostId;
-                exit;
+
+        echo "success:" . $newPostId;
+        exit;
     }
 
-    // render page
     public function showHome(){
 
-        $posts = $this->postModel->getAll() ?? [];
-
+        $posts  = $this->postModel->getAll() ?? [];
         $userid = $_SESSION['user_id'] ?? null;
 
+        // Lấy thông tin user — dùng getById() vì UserModel không có getUsernameById()
         if ($userid) {
-            $username = $this->userModel->getUsernameById($userid);
+            $userInfo = $this->userModel->getById($userid);
+            $username = $userInfo ? $userInfo['Username'] : "Guest";
         } else {
-            $username = "Guest"; 
-        }               
-        
+            $username = "Guest";
+        }
+
         $reactions_forPost = [];
-        foreach($posts as $post) {
+        foreach ($posts as $post) {
             $reactions_forPost[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
         }
 
         $isSameUser = [];
-
-        foreach($posts as $post){
-
+        foreach ($posts as $post) {
             $postId = $post->getPostId();
             $isSameUser[$postId] = false;
-
-            foreach(($reactions_forPost[$postId] ?? []) as $reaction){
-                if($reaction->getUserId() == $userid){
+            foreach (($reactions_forPost[$postId] ?? []) as $reaction) {
+                if ($reaction->getUserId() == $userid) {
                     $isSameUser[$postId] = true;
                     break;
                 }
             }
-
         }
 
         $comments = [];
-        foreach($posts as $post) {
+        foreach ($posts as $post) {
             $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
         }
 
         $reactions_forComment = [];
-
-        foreach($comments as $postComments){
-
-            foreach($postComments as $comment){
-
+        foreach ($comments as $postComments) {
+            foreach ($postComments as $comment) {
                 $commentId = $comment->getCommentId();
-
-                $reactions_forComment[$commentId] =
-                    $this->reactionModel->selectReactionsForComment($commentId);
-
+                $reactions_forComment[$commentId] = $this->reactionModel->selectReactionsForComment($commentId);
             }
-
         }
 
         $isSameUser_reactCmt = [];
-
-        foreach($comments as $postComments){
-
-            foreach($postComments as $comment){
-
+        foreach ($comments as $postComments) {
+            foreach ($postComments as $comment) {
                 $commentId = $comment->getCommentId();
                 $isSameUser_reactCmt[$commentId] = false;
-
-                foreach(($reactions_forComment[$commentId] ?? []) as $reaction){
-                    if($reaction->getUserId() == $userid){
+                foreach (($reactions_forComment[$commentId] ?? []) as $reaction) {
+                    if ($reaction->getUserId() == $userid) {
                         $isSameUser_reactCmt[$commentId] = true;
                         break;
                     }
                 }
-
             }
+        }
 
+        // Load media cho từng post để hiển thị ảnh/video trên Home
+        $mediaForPost = [];
+        foreach ($posts as $post) {
+            $mediaForPost[$post->getPostId()] = $this->mediaModel->getByPostId($post->getPostId());
         }
 
         include_once __DIR__ . "/../View/home.php";
     }
 
     public function PostAction(){
-
         $action = $_GET['action'] ?? "home";
-
-        switch($action){
-
-            case "createPost":
-                $this->createPost();
-                break;
-
-            case "home":
-                $this->showHome();
-                break;
-            case "create":
-            $this->showCreateForm();
-             break;
-
+        switch ($action) {
+            case "createPost":  $this->createPost();    break;
+            case "home":        $this->showHome();       break;
+            case "create":      $this->showCreateForm(); break;
         }
-
     }
 
     public function getAllPosts() {
         $posts = $this->postModel->getAll() ?? [];
 
         $reactions = [];
-        foreach($posts as $post) {
+        foreach ($posts as $post) {
             $reactions[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
         }
 
         $comments = [];
-        foreach($posts as $post) {
+        foreach ($posts as $post) {
             $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
         }
 
@@ -199,7 +178,7 @@ echo "success:" . $newPostId;
     public function getPostsByUserId($userId) {
         if (isset($_GET['user_id'])) {
             $userId = $_GET['user_id'];
-            $posts = $this->postModel->fetchByField('UserID', $userId);
+            $posts  = $this->postModel->fetchByField('UserID', $userId);
             include_once "../View/postview.php";
         }
         return [];
@@ -208,101 +187,65 @@ echo "success:" . $newPostId;
     public function getPostsByGroupId($groupId) {
         if (isset($_GET['group_id'])) {
             $groupId = $_GET['group_id'];
-            $posts = $this->postModel->fetchByField('GroupID', $groupId);
+            $posts   = $this->postModel->fetchByField('GroupID', $groupId);
             include_once "../View/postview.php";
         }
         return [];
     }
 
     public function getPostsByCategoryId() {
-
-    if (isset($_GET['category_id'])) {
-
-        $categoryId = $_GET['category_id'];
-
-        $posts = $this->postModel->fetchByField('CategoryID', $categoryId);
-
-        include_once __DIR__ . "/../View/home.php";
+        if (isset($_GET['category_id'])) {
+            $categoryId = $_GET['category_id'];
+            $posts      = $this->postModel->fetchByField('CategoryID', $categoryId);
+            include_once __DIR__ . "/../View/home.php";
+        }
+        return [];
     }
 
-    return [];
-}
-
     public function deletePost(){
-
         $postId = $_POST['postId'] ?? null;
-
-        if(!$postId){
-            echo "fail";
-            exit;
-        }
-
+        if (!$postId) { echo "fail"; exit; }
         $result = $this->postModel->delete($postId);
-
         echo $result ? "success" : "fail";
-
         exit;
     }
 
     public function showCreateForm(){
-        $categories = $this->categoryModel->getAll(); // 👈 lấy từ DB
-
+        $categories = $this->categoryModel->getAll();
         include __DIR__ . "/../View/createpost_view.php";
-        
         die();
     }
 
     public function updatePost() {
         $postId = $_POST['postId'] ?? null;
-
-        if(!$postId){
-            echo "fail";
-            exit;
-        }
-
-        $title = $_POST['title'] ?? null;
-        $content = $_POST['content'] ?? null;
-        $price = $_POST['price'] ?? null;
-        $condition = $_POST['condition'] ?? 'good';
-        $location = $_POST['location'] ?? 'other';
-        $brand = $_POST['brand'] ?? null;
-        $status = $_POST['status'] ?? 'selling';
+        if (!$postId) { echo "fail"; exit; }
 
         $post = new Post(
-            $postId,
-            null,
-            null,
-            null,
-            $title,
-            $content,
-            $price,
-            $condition,
-            $location,
-            $brand,
-            $status
+            $postId, null, null, null,
+            $_POST['title']     ?? null,
+            $_POST['content']   ?? null,
+            $_POST['price']     ?? null,
+            $_POST['condition'] ?? 'good',
+            $_POST['location']  ?? 'other',
+            $_POST['brand']     ?? null,
+            $_POST['status']    ?? 'selling'
         );
 
         $result = $this->postModel->update($post);
-
         echo $result ? "success" : "fail";
         exit;
     }
 
     public function detail() {
-
         $postId = $_GET['id'] ?? 0;
-        $userId = $_SESSION['user_id'] ?? 0;
-        
-        $post = $this->postModel->getById($postId);
-        
+        $post   = $this->postModel->getById($postId);
+
         if (!$post) {
             $this->redirect('/Group12-Social-Media-Website/index.php', 'Bài viết này không tồn tại hoặc đã bị xóa!');
         }
 
         $reactions = $this->reactionModel->selectReactionsForPost($postId);
-
         include_once "MVC/View/home.php";
     }
-
 }
 ?>
