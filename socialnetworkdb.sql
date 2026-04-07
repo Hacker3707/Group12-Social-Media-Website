@@ -735,3 +735,9 @@ INSERT INTO group_member (UserID, GroupID, Role, Status) VALUES
 (7,5,'member','approved'),
 (8,3,'member','approved'),
 (9,7,'member','approved');
+
+--
+-- UPDATE 05/04/2026: Thêm trạng thái banned cho bảng users
+--
+
+ALTER TABLE users MODIFY COLUMN AccountStatus ENUM('active', 'banned', 'deleted') NOT NULL DEFAULT 'active';
