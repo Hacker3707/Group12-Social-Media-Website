@@ -5,14 +5,22 @@ include_once __DIR__ . "/AppController.php";
 include_once __DIR__ . "/../Model/ReactionModel.php";
 include_once __DIR__ . "/../../Entity/Media.php";
 include_once __DIR__ . "/../Model/CategoryModel.php";
+include_once __DIR__ . "/../Model/CommentModel.php";
+include_once __DIR__ . "/../Model/UserModel.php";
+
 class PostController extends AppController {
     private $postModel;
     private $reactionModel;
+    private $categoryModel;
+    private $commentModel;
+    private $userModel;
 
     public function __construct() {
         $this->postModel = new PostModel();
         $this->reactionModel = new ReactionModel();
         $this->categoryModel = new CategoryModel();
+        $this->commentModel = new CommentModel();
+        $this->userModel = new UserModel();
     }
 
     public function createPost(){
@@ -55,7 +63,7 @@ class PostController extends AppController {
 
             move_uploaded_file($_FILES['media']['tmp_name'], $uploadPath);
 
-           $media = new Media(null, $userId, null, "image", $uploadPath);
+            $media = new Media(null, $userId, null, "image", $uploadPath);
             $mediaList[] = $media;
         }
 
@@ -65,8 +73,8 @@ class PostController extends AppController {
         echo "fail";
         die(mysqli_error($this->postModel->getConnection()));
         }
-
-        echo "success";
+$newPostId = $this->postModel->getLastInsertId();
+echo "success:" . $newPostId;
                 exit;
     }
 
@@ -74,13 +82,77 @@ class PostController extends AppController {
     public function showHome(){
 
         $posts = $this->postModel->getAll() ?? [];
+
+        $userid = $_SESSION['user_id'] ?? null;
+
+        if ($userid) {
+            $username = $this->userModel->getUsernameById($userid);
+        } else {
+            $username = "Guest"; 
+        }               
         
-        $reactions = [];
+        $reactions_forPost = [];
         foreach($posts as $post) {
-            $reactions[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
+            $reactions_forPost[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
         }
 
-        include __DIR__ . "/../View/home.php";
+        $isSameUser = [];
+
+        foreach($posts as $post){
+
+            $postId = $post->getPostId();
+            $isSameUser[$postId] = false;
+
+            foreach(($reactions_forPost[$postId] ?? []) as $reaction){
+                if($reaction->getUserId() == $userid){
+                    $isSameUser[$postId] = true;
+                    break;
+                }
+            }
+
+        }
+
+        $comments = [];
+        foreach($posts as $post) {
+            $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
+        }
+
+        $reactions_forComment = [];
+
+        foreach($comments as $postComments){
+
+            foreach($postComments as $comment){
+
+                $commentId = $comment->getCommentId();
+
+                $reactions_forComment[$commentId] =
+                    $this->reactionModel->selectReactionsForComment($commentId);
+
+            }
+
+        }
+
+        $isSameUser_reactCmt = [];
+
+        foreach($comments as $postComments){
+
+            foreach($postComments as $comment){
+
+                $commentId = $comment->getCommentId();
+                $isSameUser_reactCmt[$commentId] = false;
+
+                foreach(($reactions_forComment[$commentId] ?? []) as $reaction){
+                    if($reaction->getUserId() == $userid){
+                        $isSameUser_reactCmt[$commentId] = true;
+                        break;
+                    }
+                }
+
+            }
+
+        }
+
+        include_once __DIR__ . "/../View/home.php";
     }
 
     public function PostAction(){
@@ -111,6 +183,12 @@ class PostController extends AppController {
         foreach($posts as $post) {
             $reactions[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
         }
+
+        $comments = [];
+        foreach($posts as $post) {
+            $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
+        }
+
         include_once __DIR__ . "/../View/home.php";
     }
 
@@ -218,7 +296,7 @@ class PostController extends AppController {
         $post = $this->postModel->getById($postId);
         
         if (!$post) {
-            $this->redirect('index.php', 'Bài viết này không tồn tại hoặc đã bị xóa!');
+            $this->redirect('/Group12-Social-Media-Website/index.php', 'Bài viết này không tồn tại hoặc đã bị xóa!');
         }
 
         $reactions = $this->reactionModel->selectReactionsForPost($postId);

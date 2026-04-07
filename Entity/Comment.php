@@ -4,6 +4,7 @@ class Comment {
     private $replyToCommentId; // Optional, if this comment is a reply to another comment
     private $PostID;
     private $UserID;
+    private $Username; // Optional, for easier access to the username of the commenter
     private $Content;
     private array $MediaList; // Array to hold media objects (images, videos, etc.)
     private $CreatedAt;
@@ -31,6 +32,10 @@ class Comment {
         return $this->UserID;
     }
 
+    public function getUsername() {
+        return $this->Username;
+    }
+
     public function getContent() {
         return $this->Content;
     }
@@ -53,6 +58,10 @@ class Comment {
 
     public function setMediaList($mediaList) {
         $this->MediaList = $mediaList;
+    }
+
+    public function setUsername($username) {
+        $this->Username = $username;
     }
 }
 ?>

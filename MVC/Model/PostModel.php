@@ -29,7 +29,7 @@ class PostModel extends AppModel {
 
         return $this->execute($sql);
     }
-
+ 
     public function getAll() {
 
         
@@ -78,7 +78,6 @@ class PostModel extends AppModel {
     public function fetchByField($field, $value) 
     {
         
-
         $allowed = ['UserID','GroupID','CategoryID'];
         if (!in_array($field, $allowed)) {
             return false;
@@ -221,6 +220,10 @@ class PostModel extends AppModel {
         }
 
         return $posts;
+
     }
+    public function getLastInsertId() {
+    return parent::getLastInsertId();
+}
 }
 ?>

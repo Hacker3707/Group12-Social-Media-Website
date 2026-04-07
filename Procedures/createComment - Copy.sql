@@ -19,7 +19,7 @@ BEGIN
     SET MESSAGE_TEXT = 'Post does not exist';
     END IF;
 
-    INSERT INTO comment (PostID, UserID, Content, CommentParentID)
+    INSERT INTO comment (PostID, UserID, Content, ParentCommentID)
     VALUES (p_PostID, p_UserID, p_Content, p_ParentCommentID);
 
 END //

@@ -1,49 +1,54 @@
 <?php
-include_once __DIR__ . '/../../Entity/Media.php';
-include_once __DIR__ . "/../../Module/db_module.php";
+include_once "MVC/Model/AppModel.php";
+include_once "Entity/Media.php";
 
-class MediaModel {
+class MediaModel extends AppModel {
 
-    // Thêm media cho post
-    public function insertMediaForPost($link, $UserID, $PostID, $MediaType, $FilePath) {
-        $UserID    = mysqli_real_escape_string($link, $UserID);
-        $PostID    = mysqli_real_escape_string($link, $PostID);
-        $MediaType = mysqli_real_escape_string($link, $MediaType);
-        $FilePath  = mysqli_real_escape_string($link, $FilePath);
+    // ================= THÊM MEDIA CHO POST =================
+    public function insertMediaForPost($userId, $postId, $mediaType, $filePath) {
 
-        $query = "INSERT INTO media (UserID, PostID, MediaType, FilePath)
-                  VALUES ($UserID, $PostID, '$MediaType', '$FilePath')";
+        $userId    = (int)$userId;
+        $postId    = (int)$postId;
+        $mediaType = mysqli_real_escape_string($this->link, $mediaType);
+        $filePath  = mysqli_real_escape_string($this->link, $filePath);
 
-        $result = chayTruyVanKhongTraVeDL($link, $query);
-        if (!$result) return null;
-        return mysqli_insert_id($link);
+        $sql = "INSERT INTO media (UserID, PostID, MediaType, FilePath)
+                VALUES ($userId, $postId, '$mediaType', '$filePath')";
+
+        if ($this->execute($sql)) {
+            return $this->getLastInsertId();
+        }
+        return null;
     }
 
-    // Thêm media cho comment
-    public function insertMediaForComment($link, $UserID, $CommentID, $MediaType, $FilePath) {
-        $UserID    = mysqli_real_escape_string($link, $UserID);
-        $CommentID = mysqli_real_escape_string($link, $CommentID);
-        $MediaType = mysqli_real_escape_string($link, $MediaType);
-        $FilePath  = mysqli_real_escape_string($link, $FilePath);
+    // ================= THÊM MEDIA CHO COMMENT =================
+    public function insertMediaForComment($userId, $commentId, $mediaType, $filePath) {
 
-        $query = "INSERT INTO media (UserID, CommentID, MediaType, FilePath)
-                  VALUES ($UserID, $CommentID, '$MediaType', '$FilePath')";
+        $userId    = (int)$userId;
+        $commentId = (int)$commentId;
+        $mediaType = mysqli_real_escape_string($this->link, $mediaType);
+        $filePath  = mysqli_real_escape_string($this->link, $filePath);
 
-        $result = chayTruyVanKhongTraVeDL($link, $query);
-        if (!$result) return null;
-        return mysqli_insert_id($link);
+        $sql = "INSERT INTO media (UserID, CommentID, MediaType, FilePath)
+                VALUES ($userId, $commentId, '$mediaType', '$filePath')";
+
+        if ($this->execute($sql)) {
+            return $this->getLastInsertId();
+        }
+        return null;
     }
 
-    // Lấy tất cả media của một bài post
-    public function getByPostID($link, $PostID) {
-        $PostID = mysqli_real_escape_string($link, $PostID);
+    // ================= LẤY MEDIA THEO POST =================
+    public function getByPostId($postId) {
 
-        $query = "SELECT * FROM media WHERE PostID = $PostID";
-        $result = chayTruyVanTraVeDL($link, $query);
+        $postId = (int)$postId;
 
-        $mediaList = [];
+        $sql = "SELECT * FROM media WHERE PostID = $postId";
+        $result = $this->query($sql);
+
+        $list = [];
         while ($row = mysqli_fetch_assoc($result)) {
-            $mediaList[] = new Media(
+            $list[] = new Media(
                 $row['MediaID'],
                 $row['UserID'],
                 $row['MediaType'],
@@ -53,19 +58,20 @@ class MediaModel {
                 $row['PostID']
             );
         }
-        return $mediaList;
+        return $list;
     }
 
-    // Lấy tất cả media của một comment
-    public function getByCommentID($link, $CommentID) {
-        $CommentID = mysqli_real_escape_string($link, $CommentID);
+    // ================= LẤY MEDIA THEO COMMENT =================
+    public function getByCommentId($commentId) {
 
-        $query = "SELECT * FROM media WHERE CommentID = $CommentID";
-        $result = chayTruyVanTraVeDL($link, $query);
+        $commentId = (int)$commentId;
 
-        $mediaList = [];
+        $sql = "SELECT * FROM media WHERE CommentID = $commentId";
+        $result = $this->query($sql);
+
+        $list = [];
         while ($row = mysqli_fetch_assoc($result)) {
-            $mediaList[] = new Media(
+            $list[] = new Media(
                 $row['MediaID'],
                 $row['UserID'],
                 $row['MediaType'],
@@ -75,19 +81,20 @@ class MediaModel {
                 $row['PostID']
             );
         }
-        return $mediaList;
+        return $list;
     }
 
-    // Lấy tất cả media của một user
-    public function getByUserID($link, $UserID) {
-        $UserID = mysqli_real_escape_string($link, $UserID);
+    // ================= LẤY MEDIA THEO USER =================
+    public function getByUserId($userId) {
 
-        $query = "SELECT * FROM media WHERE UserID = $UserID";
-        $result = chayTruyVanTraVeDL($link, $query);
+        $userId = (int)$userId;
 
-        $mediaList = [];
+        $sql = "SELECT * FROM media WHERE UserID = $userId";
+        $result = $this->query($sql);
+
+        $list = [];
         while ($row = mysqli_fetch_assoc($result)) {
-            $mediaList[] = new Media(
+            $list[] = new Media(
                 $row['MediaID'],
                 $row['UserID'],
                 $row['MediaType'],
@@ -97,36 +104,38 @@ class MediaModel {
                 $row['PostID']
             );
         }
-        return $mediaList;
+        return $list;
     }
 
-    // Lấy 1 media theo MediaID
-    public function getByID($link, $MediaID) {
-        $MediaID = mysqli_real_escape_string($link, $MediaID);
+    // ================= LẤY 1 MEDIA THEO ID =================
+    public function getById($mediaId) {
 
-        $query = "SELECT * FROM media WHERE MediaID = $MediaID";
-        $result = chayTruyVanTraVeDL($link, $query);
+        $mediaId = (int)$mediaId;
 
-        $row = mysqli_fetch_assoc($result);
-        if (!$row) return null;
+        $sql = "SELECT * FROM media WHERE MediaID = $mediaId";
+        $result = $this->query($sql);
 
-        return new Media(
-            $row['MediaID'],
-            $row['UserID'],
-            $row['MediaType'],
-            $row['FilePath'],
-            $row['CreatedAt'],
-            $row['CommentID'],
-            $row['PostID']
-        );
+        if ($row = mysqli_fetch_assoc($result)) {
+            return new Media(
+                $row['MediaID'],
+                $row['UserID'],
+                $row['MediaType'],
+                $row['FilePath'],
+                $row['CreatedAt'],
+                $row['CommentID'],
+                $row['PostID']
+            );
+        }
+        return null;
     }
 
-    // Xoá media theo MediaID
-    public function deleteByID($link, $MediaID) {
-        $MediaID = mysqli_real_escape_string($link, $MediaID);
+    // ================= XÓA MEDIA THEO ID =================
+    public function deleteById($mediaId) {
 
-        $query = "DELETE FROM media WHERE MediaID = $MediaID";
-        return chayTruyVanKhongTraVeDL($link, $query);
+        $mediaId = (int)$mediaId;
+
+        $sql = "DELETE FROM media WHERE MediaID = $mediaId";
+        return $this->execute($sql);
     }
 }
 ?>

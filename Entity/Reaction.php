@@ -6,13 +6,15 @@ class Reaction {
     private $CommentID; // Optional, if the reaction is for a comment instead of a post
     private $Type; // e.g., 'like', 'love', 'haha', etc.
     private $CreatedAt;
+    private $Username; // Optional, for easier access to the username of the reactor
 
-    public function __construct($reaction_id, $post_id, $comment_id, $user_id, $type) {
+    public function __construct($reaction_id, $post_id, $comment_id, $user_id, $type, $created_at = null) {
         $this->ReactionID = $reaction_id;
         $this->PostID = $post_id;
         $this->UserID = $user_id;
         $this->CommentID = $comment_id;
         $this->Type = $type;
+        $this->CreatedAt = $created_at;
     }
 
     public function getReactionId() {
@@ -25,6 +27,14 @@ class Reaction {
 
     public function getUserId() {
         return $this->UserID;
+    }
+
+    public function setUsername($username) {
+        $this->Username = $username;
+    }
+
+    public function getUsername() {
+        return $this->Username;
     }
 
     public function getType() {

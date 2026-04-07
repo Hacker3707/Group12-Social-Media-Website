@@ -11,28 +11,21 @@
   <div class="card-body">
 
     <div class="form-group">
-      <label>👤 Username</label>
-      <input type="text" name="username" class="form-control" placeholder="Enter username">
-    </div>
-
-    <div class="form-group">
       <label>📌 Title</label>
       <input type="text" name="title" class="form-control" placeholder="Post title">
     </div>
-   <!-- 📝 CATEGORY -->
+
     <div class="form-group">
-    <label>📂 Category</label>
-    <select name="category_id" class="form-control category-select">
-       <option value="">-- Choose category --</option>
-
-    <?php foreach ($categories as $cat): ?>
-        <option value="<?= $cat->getCategoryID() ?>">
+      <label>📂 Category</label>
+      <select name="category_id" class="form-control category-select">
+        <option value="">-- Choose category --</option>
+        <?php foreach ($categories as $cat): ?>
+          <option value="<?= $cat->getCategoryID() ?>">
             <?= $cat->getCategoryName() ?>
-        </option>
-    <?php endforeach; ?>
-
-  </select>
-</div>
+          </option>
+        <?php endforeach; ?>
+      </select>
+    </div>
 
     <div class="form-group">
       <label>📄 Content</label>
@@ -105,25 +98,37 @@
 
   <div class="card-body">
 
-    <div class="custom-file">
-      <input type="file" name="media" class="custom-file-input">
-      <label class="custom-file-label">Choose file</label>
+    <!-- Ô chọn file -->
+    <div class="custom-file mb-2">
+      <input type="file" name="media" id="mediaInput" class="custom-file-input" accept="image/*,video/*">
+      <label class="custom-file-label" for="mediaInput">Choose file</label>
+    </div>
+
+    <!-- Khung xem trước ảnh/video -->
+    <div id="mediaPreview" class="mt-2" style="display:none;">
+      <p class="text-muted small mb-1">Preview:</p>
+      <img id="previewImg" src="" alt="Preview"
+           class="img-fluid rounded"
+           style="max-height: 300px; object-fit: cover; display:none;">
+      <video id="previewVideo" controls
+             class="w-100 rounded"
+             style="max-height: 300px; display:none;">
+        <source id="previewVideoSrc" src="">
+      </video>
     </div>
 
   </div>
 </div>
 
-<!-- 🔘 BUTTON (GIỮ STYLE CŨ CỦA BẠN) -->
+<!-- 🔘 BUTTON -->
 <div class="row" id="button-group">
     <button type="submit" class="btn btn-primary" style="margin-right:10px;">
         🚀 Post
     </button>
-
     <a href="/index.php?controller=post&action=showHome" class="btn btn-secondary">
         Cancel
     </a>
 </div>
-
 
 </div>
 </form>
@@ -132,37 +137,119 @@
 
 <script>
 
-console.log("JS loaded");
+// ===== XEM TRƯỚC ẢNH/VIDEO KHI CHỌN FILE =====
+document.getElementById("mediaInput").addEventListener("change", function(){
 
+    let file = this.files[0];
+    let preview   = document.getElementById("mediaPreview");
+    let imgEl     = document.getElementById("previewImg");
+    let videoEl   = document.getElementById("previewVideo");
+    let videoSrc  = document.getElementById("previewVideoSrc");
+
+    // Reset
+    imgEl.style.display   = "none";
+    videoEl.style.display = "none";
+    preview.style.display = "none";
+
+    // Cập nhật label
+    let label = document.querySelector(".custom-file-label");
+    label.textContent = file ? file.name : "Choose file";
+
+    if (!file) return;
+
+    let url = URL.createObjectURL(file);
+
+    if (file.type.startsWith("image/")) {
+        imgEl.src         = url;
+        imgEl.style.display   = "block";
+        preview.style.display = "block";
+    } else if (file.type.startsWith("video/")) {
+        videoSrc.src          = url;
+        videoEl.load();
+        videoEl.style.display = "block";
+        preview.style.display = "block";
+    }
+});
+
+
+// ===== SUBMIT FORM =====
 document.getElementById("postForm").addEventListener("submit", function(e){
 
     e.preventDefault();
 
-
     let formData = new FormData(this);
 
-    // ✅ validate phải nằm TRONG function
-    if(!formData.get("category_id")){
+<<<<<<< HEAD
+    if (!formData.get("category_id")) {
         alert("Please choose category");
         return;
     }
 
-    fetch("/index.php?controller=post&action=createPost",{
+    // Disable nút Post để tránh bấm 2 lần
+    let submitBtn = this.querySelector("button[type=submit]");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Posting...";
+
+    // BƯỚC 1: Tạo post
+    fetch("/index.php?controller=post&action=createPost", {
+        method: "POST",
+        body: formData
+=======
+    // ✅ validate phải nằm TRONG function
+    
+
+    fetch("/Group12-Social-Media-Website/index.php?controller=post&action=createPost",{
         method:"POST",
         body:formData
+>>>>>>> cc5d4737e1dd0ca54472c87729d68a76af82467d
     })
-    .then(res=>res.text())
-    .then(data=>{
+    .then(res => res.text())
+    .then(data => {
 
         console.log("Response:", data);
 
-        if(data.trim().includes("success")){
+        if (data.trim().startsWith("success")) {
 
+            let postId = data.split(":")[1]; // Lấy post_id từ "success:123"
+
+            let mediaFile = document.getElementById("mediaInput");
+
+            // BƯỚC 2: Nếu có file thì upload ảnh/video
+            if (mediaFile && mediaFile.files.length > 0) {
+
+                let mediaData = new FormData();
+                mediaData.append("media",   mediaFile.files[0]);
+                mediaData.append("post_id", postId);
+
+                fetch("/index.php?controller=media&action=uploadForPost", {
+                    method: "POST",
+                    body: mediaData
+                })
+                .then(res => res.text())
+                .then(mediaRes => {
+                    console.log("Media upload:", mediaRes);
+                    showSuccessAndRedirect();
+                })
+                .catch(err => {
+                    console.error("Media upload error:", err);
+                    showSuccessAndRedirect(); // Vẫn redirect dù upload lỗi
+                });
+
+            } else {
+                showSuccessAndRedirect();
+            }
+
+        } else {
             document.getElementById("result").innerHTML =
+<<<<<<< HEAD
+                "<div class='alert alert-danger'>Failed to create post. Please try again.</div>";
+            submitBtn.disabled = false;
+            submitBtn.textContent = "🚀 Post";
+=======
             "<div class='alert alert-success'>Post created successfully</div>";
 
             setTimeout(()=>{
-                window.location.href = "/index.php?controller=post&action=showHome";
+                window.location.href = "/Group12-Social-Media-Website/index.php?controller=post&action=showHome";
             },1500);
 
         }else{
@@ -170,14 +257,24 @@ document.getElementById("postForm").addEventListener("submit", function(e){
             document.getElementById("result").innerHTML =
             "<div class='alert alert-danger'>Failed to create post</div>";
 
+>>>>>>> cc5d4737e1dd0ca54472c87729d68a76af82467d
         }
 
     })
-    .catch(err=>{
+    .catch(err => {
         console.error("ERROR:", err);
+        submitBtn.disabled = false;
+        submitBtn.textContent = "🚀 Post";
     });
 
 });
 
+function showSuccessAndRedirect() {
+    document.getElementById("result").innerHTML =
+        "<div class='alert alert-success'>✅ Post created successfully!</div>";
+    setTimeout(() => {
+        window.location.href = "/index.php?controller=post&action=showHome";
+    }, 1500);
+}
 
 </script>

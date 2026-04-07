@@ -2,6 +2,7 @@
 <html>
 <head>
     <title><?= htmlspecialchars($user['Username']) ?> | Passo</title>
+   
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <style>
         body { background-color: #f0f2f5; }
@@ -10,8 +11,6 @@
         .cover-photo img { width: 100%; height: 100%; object-fit: cover; }
         
         .profile-header { background: #fff; padding-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .avatar-container { position: relative; margin-top: -100px; text-align: center; margin-bottom: 15px; }
-        .avatar-container img { width: 168px; height: 168px; border-radius: 50%; border: 4px solid #fff; background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2); object-fit: cover; }
         
         .profile-name { font-size: 2rem; font-weight: 700; margin-bottom: 0; }
         .profile-bio { color: #65676b; font-size: 1.1rem; }
@@ -19,10 +18,57 @@
         .content-section { margin-top: 20px; }
         .card-custom { border: none; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .card-title { font-weight: 700; font-size: 1.25rem; }
+        .follow-btn {
+    background: #1877f2;
+    color: white;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-weight: 600;
+    border: none;
+    transition: 0.2s;
+}
+
+.follow-btn:hover {
+    background: #166fe5;
+}
+
+.follow-btn.following {
+    background: #e4e6eb;
+    color: black;
+}
+
+.follow-btn.following:hover {
+    background: #d8dadf;
+}
+
+        .avatar-container {
+            width: 168px;
+            height: 168px;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            margin-top: -100px;
+            margin-bottom: 15px;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: #fff;
+        }
+
+        .avatar-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            border: 4px solid #fff;
+        }
     </style>
 </head>
 <body>
-    <?php include 'MVC/View/navbar.php'; ?>
+    <div class="row" id = "navbar">
+        <div class= "col-md-12 col-12">
+            <?php include 'MVC/View/navbar.php'; ?>
+        </div>
+    </div>
 
     <div class="profile-header">
         <div class="container">
@@ -31,17 +77,28 @@
             </div>
             
             <div class="avatar-container">
-                <img src="<?= !empty($user['AvatarFP']) ? $user['AvatarFP'] : 'https://via.placeholder.com/168/007bff/ffffff?text='.strtoupper(substr($user['Username'], 0, 1)) ?>" alt="Avatar">
+                <img class="img-fluid" src="<?= !empty($user['AvatarFP']) ? $user['AvatarFP'] : 'https://via.placeholder.com/168/007bff/ffffff?text='.strtoupper(substr($user['Username'], 0, 1)) ?>" alt="Avatar">
             </div>
             
             <div class="text-center">
                 <h1 class="profile-name"><?= htmlspecialchars($user['Username']) ?></h1>
+                 <p id="followerCount" class="text-muted">
+                <?= $followerCount ?? 0 ?> người theo dõi
+                 </p>
                 <p class="profile-bio"><?= !empty($user['Bio']) ? htmlspecialchars($user['Bio']) : 'Chưa có tiểu sử.' ?></p>
                 
                 <?php if(isset($_SESSION['user_id']) && $_SESSION['user_id'] == $user['UserID']): ?>
                     <a href="index.php?controller=user&action=edit&id=<?= $user['UserID'] ?>" class="btn btn-light font-weight-bold mt-2"><i class="fas fa-pen"></i> Chỉnh sửa trang cá nhân</a>
                 <?php else: ?>
-                    <button class="btn btn-primary font-weight-bold mt-2">Thêm bạn bè</button>
+                    <?php $isFollowing = $isFollowing ?? false; ?>
+
+                <button 
+                 id="followBtn"
+                  class="follow-btn mt-2 <?= $isFollowing ? 'following' : '' ?>"
+                   data-user-id="<?= $user['UserID'] ?>"
+                   >
+                  <?= $isFollowing ? 'Đang theo dõi' : 'Theo dõi' ?>
+                  </button>
                     <button class="btn btn-light font-weight-bold mt-2 ml-2">Nhắn tin</button>
                 <?php endif; ?>
             </div>
@@ -93,5 +150,87 @@
             </div>
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(document).ready(function(){
+
+    // chỉ chạy nếu tồn tại button
+    if ($("#followBtn").length === 0) return;
+
+    let button = $("#followBtn");
+
+    // hover
+    button.hover(
+        function(){
+            if(button.hasClass("following")){
+                button.text("Bỏ theo dõi");
+            }
+        },
+        function(){
+            if(button.hasClass("following")){
+                button.text("Đang theo dõi");
+            }
+        }
+    );
+
+    button.click(function(){
+
+        let userId = parseInt(button.data("user-id"));
+
+        console.log("USER ID:", userId);
+
+        if(!userId){
+            alert("Không lấy được userId!");
+            return;
+        }
+
+        let isFollowing = button.hasClass("following");
+        let action = isFollowing ? "unfollow" : "follow";
+
+        button.prop("disabled", true).text("Đang xử lý...");
+
+       $.ajax({
+    url: "/Group12-Social-Media-Website/index.php?controller=follow&action=" + action,
+    method: "POST",
+    data: { following_id: userId }, // ✅ dấu phẩy này phải có
+
+   success: function(response){
+
+    console.log("RESPONSE:", response);
+
+    let data = response;
+
+    if(data.status === "followed"){
+        button.addClass("following").text("Đang theo dõi");
+    }
+    else if(data.status === "unfollowed"){
+        button.removeClass("following").text("Theo dõi");
+    }
+    else if(data.status === "already"){
+        // 🔥 FIX CHÍNH Ở ĐÂY
+        button.addClass("following").text("Đang theo dõi");
+    }
+    else if(data.status === "error"){
+        alert(data.message);
+    }
+
+    if(data.count !== undefined){
+        $("#followerCount").text(data.count + " người theo dõi");
+    }
+
+    // ✅ luôn bật lại nút
+    button.prop("disabled", false);
+},
+
+    error: function(xhr){
+        console.error(xhr);
+        alert("Lỗi kết nối!");
+        button.prop("disabled", false);
+    }
+       });
+    }); 
+});
+</script>
 </body>
 </html>
