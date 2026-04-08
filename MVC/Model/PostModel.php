@@ -220,6 +220,10 @@ class PostModel extends AppModel {
         }
 
         return $posts;
+
     }
+    public function getLastInsertId() {
+    return parent::getLastInsertId();
+}
 }
 ?>

@@ -82,8 +82,8 @@ if($isProduct == 0){
         echo "fail";
         die(mysqli_error($this->postModel->getConnection()));
         }
-
-        echo "success";
+$newPostId = $this->postModel->getLastInsertId();
+echo "success:" . $newPostId;
                 exit;
     }
 
