@@ -5,23 +5,33 @@ include_once "Entity/Comment.php";
 class CommentModel extends AppModel {
 
     public function createComment(Comment $comment) {
-        $parentCommentId = $comment->getReplyToCommentId() === null ? "NULL" : (int)$comment->getReplyToCommentId();
+
+        $parentCommentId = $comment->getReplyToCommentId() === null 
+            ? "NULL" 
+            : (int)$comment->getReplyToCommentId();
+
         $content = mysqli_real_escape_string($this->link, $comment->getContent());
         $userId = (int)$comment->getUserId();
         $postId = (int)$comment->getPostId();
+
         $sql = "CALL createComment($postId, $userId, '$content', $parentCommentId)";
-        $result = $this -> query($sql);
+        $result = $this->query($sql);
 
         if(!$result){
             return false;
         }
 
-        /* flush result set của procedure */
+        $commentId = mysqli_insert_id($this->link);
+
         while(mysqli_more_results($this->link)){
             mysqli_next_result($this->link);
         }
 
-        return true;
+        return [
+            "id" => $commentId,
+            "user_id" => $userId,
+            "content" => $content
+        ];
     }
 
     public function fetchByField($field, $value) 
