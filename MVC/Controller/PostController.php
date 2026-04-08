@@ -32,11 +32,20 @@ class PostController extends AppController {
 
         $title = $_POST['title'];
         $content = $_POST['content'];
+        $isProduct = $_POST['is_product'] ?? 1;
         $price = $_POST['price'] ?? null;
         $condition = $_POST['condition'] ?? 'good';
         $location = $_POST['location'] ?? 'other';
         $brand = $_POST['brand'] ?? null;
         $status = 'selling';
+        //  nếu KHÔNG phải product → reset hết
+if($isProduct == 0){
+    $price = null;
+    $condition = null;
+    $location = null;
+    $brand = null;
+    $status = null;
+}
 
         $post = new Post(
             null,
@@ -79,81 +88,111 @@ echo "success:" . $newPostId;
     }
 
     // render page
-    public function showHome(){
+   public function showHome(){
 
-        $posts = $this->postModel->getAll() ?? [];
+    // 🔥 Lấy filter nếu có
+    $categoryId = $_SESSION['category_filter'] ?? null;
 
-        $userid = $_SESSION['user_id'] ?? null;
+    if($categoryId){
+        $posts = $this->postModel->fetchByField('CategoryID', $categoryId);
+    } else {
+        $posts = $this->postModel->getAll();
+    }
 
-        if ($userid) {
-            $username = $this->userModel->getById($userid);
-        } else {
-            $username = "Guest"; 
-        }               
-        
-        $reactions_forPost = [];
-        foreach($posts as $post) {
-            $reactions_forPost[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
+    $posts = $posts ?? [];
+
+    $userid = $_SESSION['user_id'] ?? null;
+
+    $username = $userid 
+        ? $this->userModel->getUsernameById($userid) 
+        : "Guest";
+
+    // =======================
+    // 🔥 REACTIONS POST
+    // =======================
+    $reactions_forPost = [];
+
+    foreach($posts as $post){
+        $postId = $post->getPostId();
+
+        $reactions_forPost[$postId] =
+            $this->reactionModel->selectReactionsForPost($postId);
+    }
+
+    // =======================
+    // 🔥 CHECK USER LIKE POST
+    // =======================
+    $isSameUser = [];
+
+    foreach($posts as $post){
+
+        $postId = $post->getPostId();
+        $isSameUser[$postId] = false;
+
+        foreach($reactions_forPost[$postId] as $reaction){
+            if($reaction->getUserId() == $userid){
+                $isSameUser[$postId] = true;
+                break;
+            }
         }
+    }
 
-        $isSameUser = [];
+    // =======================
+    // 🔥 COMMENTS
+    // =======================
+    $comments = [];
 
-        foreach($posts as $post){
+    foreach($posts as $post){
+        $postId = $post->getPostId();
 
-            $postId = $post->getPostId();
-            $isSameUser[$postId] = false;
+        $comments[$postId] =
+            $this->commentModel->fetchByField('PostID', $postId);
+    }
 
-            foreach(($reactions_forPost[$postId] ?? []) as $reaction){
+    // =======================
+    // 🔥 REACTION COMMENT
+    // =======================
+    $reactions_forComment = [];
+
+    foreach($comments as $postComments){
+
+        foreach($postComments as $comment){
+
+            $commentId = $comment->getCommentId();
+
+            $reactions_forComment[$commentId] =
+                $this->reactionModel->selectReactionsForComment($commentId);
+        }
+    }
+
+    // =======================
+    // 🔥 CHECK USER LIKE COMMENT
+    // =======================
+    $isSameUser_reactCmt = [];
+
+    foreach($comments as $postComments){
+
+        foreach($postComments as $comment){
+
+            $commentId = $comment->getCommentId();
+            $isSameUser_reactCmt[$commentId] = false;
+
+            foreach($reactions_forComment[$commentId] as $reaction){
                 if($reaction->getUserId() == $userid){
-                    $isSameUser[$postId] = true;
+                    $isSameUser_reactCmt[$commentId] = true;
                     break;
                 }
             }
-
         }
-
-        $comments = [];
-        foreach($posts as $post) {
-            $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
-        }
-
-        $reactions_forComment = [];
-
-        foreach($comments as $postComments){
-
-            foreach($postComments as $comment){
-
-                $commentId = $comment->getCommentId();
-
-                $reactions_forComment[$commentId] =
-                    $this->reactionModel->selectReactionsForComment($commentId);
-
-            }
-
-        }
-
-        $isSameUser_reactCmt = [];
-
-        foreach($comments as $postComments){
-
-            foreach($postComments as $comment){
-
-                $commentId = $comment->getCommentId();
-                $isSameUser_reactCmt[$commentId] = false;
-
-                foreach(($reactions_forComment[$commentId] ?? []) as $reaction){
-                    if($reaction->getUserId() == $userid){
-                        $isSameUser_reactCmt[$commentId] = true;
-                        break;
-                    }
-                }
-
-            }
-
-        }
-
-        include_once __DIR__ . "/../View/home.php";
     }
+
+    // =======================
+    // 🔥 RENDER VIEW
+    // =======================
+    include_once __DIR__ . "/../View/home.php";
+}
+
+       
 
     public function PostAction(){
 
@@ -166,6 +205,7 @@ echo "success:" . $newPostId;
                 break;
 
             case "home":
+                 unset($_SESSION['category_filter']); // 🔥 tránh bị kẹt filter
                 $this->showHome();
                 break;
             case "create":
@@ -222,7 +262,9 @@ echo "success:" . $newPostId;
 
         $posts = $this->postModel->fetchByField('CategoryID', $categoryId);
 
-        include_once __DIR__ . "/../View/home.php";
+       // ✅ redirect về showHome và xử lý filter ở đó
+        $_SESSION['category_filter'] = $categoryId;
+        $this->showHome(); 
     }
 
     return [];
