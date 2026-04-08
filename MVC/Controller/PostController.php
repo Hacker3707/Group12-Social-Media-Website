@@ -86,7 +86,7 @@ echo "success:" . $newPostId;
         $userid = $_SESSION['user_id'] ?? null;
 
         if ($userid) {
-            $username = $this->userModel->getUsernameById($userid);
+            $username = $this->userModel->getById($userid);
         } else {
             $username = "Guest"; 
         }               
