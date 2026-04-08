@@ -4,9 +4,14 @@ if(empty($posts)){
     echo "No posts found";
     return;
 }
+?>
 
-
-foreach($posts as $post) { ?>
+<?php foreach($posts as $post): ?>
+<?php 
+$isProduct = $post->getPrice() !== null 
+          || $post->getCondition() 
+          || $post->getStatus();
+?>
     
 <div class="post-item border rounded p-3 mb-3 bg-white">
 
@@ -38,24 +43,69 @@ foreach($posts as $post) { ?>
     
     <p><?= nl2br(htmlspecialchars($post->getContent())) ?></p>
 
+    <!--  BADGE Ở ĐÂY -->
+<?php if($isProduct): ?>
+<div class="mt-2 d-flex flex-wrap" style="gap:6px;">
+
+    <?php if($post->getPrice() !== null): ?>
+        <span class="badge badge-success">
+            💰 <?= number_format($post->getPrice()) ?> VND
+        </span>
+    <?php endif; ?>
+
+    <?php if($post->getCondition()): ?>
+        <span class="badge badge-info">
+            <?= $post->getCondition() ?>
+        </span>
+    <?php endif; ?>
+
+    <?php if($post->getLocation()): ?>
+        <span class="badge badge-secondary">
+            <?= $post->getLocation() ?>
+        </span>
+    <?php endif; ?>
+
+    <?php if($post->getBrand()): ?>
+        <span class="badge badge-dark">
+            <?= $post->getBrand() ?>
+        </span>
+    <?php endif; ?>
+
+</div>
+<?php endif; ?>
+
    <!-- Extra Info -->
-   <div class="text-muted small mt-2">
+  
+
+   
+
+<?php if($isProduct): ?>
+<div class="text-muted small mt-2">
 
     <?php if($post->getPrice() !== null): ?>
         💰 Price: <?= number_format($post->getPrice()) ?> VND <br>
     <?php endif; ?>
 
-    📦 Condition: <?= htmlspecialchars($post->getCondition()) ?> <br>
+    <?php if($post->getCondition()): ?>
+        📦 Condition: <?= htmlspecialchars($post->getCondition()) ?> <br>
+    <?php endif; ?>
 
-    📍 Location: <?= htmlspecialchars($post->getLocation()) ?> <br>
+    <?php if($post->getLocation()): ?>
+        📍 Location: <?= htmlspecialchars($post->getLocation()) ?> <br>
+    <?php endif; ?>
 
     <?php if($post->getBrand()): ?>
         🏷️ Brand: <?= htmlspecialchars($post->getBrand()) ?> <br>
     <?php endif; ?>
 
-    📌 Status: <?= htmlspecialchars($post->getStatus()) ?>
+    <?php if($post->getStatus()): ?>
+        📌 Status: <?= htmlspecialchars($post->getStatus()) ?>
+    <?php endif; ?>
 
-   </div>
+</div>
+<?php endif; ?>
+
+   
     <!-- Post Actions -->
     <div class="mt-2 d-flex align-items-center" >
         <button class="btn btn-sm btn-outline-primary col-md-2 col-12"
@@ -80,8 +130,9 @@ foreach($posts as $post) { ?>
                     Delete
                 </button>
             </div>
-        
         </div>
+        
+    
 
         <?php $postId = $post->getPostId(); ?> 
 
@@ -110,37 +161,12 @@ foreach($posts as $post) { ?>
             </span>
 
             </button>
+     </div>
 
         <?php endif; ?>
 
     </div>
-    <div class="mt-2">
-
-    <?php if($post->getPrice() !== null): ?>
-        <span class="badge badge-success">
-            💰 <?= number_format($post->getPrice()) ?> VND
-        </span>
-    <?php endif; ?>
-
-    <span class="badge badge-info">
-        <?= $post->getCondition() ?>
-    </span>
-
-    <span class="badge badge-secondary">
-        <?= $post->getLocation() ?>
-    </span>
-
-    <?php if($post->getBrand()): ?>
-        <span class="badge badge-dark">
-            <?= $post->getBrand() ?>
-        </span>
-    <?php endif; ?>
-
-</div>
-
-
-</div>
-
+    
 
 <!-- Modal -->
 <div class="modal fade"
@@ -293,9 +319,11 @@ tabindex="-1">
 
 </div>
 
-<?php } ?>
+ 
 
 
+
+<?php endforeach; ?>
 <!-- Delete Post Script -->
 <script>
 
@@ -474,6 +502,7 @@ document.addEventListener("submit", function(e){
 
     };
 
+
     xhr.open("POST", "index.php?controller=reaction&action=addReaction", true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhr.send(
@@ -482,5 +511,4 @@ document.addEventListener("submit", function(e){
     );
 
 });
-
 </script>
