@@ -32,7 +32,7 @@ $isProduct = $post->getPrice() !== null
         <?php if($post->getCategoryName() !== 'No Category') { ?>
             <a href="index.php?controller=post&action=getPostsByCategoryId&category_id=<?= $post->getCategoryId() ?>"
                style="color: gray; text-decoration: none;">
-                <?= htmlspecialchars($post->getCategoryName()) ?>
+                <button class="btn btn-outline-secondary" style="color: cornflowerblue; font-size: 14px;"><?= htmlspecialchars($post->getCategoryName()) ?></button>
             </a>
             <?php } else { ?>
                 <span style="color: gray;">
@@ -41,7 +41,16 @@ $isProduct = $post->getPrice() !== null
             
         <?php } ?>
     <?php endif; ?>
+
+    <?php if($post->getGroupName()): ?>
+        <span style="margin: 0 5px;">››</span>
+            <a href="index.php?controller=group&action=detail&id=<?= $post->getGroupId() ?>"
+               style="color: gray; text-decoration: none;">
+                <button class="btn btn-outline-secondary" style="color: cornflowerblue; font-size: 14px;"><?= htmlspecialchars($post->getGroupName()) ?></button>
+            </a>
+    <?php endif; ?>
 </div>
+
         <small class="text-muted">
             <?= $post->getCreatedAt() ?>
         </small>
@@ -176,7 +185,7 @@ $isProduct = $post->getPrice() !== null
 </div>
 <!-- Modal -->
 
-<?php include "post_modal.php"; ?>
+<?php include "MVC/View/post_modal.php"; ?>
 
 </div>
 

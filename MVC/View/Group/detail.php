@@ -2,8 +2,15 @@
 <html>
 <head>
     <title><?= htmlspecialchars($group['GroupName']) ?> | Passo</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" type="text/css" href="MVC/View/css/home.css">
+
+
     <style>
         body { background-color: #f0f2f5; }
         .group-cover { height: 400px; background: #ccc; border-radius: 0 0 8px 8px; overflow: hidden; }
@@ -12,6 +19,7 @@
         .nav-link { color: #65676b; font-weight: 600; padding: 15px 20px; }
         .nav-link.active { color: #1877f2 !important; border-bottom: 3px solid #1877f2 !important; border: none; }
     </style>
+    
 </head>
 <body>
     <?php include 'MVC/View/navbar.php'; ?>
@@ -19,7 +27,7 @@
     <div class="group-header">
         <div class="container px-0">
             <div class="group-cover">
-                <img src="https://via.placeholder.com/1200x400/1877f2/ffffff?text=<?= urlencode($group['GroupName']) ?>" class="w-100 h-100" style="object-fit: cover;">
+                <img src="https://picsum.photos/1200/400 ?>" class="w-100 h-100" style="object-fit: cover;">
             </div>
             <div class="p-4 relative">
                 <div class="d-flex justify-content-between align-items-center">
@@ -99,11 +107,19 @@
                     </div>
                 <?php endif; ?>
                 
-                <div class="card border-0 shadow-sm p-5 text-center">
-                    <h5 class="text-muted">
-                    <?php include_once 'postview.php'?>
-                    </h5>
+                <div class="card border-0 shadow-sm p-3">
+                    <div class="text-muted mb-2">Posts in this Group!</div>
+
+                    <?php include_once 'MVC/View/postview.php'?>
                 </div>
+
+                <div class="row" id = "lower-bar">
+                    <div class= "col-md-1 col-12">
+                    <a href="index.php?controller=group&action=showCreateForm&id=<?= $group['GroupID'] ?>" class="btn btn-primary" id="create-post-btn">
+                        + Create Post
+                    </a>
+                </div>
+        </div>
             </div>
         </div>
     </div>

@@ -18,7 +18,7 @@ if (!($currentController === 'user' && ($currentAction === 'register' || $curren
 ?>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
-  <a class="navbar-brand" href="index.php">
+  <a class="navbar-brand" href="index.php" style="margin-right: 55px;">
     <img src="Materials/Picture/Passo.png" alt="Logo" width="150" height="50" class="d-inline-block align-top">
   </a>
   
