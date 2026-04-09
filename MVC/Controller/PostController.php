@@ -359,6 +359,57 @@ echo "success:" . $newPostId;
 
         include_once "MVC/View/home.php";
     }
+    
+    // ====================================================================
+    // ================= KHU VỰC DÀNH RIÊNG CHO ADMIN =====================
+    // ====================================================================
 
+    // 1. Xem danh sách tất cả bài viết
+    public function list() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            header("Location: index.php");
+            exit();
+        }
+        $posts = $this->postModel->getAll();
+        include_once "MVC/View/Admin/Post/list.php";
+    }
+
+    // 2. Xóa bài viết (Bằng nút xóa của Admin)
+    public function adminDelete() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            header("Location: index.php");
+            exit();
+        }
+        
+        if (isset($_GET['id'])) {
+            $postId = (int)$_GET['id'];
+            $this->postModel->delete($postId);
+            $_SESSION['flash_message'] = "Đã xóa bài viết thành công!";
+            header("Location: index.php?controller=post&action=list");
+            exit();
+        }
+    }
+
+    // 3. Xem chi tiết bài viết (Để quản lý Comment)
+    public function adminDetail() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            header("Location: index.php");
+            exit();
+        }
+
+        $postId = (int)($_GET['id'] ?? 0);
+        $post = $this->postModel->getById($postId);
+        
+        if (!$post) {
+            $_SESSION['flash_message'] = "Bài viết không tồn tại!";
+            header("Location: index.php?controller=post&action=list");
+            exit();
+        }
+
+        // Lấy danh sách bình luận của bài viết này
+        $comments = $this->commentModel->fetchByField('PostID', $postId);
+        
+        include_once "MVC/View/Admin/Post/admin_detail.php";
+    }
 }
 ?>
