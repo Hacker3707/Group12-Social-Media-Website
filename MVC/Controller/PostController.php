@@ -151,10 +151,20 @@ echo "success:" . $newPostId;
         }
     }
 
-    // =======================
-    // 🔥 COMMENTS
-    // =======================
-    $comments = [];
+        $commentTree = [];
+
+        foreach($posts as $post){
+
+            $postId = $post->getPostId();
+            $commentTree[$postId] = [];
+
+            foreach($comments[$postId] as $c){
+                $parent = $c->getParentCommentId();
+                $commentTree[$postId][$parent][] = $c;
+            }
+        }
+
+        $reactions_forComment = [];
 
     foreach($posts as $post){
         $postId = $post->getPostId();

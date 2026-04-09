@@ -1,4 +1,6 @@
 <?php
+include 'confirm_alert.php';
+
 
 if(empty($posts)){
     echo "No posts found";
@@ -127,7 +129,7 @@ $isProduct = $post->getPrice() !== null
 
         <div class="btn-group dropright ml-2">
             <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background-color: rgb(186, 212, 230); border: none;">
-                ...
+                <i class="bi bi-three-dots"></i>
             </button>
 
             <div class="dropdown-menu">
@@ -182,8 +184,8 @@ $isProduct = $post->getPrice() !== null
 
 
 
-<?php endforeach; ?>
-<!-- Delete Post Script -->
+            <!-- Delete Post Script -->
+
 <script>
 
 document.addEventListener("click", function(e){
@@ -192,36 +194,42 @@ document.addEventListener("click", function(e){
 
     let postId = e.target.getAttribute("data-postid");
 
-    if(!confirm("Delete this post?")) return;
+    showConfirm("Delete this post?", function(result) {
+        if (!result) return;
 
-    let xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
 
-    xhr.onreadystatechange = function(){
+        xhr.onreadystatechange = function(){
 
-        if(xhr.readyState === 4 && xhr.status === 200){
+            if(xhr.readyState === 4 && xhr.status === 200){
 
-            if(xhr.responseText.trim() === "success"){
-                alert("Post deleted");
-                location.reload();
+                if(xhr.responseText.trim() === "success"){
+                    alert("Post deleted");
+                    location.reload();
+                }
+                else{
+                    alert("Delete failed");
+                }
+
             }
-            else{
-                alert("Delete failed");
-            }
 
-        }
-
-    };
+        };
+    
 
     xhr.open("POST", "index.php?controller=post&action=deletePost", true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhr.send("postId=" + encodeURIComponent(postId));
+
+    });
 
 });
 
 
 </script>
 
-<!-- Like Post Script -->
+
+            <!-- Like Post Script -->
+
 <script>
     document.addEventListener("click", function(e){
 
@@ -274,53 +282,11 @@ document.addEventListener("click", function(e){
 });
 </script>
 
-<!-- Comment Script -->
+
+            <!-- Like Comment Script -->
+
 <script>
-document.addEventListener("submit", function(e){
 
-    let form = e.target;
-
-    if(!form.classList.contains("comment-form")) return;
-
-    e.preventDefault(); // chặn reload
-
-    if (!confirm("Post this comment?")) return;
-
-    let postId = form.postId.value;
-    let content = form.commentContent.value;
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.onreadystatechange = function(){
-
-        if(xhr.readyState === 4 && xhr.status === 200){
-
-            if(xhr.responseText.trim() === "success"){
-                alert("Comment posted");
-                location.reload();
-            }
-            else{
-                alert("Failed to post comment");
-            }
-
-        }
-
-    };
-
-    xhr.open("POST", "index.php?controller=comment&action=addComment", true);
-    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-    xhr.send(
-        "postId=" + encodeURIComponent(postId) +
-        "&content=" + encodeURIComponent(content)
-    );
-
-});
-</script>
-
-<!-- Like Comment Script -->
-<script>
-    console.log("comment like script loaded");
     document.addEventListener("click", function(e){
     
     let btn = e.target.closest(".like-btn-cmt");
@@ -370,4 +336,271 @@ document.addEventListener("submit", function(e){
     );
 
 });
+
+</script>
+
+    <!--  -->
+                <!-- Reply Button Script -->
+    <!--  -->
+
+<script>
+$(document).on("click", ".reply-btn", function(){
+
+    let modal = $(this).closest(".post-modal");
+
+    /* reset reply state nếu đang reply comment khác */
+    modal.find(".parentId").val("");
+
+    modal.find(".reply-btn-disabled")
+         .removeClass("reply-btn-disabled");
+
+    modal.find(".reply-preview").addClass("d-none");
+
+    modal.find(".commentContent")
+        .attr("placeholder","Write a comment...");
+
+    modal.find(".cmt-btn")
+        .text("Comment")
+        .removeClass("reply-cmt-btn");
+
+    /* bắt đầu reply comment mới */
+
+    let commentItem = $(this).closest(".comment-item");
+    let repbtn = $(this);
+
+    repbtn.addClass("reply-btn-disabled");
+
+    let preview = modal.find(".reply-preview");
+    let parentInput = modal.find(".parentId");
+    let commentInput = modal.find(".commentContent");
+
+    let commentId = $(this).data("commentId");
+    let username = commentItem.find("strong a").text();
+    let content = commentItem.find("p").text();
+
+    parentInput.val(commentId);
+
+    modal.find("#reply-user").text(username);
+    modal.find("#reply-content").text(content);
+
+    preview.removeClass("d-none");
+
+    commentInput
+        .attr("placeholder","Reply to @" + username.trim())
+        .focus();
+
+    modal.find(".cmt-btn")
+        .text("Reply")
+        .addClass("reply-cmt-btn");
+
+});
+
+
+$(document).on("click", ".cancel-reply", function(){
+
+    let modal = $(this).closest(".post-modal");
+
+    modal.find(".parentId").val("");
+
+    modal.find(".reply-btn-disabled")
+         .removeClass("reply-btn-disabled");
+
+    modal.find(".reply-preview").addClass("d-none");
+
+    modal.find(".commentContent")
+        .attr("placeholder","Write a comment...");
+
+    modal.find(".cmt-btn").text("Comment");
+
+});
+
+
+</script>
+
+
+
+<!--  -->
+            <!-- Send Comment Button Script -->
+<!--  -->
+
+<script>
+document.addEventListener("submit", function(e){
+
+    let form = e.target;
+
+    if(!form.classList.contains("comment-form")) return;
+
+    e.preventDefault();
+
+    let postId = form.postId.value;
+    let content = form.commentContent.value;
+    let parentId = form.parentId.value; // thêm dòng này
+
+    let xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function(){
+        if (xhr.readyState === 4 && xhr.status === 200){
+            let data;
+
+            try{
+                data = JSON.parse(xhr.responseText);
+            }catch(e){
+                console.log("SERVER RESPONSE:");
+                console.log(xhr.responseText);
+                alert("Server returned invalid JSON");
+                return;
+            }
+
+            if(data.status === "success"){
+
+                let c = data.comment;
+
+                let commentList = form.closest(".post-modal").querySelector(".comment-list");
+
+                commentList.insertAdjacentHTML("beforeend", `
+                <div class="comment-item mb-2 d-flex justify-content-between" data-commentid="${c.id}">
+
+                    <div>
+                        <strong>
+                            <a href="index.php?controller=user&action=profile&id=${c.user_id}">
+                                ${c.username}
+                            </a>
+                            <small>commented:</small>
+                        </strong>
+
+                        <p class="mb-1">${c.content}</p>
+
+                        <small class="text-muted">${c.created_at}</small>
+                    </div>
+
+                    <div class="d-flex align-items-end">
+
+                        <button class="btn-forModal btn-sm btn-outline-primary reply-btn"
+                            type="button"
+                            data-comment-id="${c.id}">
+                            Reply
+                        </button>
+
+                        <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-2"
+                            type="button"
+                            data-commentid="${c.id}">
+
+                            <i class="bi bi-heart"></i>
+                            <span class="badge badge-light like-count-cmt">
+                                0
+                            </span>
+
+                        </button>
+
+                    </div>
+
+                </div>
+                `);
+                // reset form
+                form.commentContent.value = "";
+                let noCmt = form.closest(".post-modal").querySelector(".no-cmt");
+                if(noCmt){
+                    noCmt.remove();
+                }
+
+            }
+            else{
+                console.log("Error:", data.message);
+            }
+        }
+
+    };
+
+    xhr.open("POST", "index.php?controller=comment&action=addComment", true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        console.log("postId:", postId);
+        console.log("content:", content);
+        console.log("parentId:", parentId);
+    xhr.send(
+        "postId=" + encodeURIComponent(postId) +
+        "&content=" + encodeURIComponent(content) +
+        "&parentId=" + encodeURIComponent(parentId)
+    );
+});
+</script>
+
+
+<!-- Delete Comment Script -->
+
+<script>
+
+document.addEventListener("click", function(e){
+
+    if(!e.target.classList.contains("delete-btn-cmt")) return;
+
+    let commentId = e.target.getAttribute("data-commentid");
+
+    showConfirm("Delete this comment?", function(result) {
+
+        if(!result) return;
+
+        let xhr = new XMLHttpRequest();
+
+        xhr.onreadystatechange = function(){
+
+            if(xhr.readyState === 4 && xhr.status === 200){
+
+                let response = JSON.parse(xhr.responseText);
+
+                try{
+                    response = JSON.parse(xhr.responseText);
+                }catch(e){
+                    alert("Server error");
+                    return;
+                }
+
+                if(response.status === "success"){
+
+                    alert("Comment deleted");
+
+                    let commentItem = e.target.closest(".comment-item");
+                    if(commentItem){
+                        commentItem.remove();
+                    }
+                    location.reload();
+
+                }else{
+                    alert(response.message || "Delete failed");
+                }
+
+            }
+
+        };
+
+        xhr.open("POST","index.php?controller=comment&action=deleteComment",true);
+        xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xhr.send("commentId=" + encodeURIComponent(commentId));
+
+    });
+
+});
+
+</script>
+
+<!-- comment tree toggle -->
+
+<script>
+
+document.addEventListener("click", function(e){
+
+    if(!e.target.classList.contains("toggle-replies")) return;
+
+    let id = e.target.dataset.commentid;
+    let box = document.getElementById("replies-" + id);
+
+    if(box.classList.contains("d-none")){
+        box.classList.remove("d-none");
+        e.target.textContent = "Hide replies";
+    }
+    else{
+        box.classList.add("d-none");
+        e.target.textContent = "View replies";
+    }
+
+});
+
 </script>

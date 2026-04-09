@@ -44,7 +44,7 @@ class Comment {
         return $this->CreatedAt;
     }
 
-    public function getReplyToCommentId() {
+    public function getParentCommentId() {
         return $this->replyToCommentId;
     }
 
