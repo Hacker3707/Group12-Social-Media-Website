@@ -1,4 +1,5 @@
 <form id="postForm" method="POST" enctype="multipart/form-data">
+  <input type="hidden" name="is_product" id="isProductInput" value="1">
 
 <div class="container mt-3">
 
@@ -32,65 +33,7 @@
       <textarea name="content" class="form-control" rows="4"></textarea>
     </div>
 
-  </div>
-</div>
-
-<!-- 🛍️ PRODUCT INFO -->
-<div class="card mb-3 shadow-sm">
-  <div class="card-header bg-success text-white">
-    🛍️ Product Details
-  </div>
-
-  <div class="card-body">
-
-    <div class="form-group">
-      <label>💰 Price (VND)</label>
-      <input type="number" name="price" class="form-control">
-    </div>
-
-    <div class="form-group">
-      <label>📦 Condition</label>
-      <select name="condition" class="form-control">
-        <option value="new">New</option>
-        <option value="like_new">Like New</option>
-        <option value="very_good">Very Good</option>
-        <option value="good" selected>Good</option>
-        <option value="fair">Fair</option>
-        <option value="for_parts">For Parts</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>📍 Location</label>
-      <select name="location" class="form-control">
-        <option value="hcm">Ho Chi Minh</option>
-        <option value="hanoi">Ha Noi</option>
-        <option value="danang">Da Nang</option>
-        <option value="cantho">Can Tho</option>
-        <option value="haiphong">Hai Phong</option>
-        <option value="other" selected>Other</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>🏷️ Brand</label>
-      <input type="text" name="brand" class="form-control" placeholder="e.g. Nike, Apple">
-    </div>
-
-    <div class="form-group">
-      <label>📊 Status</label>
-      <select name="status" class="form-control">
-        <option value="selling" selected>Selling</option>
-        <option value="reserved">Reserved</option>
-        <option value="sold">Sold</option>
-        <option value="hidden">Hidden</option>
-      </select>
-    </div>
-
-  </div>
-</div>
-
-<!-- 📸 MEDIA -->
+    <!-- 📸 MEDIA -->
 <div class="card mb-3 shadow-sm">
   <div class="card-header bg-info text-white">
     📸 Media
@@ -120,16 +63,120 @@
   </div>
 </div>
 
-<!-- 🔘 BUTTON -->
+
+  </div>
+</div>
+
+<!-- 🛍️ PRODUCT INFO -->
+ <div class="custom-control custom-switch mb-3">
+  <input type="checkbox" class="custom-control-input" id="toggleProduct" checked>
+  <label class="custom-control-label" for="toggleProduct">
+    🛍️ This is a product post (selling item)
+  </label>
+</div>
+
+<div class="card mb-3 shadow-sm" id="productSection">
+
+  <div class="card-header bg-success text-white">
+    🛍️ Product Details
+  </div>
+
+  <div class="card-body">
+
+    <div class="form-group">
+      <label>💰 Price</label>
+
+<div class="custom-control custom-switch mb-2">
+  <input type="checkbox" class="custom-control-input" id="togglePrice" checked>
+  <label class="custom-control-label" for="togglePrice">Enable price</label>
+</div>
+
+
+<input type="number" name="price" id="priceInput" class="form-control">
+
+    </div>
+
+    <div class="form-group">
+      <label>📦 Condition</label>
+<div class="btn-group-toggle mb-3 d-flex flex-wrap" data-toggle="buttons">
+
+  <?php 
+  $conditions = [
+    "new" => "New",
+    "like_new" => "Like New",
+    "very_good" => "Very Good",
+    "good" => "Good",
+    "fair" => "Fair",
+    "for_parts" => "For Parts"
+  ];
+  ?>
+
+  <?php foreach($conditions as $value => $label): ?>
+    <label class="btn btn-outline-primary m-1 <?= $value == 'good' ? 'active' : '' ?>">
+      <input type="radio" name="condition" value="<?= $value ?>" <?= $value == 'good' ? 'checked' : '' ?>>
+      <?= $label ?>
+    </label>
+  <?php endforeach; ?>
+
+</div>
+
+    </div>
+
+    <div class="form-group">
+      <label>📍 Location</label>
+      <select name="location" class="form-control">
+        <option value="hcm">Ho Chi Minh</option>
+        <option value="hanoi">Ha Noi</option>
+        <option value="danang">Da Nang</option>
+        <option value="cantho">Can Tho</option>
+        <option value="haiphong">Hai Phong</option>
+        <option value="other" selected>Other</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>🏷️ Brand</label>
+      <input type="text" name="brand" class="form-control" placeholder="e.g. Nike, Apple">
+    </div>
+
+    <div class="form-group">
+      <label>📊 Status</label>
+<div class="btn-group-toggle mb-3" data-toggle="buttons">
+
+  <label class="btn btn-outline-success active">
+    <input type="radio" name="status" value="selling" checked> Selling
+  </label>
+
+  <label class="btn btn-outline-warning">
+    <input type="radio" name="status" value="reserved"> Reserved
+  </label>
+
+  <label class="btn btn-outline-secondary">
+    <input type="radio" name="status" value="sold"> Sold
+  </label>
+
+  <label class="btn btn-outline-dark">
+    <input type="radio" name="status" value="hidden"> Hidden
+  </label>
+
+</div>
+
+  </div>
+</div>
+
+
+
+
+
+</div>
+<!-- 🔘 BUTTON (GIỮ STYLE CŨ CỦA BẠN) -->
 <div class="row" id="button-group">
     <button type="submit" class="btn btn-primary" style="margin-right:10px;">
         🚀 Post
     </button>
-    <a href="/index.php?controller=post&action=showHome" class="btn btn-secondary">
+    <a href="/Group12-Social-Media-Website/index.php?controller=post&action=showHome" class="btn btn-secondary">
         Cancel
     </a>
-</div>
-
 </div>
 </form>
 
@@ -190,7 +237,7 @@ document.getElementById("postForm").addEventListener("submit", function(e){
     submitBtn.textContent = "Posting...";
 
     // BƯỚC 1: Tạo post
-    fetch("/index.php?controller=post&action=createPost", {
+    fetch("/Group12-Social-Media-Website/index.php?controller=post&action=createPost", {
         method: "POST",
         body: formData
     })
@@ -212,7 +259,7 @@ document.getElementById("postForm").addEventListener("submit", function(e){
                 mediaData.append("media",   mediaFile.files[0]);
                 mediaData.append("post_id", postId);
 
-                fetch("/index.php?controller=media&action=uploadForPost", {
+                fetch("/Group12-Social-Media-Website/index.php?controller=media&action=uploadForPost", {
                     method: "POST",
                     body: mediaData
                 })
@@ -246,11 +293,59 @@ document.getElementById("postForm").addEventListener("submit", function(e){
 
 });
 
+function updatePriceState(){
+    let toggle = document.getElementById("togglePrice");
+    let input = document.getElementById("priceInput");
+
+    input.disabled = !toggle.checked;
+
+    if(!toggle.checked){
+        input.value = "";
+    }
+}
+
+document.getElementById("togglePrice").addEventListener("change", updatePriceState);
+
+// 🔥 chạy ngay khi load
+updatePriceState();
+function updateProductSection(){
+
+    let toggle = document.getElementById("toggleProduct");
+    let section = document.getElementById("productSection");
+
+    if(toggle.checked){
+        section.style.display = "block";
+    } else {
+        section.style.display = "none";
+
+        // reset dữ liệu
+        section.querySelectorAll("input, select").forEach(el => {
+
+            if(el.id === "toggleProduct") return;
+
+            if(el.type === "radio" || el.type === "checkbox"){
+                el.checked = false;
+            } else {
+                el.value = "";
+            }
+
+        });
+    }
+}
+        
+
+document.getElementById("toggleProduct").addEventListener("change", updateProductSection);
+
+// chạy khi load
+updateProductSection();
+document.getElementById("toggleProduct").addEventListener("change", function(){
+    document.getElementById("isProductInput").value = this.checked ? "1" : "0";
+});
 function showSuccessAndRedirect() {
     document.getElementById("result").innerHTML =
         "<div class='alert alert-success'>✅ Post created successfully!</div>";
     setTimeout(() => {
-        window.location.href = "/index.php?controller=post&action=showHome";
+        window.location.href = "/Group12-Social-Media-Website/index.php?controller=post&action=showHome";
     }, 1500);
 }
 
