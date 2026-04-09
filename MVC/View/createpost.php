@@ -33,6 +33,37 @@
       <textarea name="content" class="form-control" rows="4"></textarea>
     </div>
 
+    <!-- 📸 MEDIA -->
+<div class="card mb-3 shadow-sm">
+  <div class="card-header bg-info text-white">
+    📸 Media
+  </div>
+
+  <div class="card-body">
+
+    <!-- Ô chọn file -->
+    <div class="custom-file mb-2">
+      <input type="file" name="media" id="mediaInput" class="custom-file-input" accept="image/*,video/*">
+      <label class="custom-file-label" for="mediaInput">Choose file</label>
+    </div>
+
+    <!-- Khung xem trước ảnh/video -->
+    <div id="mediaPreview" class="mt-2" style="display:none;">
+      <p class="text-muted small mb-1">Preview:</p>
+      <img id="previewImg" src="" alt="Preview"
+           class="img-fluid rounded"
+           style="max-height: 300px; object-fit: cover; display:none;">
+      <video id="previewVideo" controls
+             class="w-100 rounded"
+             style="max-height: 300px; display:none;">
+        <source id="previewVideoSrc" src="">
+      </video>
+    </div>
+
+  </div>
+</div>
+
+
   </div>
 </div>
 
@@ -133,35 +164,6 @@
   </div>
 </div>
 
-<!-- 📸 MEDIA -->
-<div class="card mb-3 shadow-sm">
-  <div class="card-header bg-info text-white">
-    📸 Media
-  </div>
-
-  <div class="card-body">
-
-    <!-- Ô chọn file -->
-    <div class="custom-file mb-2">
-      <input type="file" name="media" id="mediaInput" class="custom-file-input" accept="image/*,video/*">
-      <label class="custom-file-label" for="mediaInput">Choose file</label>
-    </div>
-
-    <!-- Khung xem trước ảnh/video -->
-    <div id="mediaPreview" class="mt-2" style="display:none;">
-      <p class="text-muted small mb-1">Preview:</p>
-      <img id="previewImg" src="" alt="Preview"
-           class="img-fluid rounded"
-           style="max-height: 300px; object-fit: cover; display:none;">
-      <video id="previewVideo" controls
-             class="w-100 rounded"
-             style="max-height: 300px; display:none;">
-        <source id="previewVideoSrc" src="">
-      </video>
-    </div>
-
-  </div>
-</div>
 
 
 
@@ -172,7 +174,7 @@
     <button type="submit" class="btn btn-primary" style="margin-right:10px;">
         🚀 Post
     </button>
-    <a href="/index.php?controller=post&action=showHome" class="btn btn-secondary">
+    <a href="/Group12-Social-Media-Website/index.php?controller=post&action=showHome" class="btn btn-secondary">
         Cancel
     </a>
 </div>
@@ -235,7 +237,7 @@ document.getElementById("postForm").addEventListener("submit", function(e){
     submitBtn.textContent = "Posting...";
 
     // BƯỚC 1: Tạo post
-    fetch("/index.php?controller=post&action=createPost", {
+    fetch("/Group12-Social-Media-Website/index.php?controller=post&action=createPost", {
         method: "POST",
         body: formData
     })
@@ -257,7 +259,7 @@ document.getElementById("postForm").addEventListener("submit", function(e){
                 mediaData.append("media",   mediaFile.files[0]);
                 mediaData.append("post_id", postId);
 
-                fetch("/index.php?controller=media&action=uploadForPost", {
+                fetch("/Group12-Social-Media-Website/index.php?controller=media&action=uploadForPost", {
                     method: "POST",
                     body: mediaData
                 })
@@ -343,7 +345,7 @@ function showSuccessAndRedirect() {
     document.getElementById("result").innerHTML =
         "<div class='alert alert-success'>✅ Post created successfully!</div>";
     setTimeout(() => {
-        window.location.href = "/index.php?controller=post&action=showHome";
+        window.location.href = "/Group12-Social-Media-Website/index.php?controller=post&action=showHome";
     }, 1500);
 }
 

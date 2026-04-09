@@ -68,10 +68,27 @@ if($isProduct == 0){
             $ext = pathinfo($_FILES['media']['name'], PATHINFO_EXTENSION);
             $fileName = uniqid() . "." . $ext;
 
-            $uploadPath = "uploads/" . $fileName;
+           $uploadDir = __DIR__ . "/../../uploads/";
 
-            move_uploaded_file($_FILES['media']['tmp_name'], $uploadPath);
+// 🔥 tạo folder nếu chưa có
+if (!is_dir($uploadDir)) {
+    mkdir($uploadDir, 0777, true);
+}
 
+$ext = pathinfo($_FILES['media']['name'], PATHINFO_EXTENSION);
+$fileName = uniqid() . "." . $ext;
+
+// đường dẫn thật để lưu file
+$uploadPath = $uploadDir . $fileName;
+
+// upload file
+move_uploaded_file($_FILES['media']['tmp_name'], $uploadPath);
+
+// đường dẫn để lưu DB / hiển thị
+$dbPath = "uploads/" . $fileName;
+
+// tạo media object
+$media = new Media(null, $userId, null, "image", $dbPath);
             $media = new Media(null, $userId, null, "image", $uploadPath);
             $mediaList[] = $media;
         }
@@ -103,10 +120,7 @@ echo "success:" . $newPostId;
 
     $userid = $_SESSION['user_id'] ?? null;
 
-    $username = $userid 
-        ? $this->userModel->getUsernameById($userid) 
-        : "Guest";
-
+   
     // =======================
     // 🔥 REACTIONS POST
     // =======================
