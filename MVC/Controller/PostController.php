@@ -151,6 +151,12 @@ echo "success:" . $newPostId;
         }
     }
 
+        $comments = [];
+        foreach($posts as $post) {
+            $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
+        }
+
+
         $commentTree = [];
 
         foreach($posts as $post){
