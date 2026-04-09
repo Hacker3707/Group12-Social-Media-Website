@@ -100,7 +100,9 @@
                 <?php endif; ?>
                 
                 <div class="card border-0 shadow-sm p-5 text-center">
-                    <h5 class="text-muted">Chưa có bài viết nào.</h5>
+                    <h5 class="text-muted">
+                    <?php include_once 'postview.php'?>
+                    </h5>
                 </div>
             </div>
         </div>

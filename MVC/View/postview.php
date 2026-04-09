@@ -147,40 +147,41 @@ $isProduct = $post->getPrice() !== null
 
         <?php if($isSameUser[$postId] ?? false): ?>
 
-            <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
-            type="button"
-            data-postid="<?= $postId ?>">
+    <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
+    type="button"
+    data-postid="<?= $postId ?>">
 
-            <i class="bi bi-heart-fill"></i>
-            <span class="badge badge-light like-count">
+        <i class="bi bi-heart-fill"></i>
+        <span class="badge badge-light like-count">
             <?= count($reactions_forPost[$postId] ?? []) ?>
-            </span>
+        </span>
 
-            </button>
+    </button>
 
-        <?php else: ?>
+<?php else: ?>
 
-            <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
-            type="button"
-            data-postid="<?= $postId ?>">
+    <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
+    type="button"
+    data-postid="<?= $postId ?>">
 
-            <i class="bi bi-heart"></i>
-            <span class="badge badge-light like-count">
+        <i class="bi bi-heart"></i>
+        <span class="badge badge-light like-count">
             <?= count($reactions_forPost[$postId] ?? []) ?>
-            </span>
+        </span>
 
-            </button>
-     </div>
+    </button>
 
-        <?php endif; ?>
-
-    </div>
+<?php endif; ?>
     
-
+</div>
 <!-- Modal -->
+
 <?php include "post_modal.php"; ?>
 
- 
+</div>
+
+
+<?php endforeach; ?>
 
 
 
