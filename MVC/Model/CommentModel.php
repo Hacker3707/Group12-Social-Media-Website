@@ -6,9 +6,9 @@ class CommentModel extends AppModel {
 
     public function createComment(Comment $comment) {
 
-        $parentCommentId = $comment->getReplyToCommentId() === null 
+        $parentCommentId = $comment->getParentCommentId() === null 
             ? "NULL" 
-            : (int)$comment->getReplyToCommentId();
+            : (int)$comment->getParentCommentId();
 
         $content = mysqli_real_escape_string($this->link, $comment->getContent());
         $userId = (int)$comment->getUserId();

@@ -79,7 +79,7 @@ foreach($posts as $post) { ?>
 
         <div class="btn-group dropright ml-2">
             <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background-color: rgb(186, 212, 230); border: none;">
-                ...
+                <i class="bi bi-three-dots"></i>
             </button>
 
             <div class="dropdown-menu">
@@ -318,8 +318,26 @@ document.addEventListener("click", function(e){
 <script>
 $(document).on("click", ".reply-btn", function(){
 
-    let commentItem = $(this).closest(".comment-item");
     let modal = $(this).closest(".post-modal");
+
+    /* reset reply state nếu đang reply comment khác */
+    modal.find(".parentId").val("");
+
+    modal.find(".reply-btn-disabled")
+         .removeClass("reply-btn-disabled");
+
+    modal.find(".reply-preview").addClass("d-none");
+
+    modal.find(".commentContent")
+        .attr("placeholder","Write a comment...");
+
+    modal.find(".cmt-btn")
+        .text("Comment")
+        .removeClass("reply-cmt-btn");
+
+    /* bắt đầu reply comment mới */
+
+    let commentItem = $(this).closest(".comment-item");
     let repbtn = $(this);
 
     repbtn.addClass("reply-btn-disabled");
@@ -343,8 +361,9 @@ $(document).on("click", ".reply-btn", function(){
         .attr("placeholder","Reply to @" + username.trim())
         .focus();
 
-    modal.find(".cmt-btn").text("Reply");
-    modal.find(".cmt-btn").addClass("reply-cmt-btn");
+    modal.find(".cmt-btn")
+        .text("Reply")
+        .addClass("reply-cmt-btn");
 
 });
 
@@ -373,7 +392,7 @@ $(document).on("click", ".cancel-reply", function(){
 
 
 <!--  -->
-            <!-- Send Reply Button Script -->
+            <!-- Send Comment Button Script -->
 <!--  -->
 
 <script>
@@ -392,7 +411,16 @@ document.addEventListener("submit", function(e){
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function(){
         if (xhr.readyState === 4 && xhr.status === 200){
-            let data = JSON.parse(xhr.responseText);
+            let data;
+
+            try{
+                data = JSON.parse(xhr.responseText);
+            }catch(e){
+                console.log("SERVER RESPONSE:");
+                console.log(xhr.responseText);
+                alert("Server returned invalid JSON");
+                return;
+            }
 
             if(data.status === "success"){
 
@@ -457,8 +485,8 @@ document.addEventListener("submit", function(e){
     xhr.open("POST", "index.php?controller=comment&action=addComment", true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         console.log("postId:", postId);
-console.log("content:", content);
-console.log("parentId:", parentId);
+        console.log("content:", content);
+        console.log("parentId:", parentId);
     xhr.send(
         "postId=" + encodeURIComponent(postId) +
         "&content=" + encodeURIComponent(content) +
@@ -517,10 +545,33 @@ document.addEventListener("click", function(e){
 
         xhr.open("POST","index.php?controller=comment&action=deleteComment",true);
         xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-
         xhr.send("commentId=" + encodeURIComponent(commentId));
 
     });
+
+});
+
+</script>
+
+<!-- comment tree toggle -->
+
+<script>
+
+document.addEventListener("click", function(e){
+
+    if(!e.target.classList.contains("toggle-replies")) return;
+
+    let id = e.target.dataset.commentid;
+    let box = document.getElementById("replies-" + id);
+
+    if(box.classList.contains("d-none")){
+        box.classList.remove("d-none");
+        e.target.textContent = "Hide replies";
+    }
+    else{
+        box.classList.add("d-none");
+        e.target.textContent = "View replies";
+    }
 
 });
 

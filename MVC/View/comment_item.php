@@ -10,11 +10,11 @@
             <small>commented:</small>
         </strong>
 
-        <div class="btn-group dropdown">
+        <div class="btn-group dropdown mt-1">
             <button type="button"
                     class="btn btn-sm dropdown-toggle"
                     data-toggle="dropdown"
-                    style="background-color: rgb(186, 212, 230); border:none; color: white;">
+                    style="background-color: rgb(255, 255, 255); border:none; color: rgb(191, 191, 191);">
                 <i class="bi bi-three-dots"></i>
             </button>
 

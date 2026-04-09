@@ -1,3 +1,5 @@
+<?php include_once "render_cmt.php"?>
+
 <div class="modal fade post-modal"
 id="postModal<?= $post->getPostId() ?>"
 tabindex="-1">
@@ -59,25 +61,14 @@ tabindex="-1">
 
         </div>
 
-        <hr style="margin: 0 15px; color: #ddd;">
+        <hr style="margin: 5px 15px; color: #ddd;">
 
         <div class="comment-list mt-3" style="padding: 0 15px; overflow-y: auto;">
 
             <?php if (!empty($comments[$post->getPostId()])): ?>
-                <?php foreach ($commentTree[$postId][null] ?? [] as $c): ?>
-                    <?php 
-                        include 'comment_item.php';
-                        echo'<hr style="margin: 10px 15px; color: #ddd;">';  
-                        
-                        foreach($commentTree[$postId][$c->getCommentId()] ?? [] as $reply){
-                            $c = $reply;
-                            include 'comment_item.php';
-                            echo'<hr style="margin: 10px 15px; color: #ddd;">';  
-                        }
-
-                    ?>
-
-                <?php endforeach; ?>
+                <?php
+                    renderComments($postId, null, $commentTree);
+                ?>
                 
             <?php else: ?>
                 <div class="text-center mt-3 no-cmt">

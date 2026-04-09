@@ -124,6 +124,7 @@
 .btn-group-cmt {
     margin-left: auto;
     align-items: end;
+
 }
 
 .confirm-box{
@@ -157,4 +158,10 @@
     margin-top:15px;
     display:flex;
     gap:10px;
+}
+
+.reply-container{
+    margin-left:40px;
+    border-left:2px solid #eee;
+    padding-left:10px;
 }
