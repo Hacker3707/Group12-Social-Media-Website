@@ -1,6 +1,8 @@
 <?php
 include_once "MVC/Model/UserModel.php";
 include_once "Entity/User.php";
+include_once "Entity/Admin.php";
+include_once "Entity/Member.php";
 
 class UserController {
 
@@ -16,7 +18,7 @@ class UserController {
         if (method_exists($this, $action)) {
             $this->$action();
         } else {
-            $this->redirect('/Group12-Social-Media-Website/index.php', 'Hành động không hợp lệ!');
+            $this->redirect('/index.php', 'Hành động không hợp lệ!');
         }
     }
 
@@ -42,6 +44,7 @@ class UserController {
         include_once "MVC/View/User/login.php";
     }
 
+    // ================= XỬ LÝ ĐĂNG NHẬP =================
     public function authenticate() {
         if (isset($_POST['username']) && isset($_POST['password'])) {
             $username = $_POST['username'];
@@ -50,24 +53,33 @@ class UserController {
             $user = $this->userModel->checkLogin($username, $password);
 
             if ($user) {
+                // 1. Lưu thông tin vào Session
                 $_SESSION['user_id'] = $user['UserID'];
                 $_SESSION['username'] = $user['Username'];
                 $_SESSION['role'] = $user['UserRole']; 
 
-                $this->redirect('/Group12-Social-Media-Website/index.php', 'Đăng nhập thành công!');
+                // 2. PHÂN LUỒNG ĐIỀU HƯỚNG (ĐIỂM SỬA CHÍNH Ở ĐÂY)
+                if ($user['UserRole'] === 'admin') {
+                    // Nếu là Admin -> Cho bay thẳng vào trang Quản lý (Dashboard)
+                    $this->redirect('index.php?controller=user&action=list', 'Đăng nhập thành công! Chào mừng Quản trị viên.');
+                } else {
+                    // Nếu là Member thường -> Cho ra Trang chủ (Newsfeed)
+                    $this->redirect('index.php', 'Đăng nhập thành công!');
+                }
+
             } else {
-                $this->back('Sai tài khoản, mật khẩu hoặc tài khoản bị khóa!');
+                $this->back('Sai tài khoản, mật khẩu hoặc tài khoản của bạn đã bị khóa/xóa!');
             }
         }
     }
 
     public function logout() {
         session_destroy();
-        // Không dùng $this->redirect để tránh lưu flash message vào session vừa bị hủy
         header("Location: index.php");
         exit();
     }
 
+    // ================= XỬ LÝ ĐĂNG KÝ =================
     public function create() {
         if (isset($_POST['username']) && isset($_POST['email'])) {
             $username = $_POST['username'];
@@ -78,7 +90,9 @@ class UserController {
                 $this->back('Tên đăng nhập đã tồn tại! Vui lòng chọn tên khác.');
             }
 
-            $user = new User(null, $username, $email);
+            // Đăng ký mặc định là Member
+            $user = new Member(null, $username, $email, $password);
+            
             $result = $this->userModel->insert($user, $password);
 
             if ($result) {
@@ -97,11 +111,70 @@ class UserController {
         }
     }
 
+    // ================= QUẢN LÝ USER DÀNH CHO ADMIN =================
     public function list() {
-        $users = $this->userModel->getAll();
+        // Chỉ Admin mới được vào trang này
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->redirect('index.php', 'Bạn không có quyền truy cập trang quản trị!');
+        }
+
+        $keyword = trim($_GET['keyword'] ?? '');
+        
+        if ($keyword !== '') {
+            $users = $this->userModel->searchUsers($keyword);
+        } else {
+            $users = $this->userModel->getAll();
+        }
+
         include_once "MVC/View/User/list.php";
     }
 
+    public function delete() {
+        if (isset($_GET['id'])) {
+            if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+                $this->back('Lỗi quyền truy cập!');
+            }
+
+            $id = (int)$_GET['id'];
+            if ($id === (int)$_SESSION['user_id']) {
+                $this->back('Lỗi: Bạn không thể tự xóa chính mình!');
+            }
+
+            $this->userModel->delete($id);
+            $this->redirect('index.php?controller=user&action=list', 'Đã xóa người dùng!');
+        }
+    }
+
+    // ================= KHÓA / MỞ KHÓA TÀI KHOẢN =================
+    public function ban() {
+        if (isset($_GET['id'])) {
+            if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+                $this->back('Lỗi quyền truy cập!');
+            }
+
+            $id = (int)$_GET['id'];
+            if ($id === (int)$_SESSION['user_id']) {
+                $this->back('Lỗi: Bạn không thể tự khóa tài khoản của mình!');
+            }
+
+            $this->userModel->banUser($id);
+            $this->redirect('index.php?controller=user&action=list', 'Đã khóa tài khoản thành công!');
+        }
+    }
+
+    public function unban() {
+        if (isset($_GET['id'])) {
+            if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+                $this->back('Lỗi quyền truy cập!');
+            }
+
+            $id = (int)$_GET['id'];
+            $this->userModel->unbanUser($id);
+            $this->redirect('index.php?controller=user&action=list', 'Đã mở khóa tài khoản!');
+        }
+    }
+
+    // ================= CHỈNH SỬA & HỒ SƠ =================
     public function edit() {
         if (isset($_GET['id'])) {
             $id = (int)$_GET['id'];
@@ -119,7 +192,8 @@ class UserController {
         if (isset($_POST['userId'])) {
             $userId = (int)$_POST['userId'];
 
-            if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] != $userId) {
+            // Nếu không phải Admin và không phải đang tự sửa hồ sơ của mình -> Chặn
+            if ($_SESSION['role'] !== 'admin' && $_SESSION['user_id'] != $userId) {
                 $this->back('Lỗi: Bạn không có quyền chỉnh sửa hồ sơ của người khác!');
             }
 
@@ -135,20 +209,17 @@ class UserController {
             $result = $this->userModel->update($userId, $username, $email, $bio, $phone);
 
             if ($result) {
-                $_SESSION['username'] = $username; 
-                $this->redirect("/Group12-Social-Media-Website/index.php?controller=user&action=profile&id=$userId", 'Cập nhật hồ sơ cá nhân thành công!');
+                if ($_SESSION['user_id'] == $userId) {
+                    $_SESSION['username'] = $username; 
+                }
+                // Nếu Admin sửa thì đưa về trang List, nếu User tự sửa thì đưa về Profile
+                $redirectUrl = ($_SESSION['role'] === 'admin' && $_SESSION['user_id'] != $userId) 
+                                ? "index.php?controller=user&action=list" 
+                                : "index.php?controller=user&action=profile&id=$userId";
+                $this->redirect($redirectUrl, 'Cập nhật hồ sơ thành công!');
             } else {
                 $this->back('Chưa có thay đổi nào được lưu hoặc có lỗi xảy ra.');
             }
-        }
-    }
-
-    public function delete() {
-        if (isset($_GET['id'])) {
-            $id = (int)$_GET['id'];
-            $result = $this->userModel->delete($id);
-            $msg = $result ? "Đã chuyển trạng thái user sang Deleted!" : "Lỗi khi xóa.";
-            $this->redirect('/Group12-Social-Media-Website/index.php?controller=user&action=list', $msg);
         }
     }
 
@@ -156,18 +227,19 @@ class UserController {
         $id = $_GET['id'] ?? ($_SESSION['user_id'] ?? null);
 
         if (!$id) {
-            $this->redirect('/Group12-Social-Media-Website/index.php?controller=user&action=login', 'Vui lòng đăng nhập!');
+            $this->redirect('/index.php?controller=user&action=login', 'Vui lòng đăng nhập!');
         }
 
         $user = $this->userModel->getById((int)$id);
 
-        if (!$user) {
+        if (!$user || $user['AccountStatus'] === 'deleted') {
             $this->back('Người dùng không tồn tại hoặc đã bị xóa.');
         }
 
         include_once "MVC/View/User/profile.php";
     }
 
+    // ================= QUÊN MẬT KHẨU =================
     public function forgotPassword() {
         include_once "MVC/View/User/forgot_password.php";
     }
@@ -181,9 +253,13 @@ class UserController {
             $user = $this->userModel->verifyUserForReset($username, $email);
 
             if ($user) {
+                if ($user['AccountStatus'] === 'banned') {
+                    $this->back('Tài khoản này đang bị khóa, không thể đổi mật khẩu!');
+                }
+                
                 $result = $this->userModel->updatePassword($user['UserID'], $newPassword);
                 if ($result) {
-                    $this->redirect('/Group12-Social-Media-Website/index.php?controller=user&action=login', 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.');
+                    $this->redirect('/index.php?controller=user&action=login', 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.');
                 } else {
                     $this->back('Lỗi hệ thống khi cập nhật mật khẩu.');
                 }
@@ -193,3 +269,4 @@ class UserController {
         }
     }
 }
+?>

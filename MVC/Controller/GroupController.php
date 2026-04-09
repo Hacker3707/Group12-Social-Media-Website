@@ -40,10 +40,13 @@ class GroupController {
         exit();
     }
 
-    // ================= ACTION: LIST =================
+    // ================= ACTION: LIST (Cho Admin Hệ Thống) =================
     public function list() {
+        // Chỉ Admin hệ thống mới xem được toàn bộ danh sách nhóm
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->redirect('index.php', 'Bạn không có quyền truy cập!');
+        }
         $groups = $this->groupModel->getAll();
-        // Không dùng echo HTML ở đây nữa, chuyển sang gọi View
         include_once "MVC/View/Group/list.php"; 
     }
 
@@ -64,6 +67,7 @@ class GroupController {
             $newGroupId = $this->groupModel->insert($group); 
 
             if ($newGroupId) {
+                // Người tạo sẽ tự động thành Admin của nhóm
                 $this->groupModel->joinGroup($_SESSION['user_id'], $newGroupId, 'admin');
                 $this->redirect("index.php?controller=group&action=detail&id=$newGroupId", "Tạo nhóm thành công!");
             } else {
@@ -119,12 +123,16 @@ class GroupController {
     public function edit() {
         $groupId = $_GET['id'] ?? 0;
         $userId = $_SESSION['user_id'] ?? 0;
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
 
-        if ($this->groupModel->getUserRole($userId, $groupId) !== 'admin') {
+        // Admin hệ thống HOẶC Admin của nhóm mới được sửa
+        if (!$isSystemAdmin && $this->groupModel->getUserRole($userId, $groupId) !== 'admin') {
             $this->back("Bạn không có quyền chỉnh sửa nhóm này!");
         }
 
         $group = $this->groupModel->getById($groupId);
+        if (!$group) $this->back("Nhóm không tồn tại!");
+        
         include_once "MVC/View/Group/edit.php";
     }
 
@@ -132,8 +140,9 @@ class GroupController {
         if (isset($_POST['groupId'])) {
             $groupId = (int)$_POST['groupId'];
             $userId = $_SESSION['user_id'] ?? 0;
+            $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
 
-            if ($this->groupModel->getUserRole($userId, $groupId) !== 'admin') {
+            if (!$isSystemAdmin && $this->groupModel->getUserRole($userId, $groupId) !== 'admin') {
                 $this->back("Lỗi quyền truy cập!");
             }
 
@@ -147,29 +156,43 @@ class GroupController {
         }
     }
 
+    // ================= ACTION: QUẢN LÝ / XEM THÀNH VIÊN =================
     public function manageMembers() {
+        $this->viewMembers(); // Gộp chung xử lý với viewMembers cho gọn
+    }
+
+    public function viewMembers() {
         $groupId = $_GET['id'] ?? 0;
         $userId = $_SESSION['user_id'] ?? 0;
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
 
-        if ($this->groupModel->getUserRole($userId, $groupId) !== 'admin') {
-            $this->back("Chỉ quản trị viên mới được vào trang này!");
+        // Phân quyền: Ai cũng có thể vào xem, nhưng các nút Quản lý sẽ do View tự ẩn hiện
+        $group = $this->groupModel->getById($groupId);
+        
+        if (!$group) {
+            $this->back("Nhóm không tồn tại!");
         }
 
-        $group = $this->groupModel->getById($groupId);
+        // Lấy đúng danh sách bằng hàm getGroupMembers (chứa cả Email để View không báo lỗi)
         $members = $this->groupModel->getGroupMembers($groupId);
         $pendingMembers = $this->groupModel->getPendingMembers($groupId); 
         
         include_once "MVC/View/Group/members.php";
     }
 
+    // ================= ACTION: XỬ LÝ (DUYỆT, KICK, PHONG ADMIN) =================
     public function processMember() {
         $groupId = (int)($_POST['group_id'] ?? 0);
         $targetUserId = (int)($_POST['target_user_id'] ?? 0);
         $action = $_POST['action_type'] ?? '';
         $currentUserId = $_SESSION['user_id'] ?? 0;
 
-        if ($this->groupModel->getUserRole($currentUserId, $groupId) !== 'admin') {
-            $this->back("Lỗi quyền truy cập!");
+        // KIỂM TRA QUYỀN LỰC: Phải là Admin Hệ Thống HOẶC Admin của Nhóm thì mới được thao tác
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isGroupAdmin = ($this->groupModel->getUserRole($currentUserId, $groupId) === 'admin');
+
+        if (!$isSystemAdmin && !$isGroupAdmin) {
+            $this->back("Lỗi quyền truy cập! Bạn không phải Quản trị viên.");
         }
 
         if ($action === 'kick' || $action === 'reject') {
@@ -180,44 +203,42 @@ class GroupController {
             $msg = "Đã duyệt thành viên!";
         } elseif ($action === 'promote') {
             $this->groupModel->updateMemberRole($targetUserId, $groupId, 'admin');
-            $msg = "Đã phong làm Quản trị viên!";
+            $msg = "Đã phong làm Quản trị viên nhóm!";
         } elseif ($action === 'demote') {
             $this->groupModel->updateMemberRole($targetUserId, $groupId, 'member');
-            $msg = "Đã giáng cấp!";
+            $msg = "Đã giáng cấp thành viên!";
         }
 
-        $this->redirect("index.php?controller=group&action=manageMembers&id=$groupId", $msg);
-    }
-
-    // ================= ACTION: VIEW MEMBERS (Dành cho Admin tổng) =================
-    public function viewMembers() {
-        if (isset($_GET['id'])) {
-            $groupId = (int)$_GET['id'];
-            $members = $this->memberModel->getMembers($groupId);
-            include_once "MVC/View/Group/members.php";
-        }
+        // Dùng back() để quay lại đúng trang (bất kể đang đứng ở manageMembers hay viewMembers)
+        $this->back($msg);
     }
 
     public function removeUser() {
+        // Hàm này giữ lại phòng hờ nếu bạn có nút xóa riêng
         if (isset($_GET['groupId']) && isset($_GET['userId'])) {
             $result = $this->memberModel->removeMember($_GET['userId'], $_GET['groupId']);
             $msg = $result ? "Đã xóa thành viên!" : "Lỗi thao tác.";
-            $this->redirect("index.php?controller=group&action=viewMembers&id={$_GET['groupId']}", $msg);
+            $this->back($msg);
         }
     }
 
-    // ================= ACTION: XÓA NHÓM =================
+    // ================= ACTION: XÓA NHÓM VĨNH VIỄN =================
     public function deleteGroup() {
         if (!isset($_SESSION['user_id'])) return;
 
         $groupId = (int)($_GET['id'] ?? 0);
         $userId = (int)$_SESSION['user_id'];
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
 
-        if ($this->groupModel->getUserRole($userId, $groupId) === 'admin') {
+        // Admin hệ thống HOẶC Admin nhóm mới được quyền xóa
+        if ($isSystemAdmin || $this->groupModel->getUserRole($userId, $groupId) === 'admin') {
             $this->groupModel->delete($groupId);
-            $this->redirect('index.php?controller=group&action=myGroups', 'Đã xóa nhóm vĩnh viễn!');
+            
+            // Xóa xong, nếu là admin hệ thống thì đẩy về danh sách All, nếu user thì đẩy về myGroups
+            $redirectUrl = $isSystemAdmin ? 'index.php?controller=group&action=list' : 'index.php?controller=group&action=myGroups';
+            $this->redirect($redirectUrl, 'Đã xóa nhóm vĩnh viễn!');
         } else {
-            $this->back('Lỗi: Bạn không phải quản trị viên của nhóm này!');
+            $this->back('Lỗi: Bạn không có quyền xóa nhóm này!');
         }
     }
 
@@ -237,3 +258,4 @@ class GroupController {
         include_once "MVC/View/Group/my_groups.php";
     }
 }
+?>
