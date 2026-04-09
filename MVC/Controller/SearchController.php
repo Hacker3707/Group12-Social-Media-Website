@@ -5,6 +5,7 @@ include_once __DIR__ . "/../Model/CategoryModel.php";
 include_once __DIR__ . "/../Model/UserModel.php";
 include_once __DIR__ . "/../Model/GroupModel.php";
 include_once __DIR__ . "/../Model/ReactionModel.php";
+include_once __DIR__ . "/../Model/CommentModel.php";
 
 class SearchController extends AppController {
 
@@ -13,6 +14,7 @@ class SearchController extends AppController {
     private $groupModel;
     private $userModel;
     private $reactionModel;
+    private $commentModel;
 
     public function __construct() {
         $this->postModel = new PostModel();
@@ -20,9 +22,20 @@ class SearchController extends AppController {
         $this->groupModel = new GroupModel();
         $this->userModel = new UserModel();
         $this->reactionModel = new ReactionModel();
+        $this->commentModel = new CommentModel();
     }
 
     public function find() {
+
+        $userid = $_SESSION['user_id'] ?? null;
+
+        if ($userid) {
+            $username = $this->userModel->getUsernameById($userid);
+        } else {
+            $username = "Guest"; 
+        }            
+
+
         $keyword = $_GET['searchResults'] ?? '';
         if(empty($keyword)){
             $posts = [];
@@ -37,6 +50,61 @@ class SearchController extends AppController {
             $users = $this-> userModel->searchUsers($keyword);
             foreach($posts as $post) {
             $reactions[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
+            }
+            $isSameUser = [];
+
+        foreach($posts as $post){
+
+            $postId = $post->getPostId();
+            $isSameUser[$postId] = false;
+
+            foreach($reactions[$postId] ?? [] as $reaction){
+                if($reaction->getUserId() == $userid){
+                    $isSameUser[$postId] = true;
+                    break;
+                }
+            }
+
+        }
+
+        $comments = [];
+        foreach($posts as $post) {
+            $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
+        }
+
+        $reactions_forComment = [];
+
+        foreach($comments as $postComments){
+
+            foreach($postComments as $comment){
+
+                $commentId = $comment->getCommentId();
+
+                $reactions_forComment[$commentId] =
+                    $this->reactionModel->selectReactionsForComment($commentId);
+
+            }
+
+        }
+
+        $isSameUser_reactCmt = [];
+
+            foreach($comments as $postComments){
+
+                foreach($postComments as $comment){
+
+                    $commentId = $comment->getCommentId();
+                    $isSameUser_reactCmt[$commentId] = false;
+
+                    foreach(($reactions_forComment[$commentId] ?? []) as $reaction){
+                        if($reaction->getUserId() == $userid){
+                            $isSameUser_reactCmt[$commentId] = true;
+                            break;
+                        }
+                    }
+
+                }
+
             }
         }
 

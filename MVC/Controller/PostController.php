@@ -151,10 +151,26 @@ echo "success:" . $newPostId;
         }
     }
 
-    // =======================
-    // 🔥 COMMENTS
-    // =======================
-    $comments = [];
+        $comments = [];
+        foreach($posts as $post) {
+            $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
+        }
+
+
+        $commentTree = [];
+
+        foreach($posts as $post){
+
+            $postId = $post->getPostId();
+            $commentTree[$postId] = [];
+
+            foreach($comments[$postId] as $c){
+                $parent = $c->getParentCommentId();
+                $commentTree[$postId][$parent][] = $c;
+            }
+        }
+
+        $reactions_forComment = [];
 
     foreach($posts as $post){
         $postId = $post->getPostId();
