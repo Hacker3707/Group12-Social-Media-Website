@@ -78,5 +78,26 @@ class CommentController {
             ]);
         }
     }
+
+    // ================= ADMIN: XÓA BÌNH LUẬN =================
+    public function adminDelete() {
+        // Chỉ Admin mới được dùng chức năng này
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            header("Location: index.php");
+            exit();
+        }
+        
+        $commentId = (int)($_GET['id'] ?? 0);
+        $postId = (int)($_GET['post_id'] ?? 0); // Kèm theo post_id để biết đường quay lại
+        
+        if ($commentId) {
+            $this->commentModel->deleteComment($commentId);
+            $_SESSION['flash_message'] = "Đã xóa bình luận vi phạm!";
+        }
+        
+        // Trở về trang chi tiết của đúng bài viết đó
+        header("Location: index.php?controller=post&action=adminDetail&id=$postId");
+        exit();
+    }
 }
 ?>
