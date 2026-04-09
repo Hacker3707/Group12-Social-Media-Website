@@ -165,3 +165,125 @@
     border-left:2px solid #eee;
     padding-left:10px;
 }
+
+/* ===== Navbar pastel theme ===== */
+.navbar {
+    background: linear-gradient(90deg, #e7f0ff, #fff7cc);
+    border-bottom: 1px solid #e3e3e3;
+}
+
+/* Logo hover */
+.navbar-brand img {
+    transition: transform 0.2s ease;
+}
+.navbar-brand img:hover {
+    transform: scale(1.05);
+}
+
+/* Nav links */
+.navbar .nav-link {
+    color: #2c3e50 !important;
+    font-weight: 500;
+}
+
+.navbar .nav-link:hover {
+    color: #3a7bd5 !important;
+}
+
+/* Search box */
+.form-control {
+    border-radius: 20px;
+}
+
+/* Search button */
+.btn-outline-success {
+    border-radius: 20px;
+}
+
+/* Create group button */
+.btn-outline-secondary {
+    border-radius: 25px;
+    border-color: #ffd966;
+    color: #b38f00;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #fff3b0;
+    border-color: #ffd966;
+}
+
+/* Notification button */
+.btn-primary {
+    background-color: #4da3ff;
+    border-color: #4da3ff;
+}
+
+.btn-primary:hover {
+    background-color: #2f80ed;
+}
+
+/* User dropdown */
+.dropdown-menu {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+/* User button */
+.btn-outline-primary {
+    border-radius: 20px;
+}
+
+/* Badge */
+.badge-light {
+    background-color: #ffe066;
+    color: #333;
+    font-weight: bold;
+}
+
+
+/* ===== SIDEBAR CONTAINER ===== */
+.list-group {
+    background: linear-gradient(180deg, #fffed6, #fff9d6);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+/* ===== SIDEBAR HEADER (ADMIN) ===== */
+.list-group-item.bg-primary {
+    background: linear-gradient(90deg, #a7bbff, #ffde5c) !important;
+    color: #2c3e50 !important;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+/* ===== SIDEBAR ITEMS ===== */
+.list-group-item-action {
+    background-color: transparent;
+    transition: all 0.2s ease;
+}
+
+/* hover effect */
+.list-group-item-action:hover {
+    background-color: rgba(77,163,255,0.15);
+    transform: translateX(4px);
+}
+
+/* icon alignment */
+.list-group-item i {
+    font-size: 16px;
+}
+
+/* active effect */
+.list-group-item-action:active {
+    background-color: rgba(255,224,102,0.4);
+}
+
+/* softer borders */
+.list-group-item {
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}

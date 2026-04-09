@@ -6,7 +6,18 @@
 <!-- 🧾 POST INFO -->
 <div class="card mb-3 shadow-sm">
   <div class="card-header bg-primary text-white">
-    📝 Create Post
+
+    <?php if ($group === null)
+      echo"<h4>📝 Create Post </h4>";
+    else
+      {
+        echo "<h4>📝 Create Post for Group " . $group->getGroupName() . "</h4>";
+      }
+    ?>
+
+    <?php if ($group !== null): ?>
+    <input type="hidden" name="group_id" value="<?= $group->getGroupId() ?>">
+    <?php endif; ?>
   </div>
 
   <div class="card-body">

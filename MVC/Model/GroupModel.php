@@ -58,6 +58,29 @@ class GroupModel extends AppModel {
         return null;
     }
 
+    // ================= GET OBJECT BY ID =================
+    public function getObjById($id) {
+        $id = (int)$id;
+        $sql = "SELECT * FROM groups WHERE GroupID = $id";
+        $result = $this->query($sql);
+
+        $group = null;
+        
+        while ($row = mysqli_fetch_assoc($result)) {
+            $group = new Group(
+                    $row['GroupID'],
+                    $row['GroupName'],
+                    $row['Privacy']
+                );
+                $group->setDescription($row['Description']);
+                $group->setCategoryId($row['CategoryID']);
+            
+            return $group;
+        }
+
+        return null;
+    }
+
     // ================= UPDATE =================
     public function update($groupId, $name, $desc, $privacy, $categoryId) {
         $groupId = (int)$groupId;
