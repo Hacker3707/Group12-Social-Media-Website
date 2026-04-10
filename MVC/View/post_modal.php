@@ -39,6 +39,40 @@ tabindex="-1">
             <h3><?= htmlspecialchars($post->getTitle()) ?></h3>
             <p><?= htmlspecialchars($post->getContent()) ?></p>
 
+            <!-- ✅ HIỂN THỊ ẢNH / VIDEO CỦA POST -->
+            <?php if (!empty($mediaForPost[$postId])): ?>
+                <div class="post-media mb-3">
+                    <?php foreach ($mediaForPost[$postId] as $media): ?>
+
+                        <?php if ($media->getMediaType() === 'photo'): ?>
+                            <img src="/<?= htmlspecialchars($media->getFilePath()) ?>"
+                                 class="img-fluid rounded mb-2"
+                                 style="max-height: 400px; object-fit: cover; width: 100%;"
+                                 alt="Post image">
+
+                        <?php elseif ($media->getMediaType() === 'video'): ?>
+                            <video controls class="w-100 rounded mb-2" style="max-height: 400px;">
+                                <source src="/<?= htmlspecialchars($media->getFilePath()) ?>">
+                            </video>
+                        <?php endif; ?>
+
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- ✅ THÔNG TIN PHỤ CỦA POST -->
+            <div class="text-muted small mb-3">
+                <?php if($post->getPrice() !== null): ?>
+                    💰 Price: <?= number_format($post->getPrice()) ?> VND <br>
+                <?php endif; ?>
+                📦 Condition: <?= htmlspecialchars($post->getCondition()) ?> <br>
+                📍 Location: <?= htmlspecialchars($post->getLocation()) ?> <br>
+                <?php if($post->getBrand()): ?>
+                    🏷️ Brand: <?= htmlspecialchars($post->getBrand()) ?> <br>
+                <?php endif; ?>
+                📌 Status: <?= htmlspecialchars($post->getStatus()) ?>
+            </div>
+
             <div class="d-flex align-items-center mt-4">
                 <small class="text-muted ">
                 Posted at <?= $post->getCreatedAt() ?>
