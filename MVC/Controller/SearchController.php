@@ -29,12 +29,7 @@ class SearchController extends AppController {
 
         $userid = $_SESSION['user_id'] ?? null;
 
-        if ($userid) {
-            $username = $this->userModel->getUsernameById($userid);
-        } else {
-            $username = "Guest"; 
-        }            
-
+        
 
         $keyword = $_GET['searchResults'] ?? '';
         if(empty($keyword)){

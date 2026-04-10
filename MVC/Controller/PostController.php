@@ -38,14 +38,16 @@ class PostController extends AppController {
         $location = $_POST['location'] ?? 'other';
         $brand = $_POST['brand'] ?? null;
         $status = 'selling';
+        $groupId = $_POST['group_id'] ?? null;
+
         //  nếu KHÔNG phải product → reset hết
-if($isProduct == 0){
-    $price = null;
-    $condition = null;
-    $location = null;
-    $brand = null;
-    $status = null;
-}
+        if($isProduct == 0){
+            $price = null;
+            $condition = null;
+            $location = null;
+            $brand = null;
+            $status = null;
+        }
 
         $post = new Post(
             null,
@@ -71,27 +73,27 @@ if($isProduct == 0){
            $uploadDir = __DIR__ . "/../../uploads/";
 
 // 🔥 tạo folder nếu chưa có
-if (!is_dir($uploadDir)) {
-    mkdir($uploadDir, 0777, true);
-}
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
 
-$ext = pathinfo($_FILES['media']['name'], PATHINFO_EXTENSION);
-$fileName = uniqid() . "." . $ext;
+        $ext = pathinfo($_FILES['media']['name'], PATHINFO_EXTENSION);
+        $fileName = uniqid() . "." . $ext;
 
-// đường dẫn thật để lưu file
-$uploadPath = $uploadDir . $fileName;
+        // đường dẫn thật để lưu file
+        $uploadPath = $uploadDir . $fileName;
 
-// upload file
-move_uploaded_file($_FILES['media']['tmp_name'], $uploadPath);
+        // upload file
+        move_uploaded_file($_FILES['media']['tmp_name'], $uploadPath);
 
-// đường dẫn để lưu DB / hiển thị
-$dbPath = "uploads/" . $fileName;
+        // đường dẫn để lưu DB / hiển thị
+        $dbPath = "uploads/" . $fileName;
 
 // tạo media object
-$media = new Media(null, $userId, null, "image", $dbPath);
-            $media = new Media(null, $userId, null, "image", $uploadPath);
-            $mediaList[] = $media;
-        }
+        $media = new Media(null, $userId, null, "image", $dbPath);
+                    $media = new Media(null, $userId, null, "image", $uploadPath);
+                    $mediaList[] = $media;
+                }
 
        $result = $this->postModel->insertPost($post);
         
@@ -99,9 +101,9 @@ $media = new Media(null, $userId, null, "image", $dbPath);
         echo "fail";
         die(mysqli_error($this->postModel->getConnection()));
         }
-$newPostId = $this->postModel->getLastInsertId();
-echo "success:" . $newPostId;
-                exit;
+        $newPostId = $this->postModel->getLastInsertId();
+        echo "success:" . $newPostId;
+        exit;
     }
 
     // render page
@@ -318,7 +320,7 @@ echo "success:" . $newPostId;
 
     public function showCreateForm(){
         $categories = $this->categoryModel->getAll(); // 👈 lấy từ DB
-
+        $group = null;
         include __DIR__ . "/../View/createpost_view.php";
         
         die();
