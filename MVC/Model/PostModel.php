@@ -75,7 +75,7 @@ class PostModel extends AppModel {
             $post->setUsername($row['Username']);
             $post->setCreatedAt($row['CreatedAt']);
             $post->setCategoryName($row['CategoryName'] ?? 'No Category');
-            $post->setGroupName($row['GroupName']);
+            $post->setGroupName($row['GroupName'] ?? 'No Group');
 
             $posts[] = $post;
         }
