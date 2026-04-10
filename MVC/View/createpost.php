@@ -1,3 +1,5 @@
+<?php define("BASE_URL", "/Group12-Social-Media-Website/"); ?>
+
 <form id="postForm" method="POST" enctype="multipart/form-data">
   <input type="hidden" name="is_product" id="isProductInput" value="1">
 
@@ -248,7 +250,7 @@ document.getElementById("postForm").addEventListener("submit", function(e){
     submitBtn.textContent = "Posting...";
 
     // BƯỚC 1: Tạo post
-    fetch("/index.php?controller=post&action=createPost", {
+    fetch("<?= BASE_URL ?>index.php?controller=post&action=createPost", {
         method: "POST",
         body: formData
     })
@@ -270,7 +272,7 @@ document.getElementById("postForm").addEventListener("submit", function(e){
                 mediaData.append("media",   mediaFile.files[0]);
                 mediaData.append("post_id", postId);
 
-                fetch("/index.php?controller=media&action=uploadForPost", {
+                fetch("<?= BASE_URL ?>index.php?controller=media&action=uploadForPost", {
                     method: "POST",
                     body: mediaData
                 })
@@ -356,7 +358,7 @@ function showSuccessAndRedirect() {
     document.getElementById("result").innerHTML =
         "<div class='alert alert-success'>✅ Post created successfully!</div>";
     setTimeout(() => {
-        window.location.href = "/index.php?controller=post&action=showHome";
+        window.location.href = "<?= BASE_URL ?>index.php?controller=post&action=showHome";
     }, 1500);
 }
 
