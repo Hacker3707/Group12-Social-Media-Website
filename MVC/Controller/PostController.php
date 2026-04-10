@@ -1,4 +1,3 @@
-
 <?php
 include_once __DIR__ . "/../Model/PostModel.php";
 include_once __DIR__ . "/AppController.php";
@@ -7,6 +6,7 @@ include_once __DIR__ . "/../../Entity/Media.php";
 include_once __DIR__ . "/../Model/CategoryModel.php";
 include_once __DIR__ . "/../Model/CommentModel.php";
 include_once __DIR__ . "/../Model/UserModel.php";
+include_once __DIR__ . "/../Model/MediaModel.php";
 
 class PostController extends AppController {
     private $postModel;
@@ -14,20 +14,21 @@ class PostController extends AppController {
     private $categoryModel;
     private $commentModel;
     private $userModel;
+    private $mediaModel;
 
     public function __construct() {
-        $this->postModel = new PostModel();
+        $this->postModel     = new PostModel();
         $this->reactionModel = new ReactionModel();
         $this->categoryModel = new CategoryModel();
-        $this->commentModel = new CommentModel();
-        $this->userModel = new UserModel();
+        $this->commentModel  = new CommentModel();
+        $this->userModel     = new UserModel();
+        $this->mediaModel    = new MediaModel();
     }
 
     public function createPost(){
 
-       
-        $userId = $_SESSION['user_id'];
-        $groupId = null;
+        $userId     = $_SESSION['user_id'];
+        $groupId    = null;
         $categoryId = !empty($_POST['category_id']) ? intval($_POST['category_id']) : null;
 
         $title = $_POST['title'];
@@ -50,111 +51,79 @@ class PostController extends AppController {
         }
 
         $post = new Post(
-            null,
-            $userId,
-            $groupId,
-            $categoryId,
-            $title,
-            $content,
-            $price,
-            $condition,
-            $location,
-            $brand,
-            $status
+            null, $userId, $groupId, $categoryId,
+            $title, $content, $price, $condition, $location, $brand, $status
         );
 
-        $mediaList = [];
+        $result = $this->postModel->insertPost($post);
 
-        if(isset($_FILES['media']) && $_FILES['media']['error'] == 0){
-
-            $ext = pathinfo($_FILES['media']['name'], PATHINFO_EXTENSION);
-            $fileName = uniqid() . "." . $ext;
-
-           $uploadDir = __DIR__ . "/../../uploads/";
-
-// 🔥 tạo folder nếu chưa có
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
+        if (!$result) {
+            echo "fail";
+            exit;
         }
 
-        $ext = pathinfo($_FILES['media']['name'], PATHINFO_EXTENSION);
-        $fileName = uniqid() . "." . $ext;
-
-        // đường dẫn thật để lưu file
-        $uploadPath = $uploadDir . $fileName;
-
-        // upload file
-        move_uploaded_file($_FILES['media']['tmp_name'], $uploadPath);
-
-        // đường dẫn để lưu DB / hiển thị
-        $dbPath = "uploads/" . $fileName;
-
-// tạo media object
-        $media = new Media(null, $userId, null, "image", $dbPath);
-                    $media = new Media(null, $userId, null, "image", $uploadPath);
-                    $mediaList[] = $media;
-                }
-
-       $result = $this->postModel->insertPost($post);
-        
-        if(!$result){
-        echo "fail";
-        die(mysqli_error($this->postModel->getConnection()));
-        }
         $newPostId = $this->postModel->getLastInsertId();
+
+        // Lưu ảnh vào bảng media nếu có file upload
+        if (isset($_FILES['media']) && $_FILES['media']['error'] == 0) {
+
+            $mimeType  = mime_content_type($_FILES['media']['tmp_name']);
+            $mediaType = 'photo';
+            if (str_starts_with($mimeType, 'video/')) {
+                $mediaType = 'video';
+            }
+
+            $uploadDir = __DIR__ . "/../../../uploads/";
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            $safeName = time() . "_" . $userId . "_" . basename($_FILES['media']['name']);
+            $destPath = $uploadDir . $safeName;
+            $dbPath   = "uploads/" . $safeName;
+
+            if (move_uploaded_file($_FILES['media']['tmp_name'], $destPath)) {
+                $this->mediaModel->insertMediaForPost($userId, $newPostId, $mediaType, $dbPath);
+            }
+        }
+
         echo "success:" . $newPostId;
         exit;
     }
 
-    // render page
-   public function showHome(){
+    public function showHome(){
 
-    // 🔥 Lấy filter nếu có
-    $categoryId = $_GET['category_id'] ?? null;
+        $posts  = $this->postModel->getAll() ?? [];
+        $userid = $_SESSION['user_id'] ?? null;
 
-    if($categoryId){
-        $posts = $this->postModel->fetchByField('CategoryID', $categoryId);
-    } else {
-        $posts = $this->postModel->getAll();
-    }
+        // Lấy thông tin user — dùng getById() vì UserModel không có getUsernameById()
+        if ($userid) {
+            $userInfo = $this->userModel->getById($userid);
+            $username = $userInfo ? $userInfo['Username'] : "Guest";
+        } else {
+            $username = "Guest";
+        }
 
-    $posts = $posts ?? [];
+        $reactions_forPost = [];
+        foreach ($posts as $post) {
+            $reactions_forPost[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
+        }
 
-    $userid = $_SESSION['user_id'] ?? null;
-
-   
-    // =======================
-    // 🔥 REACTIONS POST
-    // =======================
-    $reactions_forPost = [];
-
-    foreach($posts as $post){
-        $postId = $post->getPostId();
-
-        $reactions_forPost[$postId] =
-            $this->reactionModel->selectReactionsForPost($postId);
-    }
-
-    // =======================
-    // 🔥 CHECK USER LIKE POST
-    // =======================
-    $isSameUser = [];
-
-    foreach($posts as $post){
-
-        $postId = $post->getPostId();
-        $isSameUser[$postId] = false;
-
-        foreach($reactions_forPost[$postId] as $reaction){
-            if($reaction->getUserId() == $userid){
-                $isSameUser[$postId] = true;
-                break;
+        $isSameUser = [];
+        foreach ($posts as $post) {
+            $postId = $post->getPostId();
+            $isSameUser[$postId] = false;
+            foreach (($reactions_forPost[$postId] ?? []) as $reaction) {
+                if ($reaction->getUserId() == $userid) {
+                    $isSameUser[$postId] = true;
+                    break;
+                }
             }
         }
     }
 
         $comments = [];
-        foreach($posts as $post) {
+        foreach ($posts as $post) {
             $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
         }
 
@@ -173,48 +142,32 @@ class PostController extends AppController {
         }
 
         $reactions_forComment = [];
-
-    foreach($posts as $post){
-        $postId = $post->getPostId();
-
-        $comments[$postId] =
-            $this->commentModel->fetchByField('PostID', $postId);
-    }
-
-    // =======================
-    // 🔥 REACTION COMMENT
-    // =======================
-    $reactions_forComment = [];
-
-    foreach($comments as $postComments){
-
-        foreach($postComments as $comment){
-
-            $commentId = $comment->getCommentId();
-
-            $reactions_forComment[$commentId] =
-                $this->reactionModel->selectReactionsForComment($commentId);
+        foreach ($comments as $postComments) {
+            foreach ($postComments as $comment) {
+                $commentId = $comment->getCommentId();
+                $reactions_forComment[$commentId] = $this->reactionModel->selectReactionsForComment($commentId);
+            }
         }
     }
 
-    // =======================
-    // 🔥 CHECK USER LIKE COMMENT
-    // =======================
-    $isSameUser_reactCmt = [];
-
-    foreach($comments as $postComments){
-
-        foreach($postComments as $comment){
-
-            $commentId = $comment->getCommentId();
-            $isSameUser_reactCmt[$commentId] = false;
-
-            foreach($reactions_forComment[$commentId] as $reaction){
-                if($reaction->getUserId() == $userid){
-                    $isSameUser_reactCmt[$commentId] = true;
-                    break;
+        $isSameUser_reactCmt = [];
+        foreach ($comments as $postComments) {
+            foreach ($postComments as $comment) {
+                $commentId = $comment->getCommentId();
+                $isSameUser_reactCmt[$commentId] = false;
+                foreach (($reactions_forComment[$commentId] ?? []) as $reaction) {
+                    if ($reaction->getUserId() == $userid) {
+                        $isSameUser_reactCmt[$commentId] = true;
+                        break;
+                    }
                 }
             }
+        }
+
+        // Load media cho từng post để hiển thị ảnh/video trên Home
+        $mediaForPost = [];
+        foreach ($posts as $post) {
+            $mediaForPost[$post->getPostId()] = $this->mediaModel->getByPostId($post->getPostId());
         }
     }
 
@@ -227,7 +180,6 @@ class PostController extends AppController {
        
 
     public function PostAction(){
-
         $action = $_GET['action'] ?? "home";
 
         switch($action){
@@ -245,19 +197,18 @@ class PostController extends AppController {
              break;
 
         }
-
     }
 
     public function getAllPosts() {
         $posts = $this->postModel->getAll() ?? [];
 
         $reactions = [];
-        foreach($posts as $post) {
+        foreach ($posts as $post) {
             $reactions[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
         }
 
         $comments = [];
-        foreach($posts as $post) {
+        foreach ($posts as $post) {
             $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
         }
 
@@ -271,7 +222,7 @@ class PostController extends AppController {
     public function getPostsByUserId($userId) {
         if (isset($_GET['user_id'])) {
             $userId = $_GET['user_id'];
-            $posts = $this->postModel->fetchByField('UserID', $userId);
+            $posts  = $this->postModel->fetchByField('UserID', $userId);
             include_once "../View/postview.php";
         }
         return [];
@@ -280,41 +231,26 @@ class PostController extends AppController {
     public function getPostsByGroupId($groupId) {
         if (isset($_GET['group_id'])) {
             $groupId = $_GET['group_id'];
-            $posts = $this->postModel->fetchByField('GroupID', $groupId);
+            $posts   = $this->postModel->fetchByField('GroupID', $groupId);
             include_once "../View/postview.php";
         }
         return [];
     }
 
     public function getPostsByCategoryId() {
-
-    if (isset($_GET['category_id'])) {
-
-        $categoryId = $_GET['category_id'];
-
-        $posts = $this->postModel->fetchByField('CategoryID', $categoryId);
-
-       // ✅ redirect về showHome và xử lý filter ở đó
-        $_SESSION['category_filter'] = $categoryId;
-        $this->showHome(); 
+        if (isset($_GET['category_id'])) {
+            $categoryId = $_GET['category_id'];
+            $posts      = $this->postModel->fetchByField('CategoryID', $categoryId);
+            include_once __DIR__ . "/../View/home.php";
+        }
+        return [];
     }
 
-    return [];
-}
-
     public function deletePost(){
-
         $postId = $_POST['postId'] ?? null;
-
-        if(!$postId){
-            echo "fail";
-            exit;
-        }
-
+        if (!$postId) { echo "fail"; exit; }
         $result = $this->postModel->delete($postId);
-
         echo $result ? "success" : "fail";
-
         exit;
     }
 
@@ -322,59 +258,38 @@ class PostController extends AppController {
         $categories = $this->categoryModel->getAll(); // 👈 lấy từ DB
         $group = null;
         include __DIR__ . "/../View/createpost_view.php";
-        
         die();
     }
 
     public function updatePost() {
         $postId = $_POST['postId'] ?? null;
-
-        if(!$postId){
-            echo "fail";
-            exit;
-        }
-
-        $title = $_POST['title'] ?? null;
-        $content = $_POST['content'] ?? null;
-        $price = $_POST['price'] ?? null;
-        $condition = $_POST['condition'] ?? 'good';
-        $location = $_POST['location'] ?? 'other';
-        $brand = $_POST['brand'] ?? null;
-        $status = $_POST['status'] ?? 'selling';
+        if (!$postId) { echo "fail"; exit; }
 
         $post = new Post(
-            $postId,
-            null,
-            null,
-            null,
-            $title,
-            $content,
-            $price,
-            $condition,
-            $location,
-            $brand,
-            $status
+            $postId, null, null, null,
+            $_POST['title']     ?? null,
+            $_POST['content']   ?? null,
+            $_POST['price']     ?? null,
+            $_POST['condition'] ?? 'good',
+            $_POST['location']  ?? 'other',
+            $_POST['brand']     ?? null,
+            $_POST['status']    ?? 'selling'
         );
 
         $result = $this->postModel->update($post);
-
         echo $result ? "success" : "fail";
         exit;
     }
 
     public function detail() {
-
         $postId = $_GET['id'] ?? 0;
-        $userId = $_SESSION['user_id'] ?? 0;
-        
-        $post = $this->postModel->getById($postId);
-        
+        $post   = $this->postModel->getById($postId);
+
         if (!$post) {
             $this->redirect('/Group12-Social-Media-Website/index.php', 'Bài viết này không tồn tại hoặc đã bị xóa!');
         }
 
         $reactions = $this->reactionModel->selectReactionsForPost($postId);
-
         include_once "MVC/View/home.php";
     }
     
