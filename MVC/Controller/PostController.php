@@ -7,6 +7,7 @@ include_once __DIR__ . "/../../Entity/Media.php";
 include_once __DIR__ . "/../Model/CategoryModel.php";
 include_once __DIR__ . "/../Model/CommentModel.php";
 include_once __DIR__ . "/../Model/UserModel.php";
+include_once __DIR__ . "/../Model/GroupModel.php";
 
 class PostController extends AppController {
     private $postModel;
@@ -14,6 +15,7 @@ class PostController extends AppController {
     private $categoryModel;
     private $commentModel;
     private $userModel;
+    private $groupModel;
 
     public function __construct() {
         $this->postModel = new PostModel();
@@ -21,6 +23,7 @@ class PostController extends AppController {
         $this->categoryModel = new CategoryModel();
         $this->commentModel = new CommentModel();
         $this->userModel = new UserModel();
+        $this->groupModel = new GroupModel();
     }
 
     public function createPost(){
@@ -122,7 +125,48 @@ class PostController extends AppController {
 
     $userid = $_SESSION['user_id'] ?? null;
 
-   
+    // ==========================================================
+    // 🔥 BỘ LỌC BÀI VIẾT THEO QUYỀN NHÓM (NEW)
+    // ==========================================================
+    $filteredPosts = [];
+    $canInteract = []; // Mảng lưu trạng thái xem có được comment/react không
+    $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+
+    foreach ($posts as $post) {
+        $postId = $post->getPostId();
+        $groupId = $post->getGroupId();
+        
+        $viewFlag = true;
+        $interactFlag = true;
+
+        // Nếu bài viết này thuộc về 1 nhóm
+        if ($groupId) {
+            $group = $this->groupModel->getById($groupId);
+            $userRoleInGroup = $this->groupModel->getUserRole($userid, $groupId); // Trả về 'admin', 'member' hoặc false
+
+            if (!$isSystemAdmin) { // Nếu KHÔNG PHẢI Admin hệ thống thì mới bị xét nét
+                // Luật 1: Nhóm Private + Chưa tham gia -> Cấm xem
+                if ($group && strtolower($group['Privacy']) === 'private' && !$userRoleInGroup) {
+                    $viewFlag = false;
+                }
+                
+                // Luật 2: Chưa tham gia (dù Public hay Private) -> Cấm tương tác (Comment/React)
+                if (!$userRoleInGroup) {
+                    $interactFlag = false;
+                }
+            }
+        }
+
+        // Chỉ đưa những bài được phép xem vào danh sách hiển thị
+        if ($viewFlag) {
+            $filteredPosts[] = $post;
+            $canInteract[$postId] = $interactFlag; 
+        }
+    }
+    
+    // Ghi đè lại mảng posts bằng mảng đã được lọc sạch sẽ
+    $posts = $filteredPosts;
+
     // =======================
     // 🔥 REACTIONS POST
     // =======================

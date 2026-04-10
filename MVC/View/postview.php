@@ -1,7 +1,6 @@
 <?php
 include 'confirm_alert.php';
 
-
 if(empty($posts)){
     echo "No posts found";
     return;
@@ -10,185 +9,132 @@ if(empty($posts)){
 
 <?php foreach($posts as $post): ?>
 <?php 
-$isProduct = $post->getPrice() !== null 
-          || $post->getCondition() 
-          || $post->getStatus();
+    $isProduct = $post->getPrice() !== null || $post->getCondition() || $post->getStatus();
+    $postId = $post->getPostId();
+    
+    // 🔥 XÁC ĐỊNH QUYỀN TƯƠNG TÁC CHO TỪNG BÀI VIẾT
+    $allowInteraction = true;
+    if (isset($canInteract)) {
+        if (is_array($canInteract)) {
+            $allowInteraction = $canInteract[$postId] ?? true; // Dùng cho trang Newsfeed
+        } else {
+            $allowInteraction = $canInteract; // Dùng cho trang Chi tiết nhóm
+        }
+    }
 ?>
     
 <div class="post-item border rounded p-3 mb-3 bg-white">
 
-    <!-- Post Header -->
     <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+            <img src="" alt="???" class="rounded-circle mr-2">
 
-<div>
-    <img src="" alt="???" class="rounded-circle mr-2">
-
-    <a href="index.php?controller=user&action=profile&user_id=<?= $post->getUserId() ?>">
-        <strong><?= htmlspecialchars($post->getUsername()) ?></strong>
-    </a>
-
-    <?php if($post->getCategoryName()): ?>
-        <span style="margin: 0 5px;">›</span>
-        <?php if($post->getCategoryName() !== 'No Category') { ?>
-            <a href="index.php?controller=post&action=getPostsByCategoryId&category_id=<?= $post->getCategoryId() ?>"
-               style="color: gray; text-decoration: none;">
-                <button class="btn btn-outline-secondary" style="color: cornflowerblue; font-size: 14px;"><?= htmlspecialchars($post->getCategoryName()) ?></button>
+            <a href="index.php?controller=user&action=profile&user_id=<?= $post->getUserId() ?>">
+                <strong><?= htmlspecialchars($post->getUsername()) ?></strong>
             </a>
-            <?php } else { ?>
-                <span style="color: gray;">
-                    <?= htmlspecialchars($post->getCategoryName()) ?>
-                </span>
-            
-        <?php } ?>
-    <?php endif; ?>
 
-    <?php if($post->getGroupName()): ?>
-        <span style="margin: 0 5px;">››</span>
-            <a href="index.php?controller=group&action=detail&id=<?= $post->getGroupId() ?>"
-               style="color: gray; text-decoration: none;">
-                <button class="btn btn-outline-secondary" style="color: cornflowerblue; font-size: 14px;"><?= htmlspecialchars($post->getGroupName()) ?></button>
-            </a>
-    <?php endif; ?>
-</div>
+            <?php if($post->getCategoryName()): ?>
+                <span style="margin: 0 5px;">›</span>
+                <?php if($post->getCategoryName() !== 'No Category') { ?>
+                    <a href="index.php?controller=post&action=getPostsByCategoryId&category_id=<?= $post->getCategoryId() ?>"
+                       style="color: gray; text-decoration: none;">
+                        <button class="btn btn-outline-secondary" style="color: cornflowerblue; font-size: 14px;"><?= htmlspecialchars($post->getCategoryName()) ?></button>
+                    </a>
+                <?php } else { ?>
+                    <span style="color: gray;"><?= htmlspecialchars($post->getCategoryName()) ?></span>
+                <?php } ?>
+            <?php endif; ?>
 
-        <small class="text-muted">
-            <?= $post->getCreatedAt() ?>
-        </small>
- </div>
+            <?php if($post->getGroupName()): ?>
+                <span style="margin: 0 5px;">››</span>
+                <a href="index.php?controller=group&action=detail&id=<?= $post->getGroupId() ?>" style="color: gray; text-decoration: none;">
+                    <button class="btn btn-outline-secondary" style="color: cornflowerblue; font-size: 14px;"><?= htmlspecialchars($post->getGroupName()) ?></button>
+                </a>
+            <?php endif; ?>
+        </div>
 
-    <!-- Post Content -->
+        <small class="text-muted"><?= $post->getCreatedAt() ?></small>
+    </div>
+
     <h5><?= htmlspecialchars($post->getTitle()) ?></h5>
-    
     <p><?= nl2br(htmlspecialchars($post->getContent())) ?></p>
 
-    <!--  BADGE Ở ĐÂY -->
-<?php if($isProduct): ?>
-<div class="mt-2 d-flex flex-wrap" style="gap:6px;">
-
-    <?php if($post->getPrice() !== null): ?>
-        <span class="badge badge-success">
-            💰 <?= number_format($post->getPrice()) ?> VND
-        </span>
+    <?php if($isProduct): ?>
+    <div class="mt-2 d-flex flex-wrap" style="gap:6px;">
+        <?php if($post->getPrice() !== null): ?>
+            <span class="badge badge-success">💰 <?= number_format($post->getPrice()) ?> VND</span>
+        <?php endif; ?>
+        <?php if($post->getCondition()): ?>
+            <span class="badge badge-info"><?= $post->getCondition() ?></span>
+        <?php endif; ?>
+        <?php if($post->getLocation()): ?>
+            <span class="badge badge-secondary"><?= $post->getLocation() ?></span>
+        <?php endif; ?>
+        <?php if($post->getBrand()): ?>
+            <span class="badge badge-dark"><?= $post->getBrand() ?></span>
+        <?php endif; ?>
+    </div>
+    
+    <div class="text-muted small mt-3 border-top pt-2">
+        <?php if($post->getPrice() !== null): ?> 💰 Price: <?= number_format($post->getPrice()) ?> VND <br> <?php endif; ?>
+        <?php if($post->getCondition()): ?> 📦 Condition: <?= htmlspecialchars($post->getCondition()) ?> <br> <?php endif; ?>
+        <?php if($post->getLocation()): ?> 📍 Location: <?= htmlspecialchars($post->getLocation()) ?> <br> <?php endif; ?>
+        <?php if($post->getBrand()): ?> 🏷️ Brand: <?= htmlspecialchars($post->getBrand()) ?> <br> <?php endif; ?>
+        <?php if($post->getStatus()): ?> 📌 Status: <?= htmlspecialchars($post->getStatus()) ?> <?php endif; ?>
+    </div>
     <?php endif; ?>
 
-    <?php if($post->getCondition()): ?>
-        <span class="badge badge-info">
-            <?= $post->getCondition() ?>
-        </span>
-    <?php endif; ?>
-
-    <?php if($post->getLocation()): ?>
-        <span class="badge badge-secondary">
-            <?= $post->getLocation() ?>
-        </span>
-    <?php endif; ?>
-
-    <?php if($post->getBrand()): ?>
-        <span class="badge badge-dark">
-            <?= $post->getBrand() ?>
-        </span>
-    <?php endif; ?>
-
-</div>
-<?php endif; ?>
-
-   <!-- Extra Info -->
-  
-
-   
-
-<?php if($isProduct): ?>
-<div class="text-muted small mt-2">
-
-    <?php if($post->getPrice() !== null): ?>
-        💰 Price: <?= number_format($post->getPrice()) ?> VND <br>
-    <?php endif; ?>
-
-    <?php if($post->getCondition()): ?>
-        📦 Condition: <?= htmlspecialchars($post->getCondition()) ?> <br>
-    <?php endif; ?>
-
-    <?php if($post->getLocation()): ?>
-        📍 Location: <?= htmlspecialchars($post->getLocation()) ?> <br>
-    <?php endif; ?>
-
-    <?php if($post->getBrand()): ?>
-        🏷️ Brand: <?= htmlspecialchars($post->getBrand()) ?> <br>
-    <?php endif; ?>
-
-    <?php if($post->getStatus()): ?>
-        📌 Status: <?= htmlspecialchars($post->getStatus()) ?>
-    <?php endif; ?>
-
-</div>
-<?php endif; ?>
-
-   
-    <!-- Post Actions -->
-    <div class="mt-2 d-flex align-items-center" >
-        <button class="btn btn-sm btn-outline-primary col-md-2 col-12"
-        data-toggle="modal"
-        data-target="#postModal<?= $post->getPostId() ?>">
-            View Post
-        </button>
-
-        <button class="btn btn-sm btn-outline-secondary ml-2" type="button">
-            Comment <span class="badge badge-light"><?= count($comments[$post->getPostId()] ?? []) ?></span>
-        </button>
-
-        <div class="btn-group dropright ml-2">
-            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background-color: rgb(186, 212, 230); border: none;">
-                <i class="bi bi-three-dots"></i>
+    <?php if($allowInteraction): ?>
+        
+        <div class="mt-3 d-flex align-items-center" >
+            <button class="btn btn-sm btn-outline-primary col-md-2 col-12" data-toggle="modal" data-target="#postModal<?= $postId ?>">
+                View Post
             </button>
 
-            <div class="dropdown-menu">
-                <button class="dropdown-item" type="button">Edit</button>
-                <button class="dropdown-item" type="button">Report</button>
-                <button class="dropdown-item delete-btn" type="button" data-postid="<?= $post->getPostId() ?>">
-                    Delete
+            <button class="btn btn-sm btn-outline-secondary ml-2" type="button">
+                Comment <span class="badge badge-light"><?= count($comments[$postId] ?? []) ?></span>
+            </button>
+
+            <div class="btn-group dropright ml-2">
+                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background-color: rgb(186, 212, 230); border: none;">
+                    <i class="bi bi-three-dots"></i>
                 </button>
+                <div class="dropdown-menu">
+                    <button class="dropdown-item" type="button">Edit</button>
+                    <button class="dropdown-item" type="button">Report</button>
+                    <button class="dropdown-item delete-btn" type="button" data-postid="<?= $postId ?>">Delete</button>
+                </div>
+            </div>
+
+            <?php if($isSameUser[$postId] ?? false): ?>
+                <button class="btn btn-sm btn-outline-primary like-btn ml-auto" type="button" data-postid="<?= $postId ?>">
+                    <i class="bi bi-heart-fill"></i>
+                    <span class="badge badge-light like-count"><?= count($reactions_forPost[$postId] ?? []) ?></span>
+                </button>
+            <?php else: ?>
+                <button class="btn btn-sm btn-outline-primary like-btn ml-auto" type="button" data-postid="<?= $postId ?>">
+                    <i class="bi bi-heart"></i>
+                    <span class="badge badge-light like-count"><?= count($reactions_forPost[$postId] ?? []) ?></span>
+                </button>
+            <?php endif; ?>
+        </div>
+
+    <?php else: ?>
+
+        <div class="mt-3 d-flex align-items-center" >
+            <button class="btn btn-sm btn-outline-primary col-md-2 col-12" data-toggle="modal" data-target="#postModal<?= $postId ?>">
+                View Post
+            </button>
+            
+            <div class="alert alert-light text-muted border ml-3 mb-0 py-1 flex-grow-1 text-center" style="font-size: 0.9rem;">
+                <i class="fas fa-lock mr-1"></i> Vui lòng tham gia nhóm để tương tác
             </div>
         </div>
-        
-    
 
-        <?php $postId = $post->getPostId(); ?> 
-
-        <?php if($isSameUser[$postId] ?? false): ?>
-
-    <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
-    type="button"
-    data-postid="<?= $postId ?>">
-
-        <i class="bi bi-heart-fill"></i>
-        <span class="badge badge-light like-count">
-            <?= count($reactions_forPost[$postId] ?? []) ?>
-        </span>
-
-    </button>
-
-<?php else: ?>
-
-    <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
-    type="button"
-    data-postid="<?= $postId ?>">
-
-        <i class="bi bi-heart"></i>
-        <span class="badge badge-light like-count">
-            <?= count($reactions_forPost[$postId] ?? []) ?>
-        </span>
-
-    </button>
-
-<?php endif; ?>
-    
-</div>
-<!-- Modal -->
-
-<?php include "MVC/View/post_modal.php"; ?>
+    <?php endif; ?>
+    <?php include "MVC/View/post_modal.php"; ?>
 
 </div>
-
 
 <?php endforeach; ?>
 

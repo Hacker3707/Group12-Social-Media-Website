@@ -1,6 +1,5 @@
 <div class="comment-item mb-2">
 
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-start">
 
         <strong>
@@ -30,50 +29,47 @@
 
     </div>
 
-    <!-- Content -->
     <p class="mb-1"><?= htmlspecialchars($c->getContent()) ?></p>
 
-    
+    <div class="d-flex mt-1 align-items-center">
 
-    <!-- Action buttons -->
-    <div class="d-flex mt-1">
+        <small class="text-muted mr-3"><?= $c->getCreatedAt() ?></small>
 
-        <small class="text-muted align-items-left"><?= $c->getCreatedAt() ?></small>
-
-        <button class="btn-forModal btn-sm btn-outline-primary reply-btn align-items-end"
-                type="button"
-                data-comment-id="<?= $c->getCommentId() ?>">
-            Reply
-        </button>
-
-        <?php if($isSameUser_reactCmt[$c->getCommentId()] ?? false): ?>
-
-            <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-2 align-items-end"
+        <?php if(isset($allowInteraction) && $allowInteraction): ?>
+            
+            <button class="btn-forModal btn-sm btn-outline-primary reply-btn"
                     type="button"
-                    data-commentid="<?= $c->getCommentId() ?>">
-
-                <i class="bi bi-heart-fill"></i>
-                <span class="badge badge-light like-count-cmt">
-                    <?= count($reactions_forComment[$c->getCommentId()] ?? []) ?>
-                </span>
-
+                    data-comment-id="<?= $c->getCommentId() ?>">
+                Reply
             </button>
+
+            <?php if($isSameUser_reactCmt[$c->getCommentId()] ?? false): ?>
+                <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-2"
+                        type="button"
+                        data-commentid="<?= $c->getCommentId() ?>">
+                    <i class="bi bi-heart-fill"></i>
+                    <span class="badge badge-light like-count-cmt">
+                        <?= count($reactions_forComment[$c->getCommentId()] ?? []) ?>
+                    </span>
+                </button>
+            <?php else: ?>
+                <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-2"
+                        type="button"
+                        data-commentid="<?= $c->getCommentId() ?>">
+                    <i class="bi bi-heart"></i>
+                    <span class="badge badge-light like-count-cmt">
+                        <?= count($reactions_forComment[$c->getCommentId()] ?? []) ?>
+                    </span>
+                </button>
+            <?php endif; ?>
 
         <?php else: ?>
-
-            <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-2"
-                    type="button"
-                    data-commentid="<?= $c->getCommentId() ?>">
-
-                <i class="bi bi-heart"></i>
-                <span class="badge badge-light like-count-cmt">
-                    <?= count($reactions_forComment[$c->getCommentId()] ?? []) ?>
-                </span>
-
-            </button>
+            
+            <span class="text-muted ml-1" style="font-size: 0.9em; cursor: not-allowed;" title="Vui lòng tham gia nhóm để tương tác">
+                <i class="bi bi-heart"></i> <?= count($reactions_forComment[$c->getCommentId()] ?? []) ?>
+            </span>
 
         <?php endif; ?>
-
-    </div>
+        </div>
 
 </div>
