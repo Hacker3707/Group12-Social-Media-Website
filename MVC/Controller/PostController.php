@@ -243,6 +243,7 @@ class PostController extends AppController {
         // =======================
         include_once __DIR__ . "/../View/home.php";
     }
+   }
 
        
 
