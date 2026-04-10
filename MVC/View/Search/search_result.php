@@ -133,45 +133,7 @@ $displayUsers = array_slice($users, 0, $maxItems);
                         </div>
                     </div>
 
-
-                    <div class="modal fade"
-                    id="postModal<?= $post->getPostId() ?>"
-                    tabindex="-1">
-
-                        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                            <div class="modal-content">
-
-                            <div class="modal-header">
-                                <h5 class="modal-title">
-                                    <?= htmlspecialchars($post->getTitle()) ?>
-                                </h5>
-
-                                <button type="button" class="close" data-dismiss="modal">
-                                &times;
-                                </button>
-                            </div>
-
-                                <div class="modal-body">
-                                    <p><?= htmlspecialchars($post->getContent()) ?></p>
-
-                                    <div class="d-flex align-items-center mt-4">
-                                        <small class="text-muted ">
-                                        Posted at <?= $post->getCreatedAt() ?>
-                                        </small>
-
-                                        <button id="btn-forModal" class="btn btn-sm btn-outline-primary like-btn ml-auto justify-content-end" type="button" data-postid="<?= $post->getPostId() ?>">
-                                                Like <span class="badge badge-light like-count"><?= count($reactions[$post->getPostId()] ?? []) ?></span>
-                                        </button>
-
-                                    </div>
-
-                                </div>
-
-
-                            </div>
-                    </div>
-
-                    </div>
+                    <?php include __DIR__ . '/../post_modal.php'; ?>
 
                 <?php endforeach; ?>
             <?php endif; ?>

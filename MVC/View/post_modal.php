@@ -1,4 +1,6 @@
-<div class="modal fade"
+<?php include_once "render_cmt.php"?>
+
+<div class="modal fade post-modal"
 id="postModal<?= $post->getPostId() ?>"
 tabindex="-1">
 
@@ -93,56 +95,17 @@ tabindex="-1">
 
         </div>
 
-        <hr style="margin: 0 15px; color: #ddd;">
+        <hr style="margin: 5px 15px; color: #ddd;">
 
         <div class="comment-list mt-3" style="padding: 0 15px; overflow-y: auto;">
 
             <?php if (!empty($comments[$post->getPostId()])): ?>
-                <?php foreach ($comments[$post->getPostId()] as $c): ?>
-                    
-                    <div class="comment-item mb-2 d-flex justify-content-between align-items-end">
-                        <div>
-                            <strong><a href="index.php?controller=user&action=profile&id=<?= $c->getUserId() ?>">
-                                <?= htmlspecialchars($c->getUsername()) ?></a>
-                            <small>commented:</small></strong>
-                            <p class="mb-1"><?= htmlspecialchars($c->getContent()) ?></p>
-                            <small class="text-muted"><?= $c->getCreatedAt() ?></small>
-                        </div>
-                        <?php if($isSameUser_reactCmt[$c->getCommentId()] ?? false): ?>
-
-                            <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-auto "
-                                type="button"
-                                data-commentid="<?= $c->getCommentId() ?>">
-
-                                <i class="bi bi-heart-fill like-icon"></i>
-                                <span class="badge badge-light like-count-cmt">
-                                <?= count($reactions_forComment[$c->getCommentId()] ?? []) ?>
-                                </span>
-
-                            </button>
-
-                        <?php else: ?>
-
-                            <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-auto"
-                                type="button"
-                                data-commentid="<?= $c->getCommentId() ?>">
-
-                                <i class="bi bi-heart like-icon"></i>
-                                <span class="badge badge-light like-count-cmt">
-                                <?= count($reactions_forComment[$c->getCommentId()] ?? []) ?>
-                                </span>
-
-                            </button>
-
-                        <?php endif; ?>
-
-                    </div>
-
-                    <hr style="margin: 10px 15px; color: #ddd;">
-
-                <?php endforeach; ?>
+                <?php
+                    renderComments($postId, null, $commentTree);
+                ?>
+                
             <?php else: ?>
-                <div class="text-center mt-3">
+                <div class="text-center mt-3 no-cmt">
                     <small class="text-muted d-block mb-2">No comments yet</small>
                     <img src="Materials/Picture/no-comment.jpg"
                         style="opacity:0.5;"
@@ -152,20 +115,36 @@ tabindex="-1">
 
         </div>
 
+        <div class="border rounded p-2 mb-2 d-none reply-preview" id ="reply-preview">
+            <div class="d-flex justify-content-between">
+                <small>
+                    Replying to <strong id="reply-user"></strong>
+                </small>
+
+                <button type="button" class="cancel-reply close">
+                    &times;
+                </button>
+            </div>
+
+            <div id="reply-content" class="text-muted small"></div>
+        </div>
+
         <form class="comment-form mt-2" style="padding: 10px 15px;">
+
+            <input type="hidden" name="parentId" id="parentId" class="parentId">
 
             <input type="hidden"
                 name="postId"
                 value="<?= $post->getPostId() ?>">
 
             <div class="input-group">
-                <input type="text"
+                <input type="text" id="commentContent"
                     name="commentContent"
-                    class="form-control"
+                    class="form-control commentContent"
                     placeholder="Write a comment...">
 
                 <div class="input-group-append">
-                    <button class="btn btn-primary"
+                    <button class="btn btn-primary cmt-btn"
                             type="submit">
                         Comment
                     </button>
@@ -178,3 +157,5 @@ tabindex="-1">
   </div>
 
 </div>
+
+

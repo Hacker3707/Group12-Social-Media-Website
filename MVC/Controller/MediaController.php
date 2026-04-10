@@ -148,8 +148,8 @@ class MediaController extends AppController {
             return false;
         }
 
-        // 2. Tạo thư mục uploads/ NGAY TRONG PROJECT
-        $uploadDir = __DIR__ . "/../../uploads/";
+        // 2. Tạo thư mục uploads/ nếu chưa tồn tại
+       $uploadDir = __DIR__ . "/../../uploads/";
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }

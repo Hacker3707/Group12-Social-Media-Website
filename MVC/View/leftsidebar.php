@@ -1,17 +1,33 @@
-<ul class="nav flex-column">
-  <li class="nav-item">
-    <a class="nav-link active" href="#"><img src="../../Materials/Picture/Passo.png" class="rounded-circle" width="30" height="30" alt="..."></a>
-  </li>
-  <li class="nav-item">
-    <a href="index.php?controller=user&action=profile&id=<?= $_SESSION['user_id'] ?>" class="nav-link">Profile</a>
-  </li>
-  <li class="nav-item">
-    <a href="index.php?controller=group&action=myGroups" class="nav-link">Groups</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="#">Setting</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link disabled" href="#">Switch to Admin View</a>
-  </li>
-</ul>
+<div class="list-group shadow-sm border-0 rounded-lg">
+
+    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+        <div class="list-group-item bg-primary text-white font-weight-bold text-uppercase border-0 py-3">
+            <i class="fas fa-user-shield mr-2"></i> Admin Dashboard
+        </div>
+
+        <a href="index.php?controller=user&action=list" class="list-group-item list-group-item-action border-0 font-weight-bold text-dark py-3">
+            <i class="fas fa-users mr-2 text-primary" style="width: 25px;"></i> Quản lý Người dùng
+        </a>
+        
+        <a href="index.php?controller=group&action=list" class="list-group-item list-group-item-action border-0 font-weight-bold text-dark py-3">
+            <i class="fas fa-layer-group mr-2 text-success" style="width: 25px;"></i> Quản lý Nhóm
+        </a>
+        
+        <a href="index.php?controller=post&action=list" class="list-group-item list-group-item-action border-0 font-weight-bold text-dark py-3">
+            <i class="fas fa-newspaper mr-2 text-info" style="width: 25px;"></i> Quản lý Bài đăng
+        </a>
+        <?php else: ?>
+        <a href="index.php?controller=user&action=profile&id=<?= $_SESSION['user_id'] ?? 0 ?>" class="list-group-item list-group-item-action border-0 font-weight-bold text-dark py-3">
+            <i class="fas fa-user mr-2 text-primary" style="width: 25px;"></i> Profile
+        </a>
+        
+        <a href="index.php?controller=group&action=myGroups" class="list-group-item list-group-item-action border-0 font-weight-bold text-dark py-3">
+            <i class="fas fa-users mr-2 text-info" style="width: 25px;"></i> Groups
+        </a>
+        
+        <a href="#" class="list-group-item list-group-item-action border-0 font-weight-bold text-dark py-3">
+            <i class="fas fa-cog mr-2 text-secondary" style="width: 25px;"></i> Setting
+        </a>
+        <?php endif; ?>
+
+</div>

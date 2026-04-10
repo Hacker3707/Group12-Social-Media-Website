@@ -31,13 +31,24 @@ class PostController extends AppController {
         $groupId    = null;
         $categoryId = !empty($_POST['category_id']) ? intval($_POST['category_id']) : null;
 
-        $title     = $_POST['title'];
-        $content   = $_POST['content'];
-        $price     = !empty($_POST['price']) ? $_POST['price'] : null;
+        $title = $_POST['title'];
+        $content = $_POST['content'];
+        $isProduct = $_POST['is_product'] ?? 1;
+        $price = $_POST['price'] ?? null;
         $condition = $_POST['condition'] ?? 'good';
-        $location  = $_POST['location']  ?? 'other';
-        $brand     = !empty($_POST['brand']) ? $_POST['brand'] : null;
-        $status    = 'selling';
+        $location = $_POST['location'] ?? 'other';
+        $brand = $_POST['brand'] ?? null;
+        $status = 'selling';
+        $groupId = $_POST['group_id'] ?? null;
+
+        //  nếu KHÔNG phải product → reset hết
+        if($isProduct == 0){
+            $price = null;
+            $condition = null;
+            $location = null;
+            $brand = null;
+            $status = null;
+        }
 
         $post = new Post(
             null, $userId, $groupId, $categoryId,
@@ -109,10 +120,25 @@ class PostController extends AppController {
                 }
             }
         }
+    }
 
         $comments = [];
         foreach ($posts as $post) {
             $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
+        }
+
+
+        $commentTree = [];
+
+        foreach($posts as $post){
+
+            $postId = $post->getPostId();
+            $commentTree[$postId] = [];
+
+            foreach($comments[$postId] as $c){
+                $parent = $c->getParentCommentId();
+                $commentTree[$postId][$parent][] = $c;
+            }
         }
 
         $reactions_forComment = [];
@@ -122,6 +148,7 @@ class PostController extends AppController {
                 $reactions_forComment[$commentId] = $this->reactionModel->selectReactionsForComment($commentId);
             }
         }
+    }
 
         $isSameUser_reactCmt = [];
         foreach ($comments as $postComments) {
@@ -142,16 +169,33 @@ class PostController extends AppController {
         foreach ($posts as $post) {
             $mediaForPost[$post->getPostId()] = $this->mediaModel->getByPostId($post->getPostId());
         }
-
-        include_once __DIR__ . "/../View/home.php";
     }
+
+    // =======================
+    // 🔥 RENDER VIEW
+    // =======================
+    include_once __DIR__ . "/../View/home.php";
+}
+
+       
 
     public function PostAction(){
         $action = $_GET['action'] ?? "home";
-        switch ($action) {
-            case "createPost":  $this->createPost();    break;
-            case "home":        $this->showHome();       break;
-            case "create":      $this->showCreateForm(); break;
+
+        switch($action){
+
+            case "createPost":
+                $this->createPost();
+                break;
+
+            case "home":
+                 unset($_SESSION['category_filter']); // 🔥 tránh bị kẹt filter
+                $this->showHome();
+                break;
+            case "create":
+            $this->showCreateForm();
+             break;
+
         }
     }
 
@@ -211,7 +255,8 @@ class PostController extends AppController {
     }
 
     public function showCreateForm(){
-        $categories = $this->categoryModel->getAll();
+        $categories = $this->categoryModel->getAll(); // 👈 lấy từ DB
+        $group = null;
         include __DIR__ . "/../View/createpost_view.php";
         die();
     }
@@ -246,6 +291,58 @@ class PostController extends AppController {
 
         $reactions = $this->reactionModel->selectReactionsForPost($postId);
         include_once "MVC/View/home.php";
+    }
+    
+    // ====================================================================
+    // ================= KHU VỰC DÀNH RIÊNG CHO ADMIN =====================
+    // ====================================================================
+
+    // 1. Xem danh sách tất cả bài viết
+    public function list() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            header("Location: index.php");
+            exit();
+        }
+        $posts = $this->postModel->getAll();
+        include_once "MVC/View/Admin/Post/list.php";
+    }
+
+    // 2. Xóa bài viết (Bằng nút xóa của Admin)
+    public function adminDelete() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            header("Location: index.php");
+            exit();
+        }
+        
+        if (isset($_GET['id'])) {
+            $postId = (int)$_GET['id'];
+            $this->postModel->delete($postId);
+            $_SESSION['flash_message'] = "Đã xóa bài viết thành công!";
+            header("Location: index.php?controller=post&action=list");
+            exit();
+        }
+    }
+
+    // 3. Xem chi tiết bài viết (Để quản lý Comment)
+    public function adminDetail() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            header("Location: index.php");
+            exit();
+        }
+
+        $postId = (int)($_GET['id'] ?? 0);
+        $post = $this->postModel->getById($postId);
+        
+        if (!$post) {
+            $_SESSION['flash_message'] = "Bài viết không tồn tại!";
+            header("Location: index.php?controller=post&action=list");
+            exit();
+        }
+
+        // Lấy danh sách bình luận của bài viết này
+        $comments = $this->commentModel->fetchByField('PostID', $postId);
+        
+        include_once "MVC/View/Admin/Post/admin_detail.php";
     }
 }
 ?>

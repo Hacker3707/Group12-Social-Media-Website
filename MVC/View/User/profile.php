@@ -191,7 +191,7 @@ $(document).ready(function(){
         button.prop("disabled", true).text("Đang xử lý...");
 
        $.ajax({
-    url: "/Group12-Social-Media-Website/index.php?controller=follow&action=" + action,
+    url: "/index.php?controller=follow&action=" + action,
     method: "POST",
     data: { following_id: userId }, // ✅ dấu phẩy này phải có
 

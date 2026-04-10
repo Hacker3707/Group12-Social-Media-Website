@@ -1,22 +1,39 @@
 <?php
 include_once "MVC/Model/AppModel.php";
 include_once "Entity/User.php";
+include_once "Entity/Admin.php";
+include_once "Entity/Member.php";
 
 class UserModel extends AppModel {
+
+    // ================= NHÀ MÁY ĐÚC ĐỐI TƯỢNG (FACTORY) =================
+    private function mapToUserObject($row) {
+        if ($row['UserRole'] === 'admin') {
+            return new Admin(
+                $row['UserID'], $row['Username'], $row['Email'], $row['AccountPassword'],
+                $row['AccountStatus'], $row['AvatarFP'], $row['Phone'], $row['Bio']
+            );
+        } else {
+            return new Member(
+                $row['UserID'], $row['Username'], $row['Email'], $row['AccountPassword'],
+                $row['AccountStatus'], $row['AvatarFP'], $row['Phone'], $row['Bio']
+            );
+        }
+    }
 
     // ================= XÁC THỰC ĐĂNG NHẬP =================
     public function checkLogin($username, $password) {
         $username = mysqli_real_escape_string($this->link, $username);
         $password = mysqli_real_escape_string($this->link, $password);
 
-        // Kiểm tra xem có user nào khớp và trạng thái tài khoản đang 'active' không
+        // Chỉ cho phép tài khoản 'active' đăng nhập (chặn bị ban hoặc deleted)
         $sql = "SELECT * FROM users WHERE Username = '$username' AND AccountPassword = '$password' AND AccountStatus = 'active'";
         $result = $this->query($sql);
 
         if ($row = mysqli_fetch_assoc($result)) {
-            return $row; // Trả về thông tin user nếu đúng
+            return $row; 
         }
-        return null; // Trả về null nếu sai
+        return null; 
     }
 
     // ================= CREATE =================
@@ -32,20 +49,32 @@ class UserModel extends AppModel {
         return $this->execute($sql);
     }
 
-    // ================= LIST =================
+    // ================= LIST (Dành cho Admin) =================
     public function getAll() {
-        $sql = "SELECT * FROM users ORDER BY UserID DESC";
+        // Ẩn những người đã bị xóa mềm ('deleted') khỏi danh sách hiển thị
+        $sql = "SELECT * FROM users WHERE AccountStatus != 'deleted' ORDER BY UserID DESC";
         $result = $this->query($sql);
         $list = [];
 
-        while ($row = mysqli_fetch_assoc($result)) {
-            $list[] = new User(
-                $row['UserID'],
-                $row['Username'],
-                $row['Email'],
-                $row['UserRole'],
-                $row['AccountStatus']
-            );
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $list[] = $this->mapToUserObject($row);
+            }
+        }
+        return $list;
+    }
+
+    // ================= SEARCH =================
+    public function searchUsers($keyword) {
+        $keyword = mysqli_real_escape_string($this->link, $keyword);
+        $sql = "SELECT * FROM users WHERE AccountStatus != 'deleted' AND (Username LIKE '%$keyword%' OR Email LIKE '%$keyword%') ORDER BY UserID DESC";
+        $result = $this->query($sql);
+        $list = [];
+
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $list[] = $this->mapToUserObject($row);
+            }
         }
         return $list;
     }
@@ -57,7 +86,7 @@ class UserModel extends AppModel {
         $result = $this->query($sql);
 
         if ($row = mysqli_fetch_assoc($result)) {
-            return $row; // Trả về mảng để Controller lấy Bio, Phone dễ dàng
+            return $row; // Trả về mảng cho Profile/Edit dễ dùng
         }
         return null;
     }
@@ -80,11 +109,23 @@ class UserModel extends AppModel {
         return $this->execute($sql);
     }
 
-    // ================= DELETE (SOFT) =================
+    // ================= DELETE (SOFT DELETE) =================
     public function delete($userId) {
         $userId = (int)$userId;
-        // Xóa mềm để giữ toàn vẹn dữ liệu mạng xã hội
         $sql = "UPDATE users SET AccountStatus = 'deleted' WHERE UserID = $userId";
+        return $this->execute($sql);
+    }
+
+    // ================= BAN / UNBAN (MỚI THÊM) =================
+    public function banUser($userId) {
+        $userId = (int)$userId;
+        $sql = "UPDATE users SET AccountStatus = 'banned' WHERE UserID = $userId";
+        return $this->execute($sql);
+    }
+
+    public function unbanUser($userId) {
+        $userId = (int)$userId;
+        $sql = "UPDATE users SET AccountStatus = 'active' WHERE UserID = $userId";
         return $this->execute($sql);
     }
 
@@ -100,12 +141,12 @@ class UserModel extends AppModel {
         return mysqli_num_rows($result) > 0;
     }
 
-    // ================= QUÊN MẬT KHẨU: KIỂM TRA USER =================
+    // ================= QUÊN MẬT KHẨU =================
     public function verifyUserForReset($username, $email) {
         $username = mysqli_real_escape_string($this->link, $username);
         $email = mysqli_real_escape_string($this->link, $email);
         
-        $sql = "SELECT * FROM users WHERE Username = '$username' AND Email = '$email'";
+        $sql = "SELECT * FROM users WHERE Username = '$username' AND Email = '$email' AND AccountStatus != 'deleted'";
         $result = $this->query($sql);
         
         if ($row = mysqli_fetch_assoc($result)) {
@@ -114,7 +155,6 @@ class UserModel extends AppModel {
         return null;
     }
 
-    // ================= QUÊN MẬT KHẨU: CẬP NHẬT PASS MỚI =================
     public function updatePassword($userId, $newPassword) {
         $userId = (int)$userId;
         $newPassword = mysqli_real_escape_string($this->link, $newPassword);
@@ -122,38 +162,5 @@ class UserModel extends AppModel {
         $sql = "UPDATE users SET AccountPassword = '$newPassword' WHERE UserID = $userId";
         return $this->execute($sql);
     }
-
-    public function searchUsers($keyword) {
-        $keyword = mysqli_real_escape_string($this->link, $keyword);
-        $sql = "SELECT * FROM users WHERE Username LIKE '%$keyword%' OR Email LIKE '%$keyword%'";
-        $result = $this->query($sql);
-        $list = [];
-
-        while ($row = mysqli_fetch_assoc($result)) {
-            $user = new User(
-                $row['UserID'],
-                $row['Username'],
-                $row['Email'],
-                $row['UserRole'],
-                $row['AccountStatus']
-            );
-            $user->setBio($row['Bio']);
-            $user->setPhone($row['Phone']);
-            $user->setAvatarFP($row['AvatarFP']);
-            $list[] = $user;
-        }
-        return $list;
-    }
-
-    public function getUsernameById($userId) {
-        $userId = (int)$userId;
-        $sql = "SELECT Username FROM users WHERE UserID = $userId";
-        $result = $this->query($sql);
-
-        if ($row = mysqli_fetch_assoc($result)) {
-            return $row['Username'];
-        }
-        return null;
-        
-    }
 }
+?>
