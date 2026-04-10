@@ -5,7 +5,7 @@
 
 <div class="container mt-3">
 
-<!-- 🧾 POST INFO -->
+<!-- 📝 POST INFO -->
 <div class="card mb-3 shadow-sm">
   <div class="card-header bg-primary text-white">
 
@@ -160,6 +160,29 @@
     <input type="radio" name="status" value="selling" checked> Selling
   </label>
 
+<!-- 📸 MEDIA -->
+<div class="card mb-3 shadow-sm">
+  <div class="card-header bg-info text-white">📸 Media</div>
+  <div class="card-body">
+
+    <div class="custom-file mb-2">
+      <input type="file" name="media" id="mediaInput"
+             class="custom-file-input" accept="image/*,video/*">
+      <label class="custom-file-label" for="mediaInput">Choose file</label>
+    </div>
+
+    <!-- Xem trước ảnh/video -->
+    <div id="mediaPreview" class="mt-2" style="display:none;">
+      <p class="text-muted small mb-1">Preview:</p>
+      <img id="previewImg" src="" alt="Preview"
+           class="img-fluid rounded"
+           style="max-height:300px; object-fit:cover; display:none;">
+      <video id="previewVideo" controls
+             class="w-100 rounded"
+             style="max-height:300px; display:none;">
+        <source id="previewVideoSrc" src="">
+      </video>
+    </div>
   <label class="btn btn-outline-warning">
     <input type="radio" name="status" value="reserved"> Reserved
   </label>
@@ -184,7 +207,7 @@
 </div>
 <!-- 🔘 BUTTON (GIỮ STYLE CŨ CỦA BẠN) -->
 <div class="row" id="button-group">
-    <button type="submit" class="btn btn-primary" style="margin-right:10px;">
+    <button type="submit" id="submitBtn" class="btn btn-primary" style="margin-right:10px;">
         🚀 Post
     </button>
     <a href="./index.php?controller=post&action=showHome" class="btn btn-secondary">
@@ -199,19 +222,16 @@
 
 // ===== XEM TRƯỚC ẢNH/VIDEO KHI CHỌN FILE =====
 document.getElementById("mediaInput").addEventListener("change", function(){
+    let file    = this.files[0];
+    let preview = document.getElementById("mediaPreview");
+    let imgEl   = document.getElementById("previewImg");
+    let videoEl = document.getElementById("previewVideo");
+    let videoSrc = document.getElementById("previewVideoSrc");
 
-    let file = this.files[0];
-    let preview   = document.getElementById("mediaPreview");
-    let imgEl     = document.getElementById("previewImg");
-    let videoEl   = document.getElementById("previewVideo");
-    let videoSrc  = document.getElementById("previewVideoSrc");
+    imgEl.style.display    = "none";
+    videoEl.style.display  = "none";
+    preview.style.display  = "none";
 
-    // Reset
-    imgEl.style.display   = "none";
-    videoEl.style.display = "none";
-    preview.style.display = "none";
-
-    // Cập nhật label
     let label = document.querySelector(".custom-file-label");
     label.textContent = file ? file.name : "Choose file";
 
@@ -220,8 +240,8 @@ document.getElementById("mediaInput").addEventListener("change", function(){
     let url = URL.createObjectURL(file);
 
     if (file.type.startsWith("image/")) {
-        imgEl.src         = url;
-        imgEl.style.display   = "block";
+        imgEl.src           = url;
+        imgEl.style.display = "block";
         preview.style.display = "block";
     } else if (file.type.startsWith("video/")) {
         videoSrc.src          = url;
@@ -244,10 +264,9 @@ document.getElementById("postForm").addEventListener("submit", function(e){
         return;
     }
 
-    // Disable nút Post để tránh bấm 2 lần
-    let submitBtn = this.querySelector("button[type=submit]");
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Posting...";
+    let submitBtn = document.getElementById("submitBtn");
+    submitBtn.disabled    = true;
+    submitBtn.textContent = "⏳ Posting...";
 
     // BƯỚC 1: Tạo post
       fetch("./index.php?controller=post&action=createPost", {
@@ -257,50 +276,49 @@ document.getElementById("postForm").addEventListener("submit", function(e){
     .then(res => res.text())
     .then(data => {
 
-        console.log("Response:", data);
+        console.log("createPost response:", data);
 
-        if (data.trim().startsWith("success")) {
+        if (!data.trim().startsWith("success")) {
+            document.getElementById("result").innerHTML =
+                "<div class='alert alert-danger'>❌ Failed to create post.</div>";
+            submitBtn.disabled    = false;
+            submitBtn.textContent = "🚀 Post";
+            return;
+        }
 
-            let postId = data.split(":")[1]; // Lấy post_id từ "success:123"
+        // Lấy post_id từ "success:123"
+        let postId    = data.trim().split(":")[1];
+        let mediaFile = document.getElementById("mediaInput");
 
-            let mediaFile = document.getElementById("mediaInput");
+        // BƯỚC 2: Nếu có file thì upload ảnh/video
+        if (mediaFile && mediaFile.files.length > 0) {
 
-            // BƯỚC 2: Nếu có file thì upload ảnh/video
-            if (mediaFile && mediaFile.files.length > 0) {
+            let mediaData = new FormData();
+            mediaData.append("media",   mediaFile.files[0]);
+            mediaData.append("post_id", postId);
 
-                let mediaData = new FormData();
-                mediaData.append("media",   mediaFile.files[0]);
-                mediaData.append("post_id", postId);
-
-                fetch("./index.php?controller=media&action=uploadForPost", {
-                    method: "POST",
-                    body: mediaData
-                })
-                .then(res => res.text())
-                .then(mediaRes => {
-                    console.log("Media upload:", mediaRes);
-                    showSuccessAndRedirect();
-                })
-                .catch(err => {
-                    console.error("Media upload error:", err);
-                    showSuccessAndRedirect(); // Vẫn redirect dù upload lỗi
-                });
-
-            } else {
+            fetch("index.php?controller=media&action=uploadForPost", {
+                method: "POST",
+                body: mediaData
+            })
+            .then(res => res.text())
+            .then(mediaRes => {
+                console.log("uploadForPost response:", mediaRes);
                 showSuccessAndRedirect();
-            }
+            })
+            .catch(err => {
+                console.error("Media upload error:", err);
+                showSuccessAndRedirect();
+            });
 
         } else {
-            document.getElementById("result").innerHTML =
-                "<div class='alert alert-danger'>Failed to create post. Please try again.</div>";
-            submitBtn.disabled = false;
-            submitBtn.textContent = "🚀 Post";
+            showSuccessAndRedirect();
         }
 
     })
     .catch(err => {
         console.error("ERROR:", err);
-        submitBtn.disabled = false;
+        submitBtn.disabled    = false;
         submitBtn.textContent = "🚀 Post";
     });
 
