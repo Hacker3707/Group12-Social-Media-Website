@@ -110,7 +110,7 @@ class PostController extends AppController {
    public function showHome(){
 
     // 🔥 Lấy filter nếu có
-    $categoryId = $_SESSION['category_filter'] ?? null;
+    $categoryId = $_GET['category_id'] ?? null;
 
     if($categoryId){
         $posts = $this->postModel->fetchByField('CategoryID', $categoryId);

@@ -1,3 +1,5 @@
+<?php define("BASE_URL", "/Group12-Social-Media-Website/"); ?>
+
 <form id="postForm" method="POST" enctype="multipart/form-data">
   <input type="hidden" name="is_product" id="isProductInput" value="1">
 
@@ -185,7 +187,7 @@
     <button type="submit" class="btn btn-primary" style="margin-right:10px;">
         🚀 Post
     </button>
-    <a href="/index.php?controller=post&action=showHome" class="btn btn-secondary">
+    <a href="./index.php?controller=post&action=showHome" class="btn btn-secondary">
         Cancel
     </a>
 </div>
@@ -248,9 +250,9 @@ document.getElementById("postForm").addEventListener("submit", function(e){
     submitBtn.textContent = "Posting...";
 
     // BƯỚC 1: Tạo post
-    fetch("/index.php?controller=post&action=createPost", {
-        method: "POST",
-        body: formData
+      fetch("./index.php?controller=post&action=createPost", {
+      method: "POST",
+      body: formData
     })
     .then(res => res.text())
     .then(data => {
@@ -270,7 +272,7 @@ document.getElementById("postForm").addEventListener("submit", function(e){
                 mediaData.append("media",   mediaFile.files[0]);
                 mediaData.append("post_id", postId);
 
-                fetch("/index.php?controller=media&action=uploadForPost", {
+                fetch("./index.php?controller=media&action=uploadForPost", {
                     method: "POST",
                     body: mediaData
                 })
@@ -356,7 +358,7 @@ function showSuccessAndRedirect() {
     document.getElementById("result").innerHTML =
         "<div class='alert alert-success'>✅ Post created successfully!</div>";
     setTimeout(() => {
-        window.location.href = "/index.php?controller=post&action=showHome";
+        window.location.href = "./index.php?controller=post&action=showHome";
     }, 1500);
 }
 
