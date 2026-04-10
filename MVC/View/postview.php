@@ -10,77 +10,67 @@ if(empty($posts)){
 
 <?php foreach($posts as $post): ?>
 <?php 
+$postId = $post->getPostId();
 $isProduct = $post->getPrice() !== null 
           || $post->getCondition() 
           || $post->getStatus();
 ?>
-    
+
 <div class="post-item border rounded p-3 mb-3 bg-white">
 
-    <!-- Post Header -->
+    <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-2">
+
         <div>
-            <img src="" alt="???" class="rounded-circle mr-2">
+            <img src="" alt="avatar" class="rounded-circle mr-2" width="30">
 
             <a href="index.php?controller=user&action=profile&user_id=<?= $post->getUserId() ?>">
                 <strong><?= htmlspecialchars($post->getUsername()) ?></strong>
             </a>
 
+            <!-- Category -->
             <?php if($post->getCategoryName()): ?>
                 <span style="margin: 0 5px;">›</span>
+
                 <?php if($post->getCategoryName() !== 'No Category'): ?>
-                    <a href="index.php?controller=post&action=getPostsByCategoryId&category_id=<?= $post->getCategoryId() ?>"
-                       style="color: gray; text-decoration: none;">
-                        <?= htmlspecialchars($post->getCategoryName()) ?>
+                    <a href="index.php?controller=post&action=getPostsByCategoryId&category_id=<?= $post->getCategoryId() ?>">
+                        <button class="btn btn-outline-secondary btn-sm" style="color: cornflowerblue;">
+                            <?= htmlspecialchars($post->getCategoryName()) ?>
+                        </button>
                     </a>
                 <?php else: ?>
-                    <span style="color: gray;"><?= htmlspecialchars($post->getCategoryName()) ?></span>
+                    <span style="color: gray;">
+                        <?= htmlspecialchars($post->getCategoryName()) ?>
+                    </span>
                 <?php endif; ?>
+            <?php endif; ?>
+
+            <!-- Group -->
+            <?php if($post->getGroupName()): ?>
+                <span style="margin: 0 5px;">››</span>
+                <a href="index.php?controller=group&action=detail&id=<?= $post->getGroupId() ?>">
+                    <button class="btn btn-outline-secondary btn-sm" style="color: cornflowerblue;">
+                        <?= htmlspecialchars($post->getGroupName()) ?>
+                    </button>
+                </a>
             <?php endif; ?>
         </div>
 
-    <?php if($post->getCategoryName()): ?>
-        <span style="margin: 0 5px;">›</span>
-        <?php if($post->getCategoryName() !== 'No Category') { ?>
-            <a href="index.php?controller=post&action=getPostsByCategoryId&category_id=<?= $post->getCategoryId() ?>"
-               style="color: gray; text-decoration: none;">
-                <button class="btn btn-outline-secondary" style="color: cornflowerblue; font-size: 14px;"><?= htmlspecialchars($post->getCategoryName()) ?></button>
-            </a>
-            <?php } else { ?>
-                <span style="color: gray;">
-                    <?= htmlspecialchars($post->getCategoryName()) ?>
-                </span>
-            
-        <?php } ?>
-    <?php endif; ?>
+        <small class="text-muted"><?= $post->getCreatedAt() ?></small>
+    </div>
 
-    <?php if($post->getGroupName()): ?>
-        <span style="margin: 0 5px;">››</span>
-            <a href="index.php?controller=group&action=detail&id=<?= $post->getGroupId() ?>"
-               style="color: gray; text-decoration: none;">
-                <button class="btn btn-outline-secondary" style="color: cornflowerblue; font-size: 14px;"><?= htmlspecialchars($post->getGroupName()) ?></button>
-            </a>
-    <?php endif; ?>
-</div>
-
-        <small class="text-muted">
-            <?= $post->getCreatedAt() ?>
-        </small>
- </div>
-
-    <!-- Post Content -->
+    <!-- CONTENT -->
     <h5><?= htmlspecialchars($post->getTitle()) ?></h5>
     <p><?= nl2br(htmlspecialchars($post->getContent())) ?></p>
 
-    <!-- ✅ Post Media -->
+    <!-- MEDIA (giữ từ code trên) -->
     <?php if (!empty($mediaForPost[$postId])): ?>
-        <div class="post-media mb-2">
+        <div class="mb-2">
             <?php foreach ($mediaForPost[$postId] as $media): ?>
                 <?php if ($media->getMediaType() === 'photo'): ?>
                     <img src="/<?= htmlspecialchars($media->getFilePath()) ?>"
                          class="img-fluid rounded mb-1"
-                         style="max-height:400px; object-fit:cover; width:100%;"
-                         alt="Post image">
+                         style="max-height:400px; width:100%; object-fit:cover;">
                 <?php elseif ($media->getMediaType() === 'video'): ?>
                     <video controls class="w-100 rounded mb-1" style="max-height:400px;">
                         <source src="/<?= htmlspecialchars($media->getFilePath()) ?>">
@@ -90,143 +80,80 @@ $isProduct = $post->getPrice() !== null
         </div>
     <?php endif; ?>
 
-    <!-- Extra Info -->
-    <div class="text-muted small mt-2">
+    <!-- BADGE -->
+    <?php if($isProduct): ?>
+    <div class="mt-2 d-flex flex-wrap" style="gap:6px;">
         <?php if($post->getPrice() !== null): ?>
-            💰 Price: <?= number_format($post->getPrice()) ?> VND <br>
+            <span class="badge badge-success">
+                💰 <?= number_format($post->getPrice()) ?> VND
+            </span>
         <?php endif; ?>
-        📦 Condition: <?= htmlspecialchars($post->getCondition()) ?> <br>
-        📍 Location: <?= htmlspecialchars($post->getLocation()) ?> <br>
+
+        <?php if($post->getCondition()): ?>
+            <span class="badge badge-info"><?= $post->getCondition() ?></span>
+        <?php endif; ?>
+
+        <?php if($post->getLocation()): ?>
+            <span class="badge badge-secondary"><?= $post->getLocation() ?></span>
+        <?php endif; ?>
+
         <?php if($post->getBrand()): ?>
-            🏷️ Brand: <?= htmlspecialchars($post->getBrand()) ?> <br>
+            <span class="badge badge-dark"><?= $post->getBrand() ?></span>
         <?php endif; ?>
-        📌 Status: <?= htmlspecialchars($post->getStatus()) ?>
     </div>
-
-    <!--  BADGE Ở ĐÂY -->
-<?php if($isProduct): ?>
-<div class="mt-2 d-flex flex-wrap" style="gap:6px;">
-
-    <?php if($post->getPrice() !== null): ?>
-        <span class="badge badge-success">
-            💰 <?= number_format($post->getPrice()) ?> VND
-        </span>
     <?php endif; ?>
 
-    <?php if($post->getCondition()): ?>
-        <span class="badge badge-info">
-            <?= $post->getCondition() ?>
-        </span>
-    <?php endif; ?>
-
-    <?php if($post->getLocation()): ?>
-        <span class="badge badge-secondary">
-            <?= $post->getLocation() ?>
-        </span>
-    <?php endif; ?>
-
-    <?php if($post->getBrand()): ?>
-        <span class="badge badge-dark">
-            <?= $post->getBrand() ?>
-        </span>
-    <?php endif; ?>
-
-</div>
-<?php endif; ?>
-
-   <!-- Extra Info -->
-  
-
-   
-
-<?php if($isProduct): ?>
-<div class="text-muted small mt-2">
-
-    <?php if($post->getPrice() !== null): ?>
-        💰 Price: <?= number_format($post->getPrice()) ?> VND <br>
-    <?php endif; ?>
-
-    <?php if($post->getCondition()): ?>
-        📦 Condition: <?= htmlspecialchars($post->getCondition()) ?> <br>
-    <?php endif; ?>
-
-    <?php if($post->getLocation()): ?>
-        📍 Location: <?= htmlspecialchars($post->getLocation()) ?> <br>
-    <?php endif; ?>
-
-    <?php if($post->getBrand()): ?>
-        🏷️ Brand: <?= htmlspecialchars($post->getBrand()) ?> <br>
-    <?php endif; ?>
-
-    <?php if($post->getStatus()): ?>
-        📌 Status: <?= htmlspecialchars($post->getStatus()) ?>
-    <?php endif; ?>
-
-</div>
-<?php endif; ?>
-
-   
-    <!-- Post Actions -->
+    <!-- ACTIONS -->
     <div class="mt-2 d-flex align-items-center">
+
         <button class="btn btn-sm btn-outline-primary col-md-2 col-12"
             data-toggle="modal"
             data-target="#postModal<?= $postId ?>">
             View Post
         </button>
 
-        <button class="btn btn-sm btn-outline-secondary ml-2" type="button">
-            Comment <span class="badge badge-light"><?= count($comments[$postId] ?? []) ?></span>
+        <button class="btn btn-sm btn-outline-secondary ml-2">
+            Comment 
+            <span class="badge badge-light">
+                <?= count($comments[$postId] ?? []) ?>
+            </span>
         </button>
 
+        <!-- MENU -->
         <div class="btn-group dropright ml-2">
-            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background-color: rgb(186, 212, 230); border: none;">
+            <button class="btn btn-secondary dropdown-toggle"
+                    data-toggle="dropdown"
+                    style="background-color: rgb(186, 212, 230); border:none;">
                 <i class="bi bi-three-dots"></i>
             </button>
+
             <div class="dropdown-menu">
-                <button class="dropdown-item" type="button">Edit</button>
-                <button class="dropdown-item" type="button">Report</button>
-                <button class="dropdown-item delete-btn" type="button"
-                        data-postid="<?= $postId ?>">Delete</button>
+                <button class="dropdown-item">Edit</button>
+                <button class="dropdown-item">Report</button>
+                <button class="dropdown-item delete-btn"
+                        data-postid="<?= $postId ?>">
+                    Delete
+                </button>
             </div>
         </div>
-        
-    
 
-        <?php if($isSameUser[$postId] ?? false): ?>
+        <!-- LIKE -->
+        <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
+                data-postid="<?= $postId ?>">
 
-    <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
-    type="button"
-    data-postid="<?= $postId ?>">
+            <i class="bi <?= ($isSameUser[$postId] ?? false) ? 'bi-heart-fill' : 'bi-heart' ?>"></i>
 
-        <i class="bi bi-heart-fill"></i>
-        <span class="badge badge-light like-count">
-            <?= count($reactions_forPost[$postId] ?? []) ?>
-        </span>
+            <span class="badge badge-light like-count">
+                <?= count($reactions_forPost[$postId] ?? []) ?>
+            </span>
+        </button>
 
-    </button>
+    </div>
 
-<?php else: ?>
-
-    <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
-    type="button"
-    data-postid="<?= $postId ?>">
-
-        <i class="bi bi-heart"></i>
-        <span class="badge badge-light like-count">
-            <?= count($reactions_forPost[$postId] ?? []) ?>
-        </span>
-
-    </button>
-
-<?php endif; ?>
-    
-</div>
-<!-- Modal -->
-
-<?php include "MVC/View/post_modal.php"; ?>
+    <!-- MODAL -->
+    <?php include "MVC/View/post_modal.php"; ?>
 
 </div>
-
 
 <?php endforeach; ?>
 

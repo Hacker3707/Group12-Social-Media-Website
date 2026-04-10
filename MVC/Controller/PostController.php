@@ -120,7 +120,7 @@ class PostController extends AppController {
                 }
             }
         }
-    }
+    
 
         $comments = [];
         foreach ($posts as $post) {
@@ -148,7 +148,7 @@ class PostController extends AppController {
                 $reactions_forComment[$commentId] = $this->reactionModel->selectReactionsForComment($commentId);
             }
         }
-    }
+    
 
         $isSameUser_reactCmt = [];
         foreach ($comments as $postComments) {
@@ -169,13 +169,13 @@ class PostController extends AppController {
         foreach ($posts as $post) {
             $mediaForPost[$post->getPostId()] = $this->mediaModel->getByPostId($post->getPostId());
         }
-    }
+    
 
-    // =======================
-    // 🔥 RENDER VIEW
-    // =======================
-    include_once __DIR__ . "/../View/home.php";
-}
+        // =======================
+        // 🔥 RENDER VIEW
+        // =======================
+        include_once __DIR__ . "/../View/home.php";
+    }
 
        
 
