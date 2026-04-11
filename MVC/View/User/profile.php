@@ -88,7 +88,7 @@
                 <p class="profile-bio"><?= !empty($user['Bio']) ? htmlspecialchars($user['Bio']) : 'Chưa có tiểu sử.' ?></p>
                 
                 <?php if(isset($_SESSION['user_id']) && $_SESSION['user_id'] == $user['UserID']): ?>
-                    <a href="index.php?controller=user&action=edit&id=<?= $user['UserID'] ?>" class="btn btn-light font-weight-bold mt-2"><i class="fas fa-pen"></i> Chỉnh sửa trang cá nhân</a>
+                    <a href="/Group12-Social-Media-Website/ndex.php?controller=user&action=edit&id=<?= $user['UserID'] ?>" class="btn btn-light font-weight-bold mt-2"><i class="fas fa-pen"></i> Chỉnh sửa trang cá nhân</a>
                 <?php else: ?>
                     <?php $isFollowing = $isFollowing ?? false; ?>
 
@@ -191,7 +191,7 @@ $(document).ready(function(){
         button.prop("disabled", true).text("Đang xử lý...");
 
        $.ajax({
-    url: "/index.php?controller=follow&action=" + action,
+    url: "/Group12-Social-Media-Website/index.php?controller=follow&action=" + action,
     method: "POST",
     data: { following_id: userId }, // ✅ dấu phẩy này phải có
 

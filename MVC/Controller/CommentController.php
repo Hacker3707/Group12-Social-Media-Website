@@ -21,9 +21,45 @@ class CommentController {
             echo "fail";
             die(mysqli_error($this->commentModel->getConnection()));
         }
+        include_once __DIR__ . "/../Model/NotificationModel.php";
+    include_once __DIR__ . "/../Model/PostModel.php";
+
+    $notiModel = new NotificationModel();
+    $postModel = new PostModel();
+
+    $post = $postModel->getById($postId);
+    $postOwnerId = $post->getUserId();
+
+ include_once __DIR__ . "/../Model/NotificationModel.php";
+include_once __DIR__ . "/../Model/PostModel.php";
+
+$notiModel = new NotificationModel();
+$postModel = new PostModel();
+
+$post = $postModel->getById($postId);
+$postOwnerId = $post->getUserId();
+
+// 🔥 FIX quan trọng
+$parentCommentId = !empty($_POST['parent_comment_id']) ? $_POST['parent_comment_id'] : null;
+
+
+// 🔵 CASE 1: COMMENT
+if ($parentCommentId === null) {
+
+    if ($postOwnerId != $userId) {
+
+        $notiModel->insert(
+            $postOwnerId,
+            $userId,
+            "<b>" . $_SESSION['username'] . "</b> đã bình luận bài viết của bạn",
+            "comment"
+        );
+    }
+
+}
+
 
         echo "success";
-        exit;
     }
 
     public function deleteComment() {

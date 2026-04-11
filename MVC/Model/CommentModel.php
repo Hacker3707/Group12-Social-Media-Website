@@ -62,7 +62,28 @@ class CommentModel extends AppModel {
         $sql = "DELETE FROM comment WHERE CommentID = $commentId";
         return $this->execute($sql);
     }
+public function getById($id) {
 
+    $id = (int)$id;
+
+    $sql = "SELECT * FROM comment WHERE CommentID = $id";
+    $result = $this->query($sql);
+
+    if ($row = mysqli_fetch_assoc($result)) {
+
+        return new Comment(
+            $row['CommentID'],
+            $row['CommentParentID'],
+            $row['PostID'],
+            $row['UserID'],
+            $row['Content'],
+            $row['CreatedAt'],
+            []
+        );
+    }
+
+    return null;
+}
     
     
 }
