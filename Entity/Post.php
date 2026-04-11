@@ -16,6 +16,7 @@ class Post {
     private $PostStatus;
     private $CategoryName;
     
+    private $GroupName;
 
     public function __construct(
         $post_id, 
@@ -141,6 +142,14 @@ class Post {
 
     public function setCategoryName($name) {
     $this->CategoryName = $name;
+    }
+
+    public function setGroupName($name) {
+        $this->GroupName = $name;
+    }
+
+    public function getGroupName() {
+        return $this->GroupName;
     }
 
 }

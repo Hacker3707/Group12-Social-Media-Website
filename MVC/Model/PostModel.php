@@ -16,10 +16,18 @@ class PostModel extends AppModel {
         $content = mysqli_real_escape_string($this->link,$post->getContent());
 
         $price = $post->getPrice() === null ? "NULL" : intval($post->getPrice());
-        $condition = mysqli_real_escape_string($this->link, $post->getCondition());
-        $location = mysqli_real_escape_string($this->link, $post->getLocation());
+        $condition = $post->getCondition() 
+        ? "" . mysqli_real_escape_string($this->link, $post->getCondition()) . "" 
+        : "NULL";
+
+        $location = $post->getLocation() 
+            ? "" . mysqli_real_escape_string($this->link, $post->getLocation()) . "" 
+            : "NULL";
+
+        $status = $post->getStatus() 
+            ? "" . mysqli_real_escape_string($this->link, $post->getStatus()) . "" 
+            : "NULL";
         $brand = $post->getBrand() ? "'" . mysqli_real_escape_string($this->link, $post->getBrand()) . "'" : "NULL";
-        $status = mysqli_real_escape_string($this->link, $post->getStatus());
 
         // ❗ KHÔNG dùng stored procedure nữa (vì thiếu field mới)
         $sql = "INSERT INTO post 
@@ -36,10 +44,12 @@ class PostModel extends AppModel {
         $sql = "SELECT 
                     p.*,
                     u.Username,
-                    c.CategoryName
+                    c.CategoryName,
+                    g.GroupName
                 FROM post p
                 JOIN users u ON p.UserID = u.UserID
                 LEFT JOIN category c ON p.CategoryID = c.CategoryID
+                LEFT JOIN groups g ON g.GroupID = p.GroupID
                 ORDER BY p.CreatedAt DESC";
 
         $result = $this->query($sql);
@@ -64,7 +74,8 @@ class PostModel extends AppModel {
 
             $post->setUsername($row['Username']);
             $post->setCreatedAt($row['CreatedAt']);
-               $post->setCategoryName($row['CategoryName'] ?? 'No Category');
+            $post->setCategoryName($row['CategoryName'] ?? 'No Category');
+            $post->setGroupName($row['GroupName'] ?? 'No Group');
 
             $posts[] = $post;
         }
@@ -135,17 +146,18 @@ class PostModel extends AppModel {
     $location = mysqli_real_escape_string($this->link, $post->getLocation());
     $brand = $post->getBrand() ? "'" . mysqli_real_escape_string($this->link, $post->getBrand()) . "'" : "NULL";
     $status = mysqli_real_escape_string($this->link, $post->getStatus());
+    $postId = mysqli_real_escape_string($this->link, $post -> getPostId());
     $price = $post->getPrice() ? intval($post->getPrice()) : "NULL";
 
     $sql = "UPDATE post SET 
-        Title = '$title',
-        Content = '$content',
-        Price = $price,
-        ProductCondition = '$condition',
-        Location = '$location',
-        Brand = $brand,
-        PostStatus = '$status'
-        WHERE PostID = $postId";
+    Title = '$title',
+    Content = '$content',
+    Price = $price,
+    ProductCondition = '$condition',
+    Location = '$location',
+    Brand = $brand,
+    PostStatus = '$status'
+    WHERE PostID = '$postId'";
 
     return $this->execute($sql);
 }
@@ -224,6 +236,7 @@ class PostModel extends AppModel {
     }
     public function getLastInsertId() {
     return parent::getLastInsertId();
-}
+    }
+    
 }
 ?>

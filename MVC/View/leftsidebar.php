@@ -1,4 +1,4 @@
-<div class="list-group shadow-sm border-0 rounded-lg">
+<div class="list-group border-0 rounded-lg">
 
     <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
         <div class="list-group-item bg-primary text-white font-weight-bold text-uppercase border-0 py-3">
@@ -16,18 +16,20 @@
         <a href="index.php?controller=post&action=list" class="list-group-item list-group-item-action border-0 font-weight-bold text-dark py-3">
             <i class="fas fa-newspaper mr-2 text-info" style="width: 25px;"></i> Quản lý Bài đăng
         </a>
-        <?php else: ?>
-        <a href="index.php?controller=user&action=profile&id=<?= $_SESSION['user_id'] ?? 0 ?>" class="list-group-item list-group-item-action border-0 font-weight-bold text-dark py-3">
+
+    <?php else: ?>
+
+        <a href="index.php?controller=user&action=profile&id=<?= $_SESSION['user_id'] ?? 0 ?>" class="list-group-item list-group-item-action border-0 font-weight-bold py-3">
             <i class="fas fa-user mr-2 text-primary" style="width: 25px;"></i> Profile
         </a>
         
-        <a href="index.php?controller=group&action=myGroups" class="list-group-item list-group-item-action border-0 font-weight-bold text-dark py-3">
+        <a href="index.php?controller=group&action=myGroups" class="list-group-item list-group-item-action border-0 font-weight-bold py-3">
             <i class="fas fa-users mr-2 text-info" style="width: 25px;"></i> Groups
         </a>
         
-        <a href="#" class="list-group-item list-group-item-action border-0 font-weight-bold text-dark py-3">
+        <a href="#" class="list-group-item list-group-item-action border-0 font-weight-bold py-3">
             <i class="fas fa-cog mr-2 text-secondary" style="width: 25px;"></i> Setting
         </a>
-        <?php endif; ?>
+    <?php endif; ?>
 
 </div>
