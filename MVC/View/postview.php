@@ -146,13 +146,22 @@ $isProduct = $post->getPrice() !== null
         </button>
 
         <div class="dropdown-menu">
-            <button class="dropdown-item" type="button">Edit</button>
-            <button class="dropdown-item" type="button">Report</button>
-            <button class="dropdown-item delete-btn"
+            <?php if ($canDel_EditPost[$postId] ?? false)
+            echo '<button class="dropdown-item edit-btn"
                     type="button"
-                    data-postid="<?= $postId ?>">
+                    data-postid="<?="'.$postId.'">
+                    Edit
+                </button>';
+            ?>
+
+            <button class="dropdown-item" type="button">Report</button>
+
+            <?php if ($canDel_EditPost[$postId] ?? false)
+            echo '<button class="dropdown-item delete-btn"
+                type="button"
+                data-postid="'.$postId.'">
                 Delete
-            </button>
+            </button>'; ?>
         </div>
     </div>
 
@@ -161,7 +170,7 @@ $isProduct = $post->getPrice() !== null
             type="button"
             data-postid="<?= $postId ?>">
 
-        <?php if($isSameUser[$postId] ?? false): ?>
+        <?php if($isSameUser_reactPost[$postId] ?? false): ?>
             <i class="bi bi-heart-fill"></i>
         <?php else: ?>
             <i class="bi bi-heart"></i>
@@ -242,63 +251,82 @@ document.addEventListener("click", function(e){
 document.addEventListener("click", function(e){
     let btn = e.target.closest(".like-btn");
     if(!btn) return;
-    let postId = btn.getAttribute("data-postid");
+
+    let postId = btn.dataset.postid;
+
     let xhr = new XMLHttpRequest();
+
     xhr.onreadystatechange = function(){
-        if(xhr.readyState === 4 && xhr.status === 200){
-            console.log(xhr.responseText);
-            if(xhr.responseText.trim() === "success"){
-                document.querySelectorAll(`.like-btn[data-postid="${postId}"]`).forEach(button => {
-                    let badge = button.querySelector(".like-count");
-                    let icon  = button.querySelector("i");
-                    if(icon.classList.contains("bi-heart")){
-                        icon.classList.replace("bi-heart","bi-heart-fill");
-                        badge.textContent = parseInt(badge.textContent) + 1;
-                    } else {
-                        icon.classList.replace("bi-heart-fill","bi-heart");
-                        badge.textContent = Math.max(0, parseInt(badge.textContent) - 1);
-                    }
-                });
+    if(xhr.readyState === 4 && xhr.status === 200){
+
+        let data = JSON.parse(xhr.responseText);
+
+        document.querySelectorAll(`.like-btn[data-postid="${postId}"]`)
+        .forEach(button => {
+
+            let badge = button.querySelector(".like-count");
+            let icon  = button.querySelector("i");
+
+            badge.textContent = data.total;
+
+            if(data.reacted === 1){
+                icon.classList.replace("bi-heart","bi-heart-fill");
+            } else {
+                icon.classList.replace("bi-heart-fill","bi-heart");
             }
-        }
-    };
-    xhr.open("POST", "index.php?controller=reaction&action=addReaction", true);
+
+        });
+    }
+};
+
+    xhr.open("POST", "index.php?controller=reaction&action=action_forReaction", true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhr.send("postId=" + encodeURIComponent(postId) + "&type=like");
+    xhr.send("postId=" + postId + "&type=like");
 });
 </script>
 
 
-            <!-- Like Comment Script -->
+    <!-- == React + Remove react Comment Script == -->
 
 <script>
+document.addEventListener("click", function(e){
 
-    document.addEventListener("click", function(e){
-    
     let btn = e.target.closest(".like-btn-cmt");
     if(!btn) return;
-    let commentId = btn.getAttribute("data-commentid");
+
+    let commentId = btn.dataset.commentId;
+
     let xhr = new XMLHttpRequest();
+
     xhr.onreadystatechange = function(){
         if(xhr.readyState === 4 && xhr.status === 200){
-            if(xhr.responseText.trim() === "success"){
+
+            console.log(xhr.responseText);
+
+            let data = JSON.parse(xhr.responseText); // ✅ FIX QUAN TRỌNG
+
+            if(data){
                 let badge = btn.querySelector(".like-count-cmt");
                 let icon  = btn.querySelector("i");
-                if(icon.classList.contains("bi-heart")){
+
+                badge.textContent = data.total;
+
+                if(data.reacted === 1){
                     icon.classList.replace("bi-heart","bi-heart-fill");
-                    badge.textContent = parseInt(badge.textContent) + 1;
                 } else {
                     icon.classList.replace("bi-heart-fill","bi-heart");
-                    badge.textContent = Math.max(0, parseInt(badge.textContent) - 1);
                 }
-            } else { alert("Failed to react to comment"); }
+            }
         }
     };
 
-
-    xhr.open("POST", "index.php?controller=reaction&action=addReaction", true);
+    xhr.open("POST", "index.php?controller=reaction&action=action_forReaction", true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhr.send("commentId=" + encodeURIComponent(commentId) + "&type=like");
+
+    xhr.send(
+        "commentId=" + encodeURIComponent(commentId) +
+        "&type=like"
+    );
 });
 
 </script>
@@ -328,6 +356,8 @@ $(document).on("click", ".reply-btn", function(){
         .removeClass("reply-cmt-btn");
 
     /* bắt đầu reply comment mới */
+
+    
 
     let commentItem = $(this).closest(".comment-item");
     let repbtn = $(this);
@@ -418,10 +448,27 @@ document.addEventListener("submit", function(e){
 
                 let c = data.comment;
 
-                let commentList = form.closest(".post-modal").querySelector(".comment-list");
+                let container;
 
-                commentList.insertAdjacentHTML("beforeend", `
-                <div class="comment-item mb-2 d-flex justify-content-between" data-commentid="${c.id}">
+                if(parentId == 0){
+                    container = form.closest(".post-modal").querySelector(".comment-list");
+                } else {
+
+                    container = document.getElementById("replies-" + parentId);
+
+                    if(!container){
+                        console.log("Missing reply container");
+                        return;
+                    }
+
+                    // ✅ mở luôn box chứa reply
+                    container.classList.remove("d-none");
+
+                }
+
+                container.insertAdjacentHTML("beforeend", `
+                    <div class="comment-item d-flex justify-content-between"
+                        data-comment-id="${c.id}">
 
                     <div>
                         <strong>
@@ -446,7 +493,7 @@ document.addEventListener("submit", function(e){
 
                         <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-2"
                             type="button"
-                            data-commentid="${c.id}">
+                            data-comment-id="${c.id}">
 
                             <i class="bi bi-heart"></i>
                             <span class="badge badge-light like-count-cmt">
@@ -466,10 +513,27 @@ document.addEventListener("submit", function(e){
                     noCmt.remove();
                 }
 
-            }
-            else{
-                console.log("Error:", data.message);
-            }
+                container.scrollIntoView({ behavior: "smooth", block: "end" });
+
+                form.parentId.value = 0;
+
+                let modal = form.closest(".post-modal");
+
+                modal.find(".reply-preview").addClass("d-none");
+                modal.find(".commentContent")
+                    .attr("placeholder","Write a comment...");
+
+                modal.find(".cmt-btn")
+                    .text("Comment")
+                    .removeClass("reply-cmt-btn");
+
+                modal.find(".reply-btn-disabled")
+                    .removeClass("reply-btn-disabled");
+
+                }
+                else{
+                    console.log("Error:", data.message);
+                }
         }
 
     };
@@ -508,7 +572,7 @@ document.addEventListener("click", function(e){
 
             if(xhr.readyState === 4 && xhr.status === 200){
 
-                let response = JSON.parse(xhr.responseText);
+                let response;
 
                 try{
                     response = JSON.parse(xhr.responseText);
@@ -553,8 +617,14 @@ document.addEventListener("click", function(e){
 
     if(!e.target.classList.contains("toggle-replies")) return;
 
-    let id = e.target.dataset.commentid;
+    let id = e.target.dataset.commentId;
     let box = document.getElementById("replies-" + id);
+
+    // 🔥 FIX: chống null
+    if(!box){
+        console.log("Không tìm thấy replies box:", id);
+        return;
+    }
 
     if(box.classList.contains("d-none")){
         box.classList.remove("d-none");

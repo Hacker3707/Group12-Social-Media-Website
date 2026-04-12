@@ -9,7 +9,7 @@ class ReactionController {
         $this->reactionModel = new ReactionModel();
     }
 
-    public function addReaction() {
+    public function action_forReaction() {
 
         $postId = $_POST['postId'] ?? null;
         //$userId = $_POST['user_id'];
@@ -28,7 +28,8 @@ class ReactionController {
 
         // Create reaction
         $result = $this->reactionModel->insertReaction($reaction);
-        echo $result ? "success" : "fail";
+
+        echo json_encode($result);
         exit;
         
     }

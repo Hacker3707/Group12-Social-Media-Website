@@ -95,155 +95,166 @@ class PostController extends AppController {
     }
 
     // render page
-   public function showHome(){
+   public function showHome() {
 
-    // 🔥 Lấy filter nếu có
+    // 🔥 Filter category
     $categoryId = $_GET['category_id'] ?? null;
 
-    if($categoryId){
+    if ($categoryId) {
         $posts = $this->postModel->fetchByField('CategoryID', $categoryId);
     } else {
         $posts = $this->postModel->getAll();
     }
 
     $posts = $posts ?? [];
-
     $userid = $_SESSION['user_id'] ?? null;
-
-    // ==========================================================
-    // 🔥 BỘ LỌC BÀI VIẾT THEO QUYỀN NHÓM (NEW)
-    // ==========================================================
-    $filteredPosts = [];
-    $canInteract = []; // Mảng lưu trạng thái xem có được comment/react không
     $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+
+    // =========================
+    // 🔥 FILTER GROUP
+    // =========================
+    $filteredPosts = [];
+    $canInteract = [];
 
     foreach ($posts as $post) {
         $postId = $post->getPostId();
         $groupId = $post->getGroupId();
-        
+
         $viewFlag = true;
         $interactFlag = true;
 
-        // Nếu bài viết này thuộc về 1 nhóm
         if ($groupId) {
             $group = $this->groupModel->getById($groupId);
-            $userRoleInGroup = $this->groupModel->getUserRole($userid, $groupId); // Trả về 'admin', 'member' hoặc false
+            $userRoleInGroup = $this->groupModel->getUserRole($userid, $groupId);
 
-            if (!$isSystemAdmin) { // Nếu KHÔNG PHẢI Admin hệ thống thì mới bị xét nét
-                // Luật 1: Nhóm Private + Chưa tham gia -> Cấm xem
+            if (!$isSystemAdmin) {
                 if ($group && strtolower($group['Privacy']) === 'private' && !$userRoleInGroup) {
                     $viewFlag = false;
                 }
-                
-                // Luật 2: Chưa tham gia (dù Public hay Private) -> Cấm tương tác (Comment/React)
+
                 if (!$userRoleInGroup) {
                     $interactFlag = false;
                 }
             }
         }
 
-        // Chỉ đưa những bài được phép xem vào danh sách hiển thị
         if ($viewFlag) {
             $filteredPosts[] = $post;
-            $canInteract[$postId] = $interactFlag; 
+            $canInteract[$postId] = $interactFlag;
         }
     }
-    
-    // Ghi đè lại mảng posts bằng mảng đã được lọc sạch sẽ
+
     $posts = $filteredPosts;
 
-    // =======================
-    // 🔥 REACTIONS POST
-    // =======================
-    $reactions_forPost = [];
 
-    foreach($posts as $post){
+    $isOwnerPost = [];
+    $canDel_EditPost = [];
+
+    foreach ($posts as $post) {
         $postId = $post->getPostId();
 
-        $posts  = $this->postModel->getAll() ?? [];
-        $userid = $_SESSION['user_id'] ?? null;
+        // check chủ bài
+        $isOwnerPost[$postId] = ($post->getUserId() == $userid);
 
-        // Lấy thông tin user — dùng getById() vì UserModel không có getUsernameById()
-        if ($userid) {
-            $userInfo = $this->userModel->getById($userid);
-            $username = $userInfo ? $userInfo['Username'] : "Guest";
-        } else {
-            $username = "Guest";
+        // check quyền delete
+        $canDel_EditPost[$postId] =
+            $isOwnerPost[$postId] || $isSystemAdmin;
+    }
+
+    // =========================
+    // 🔥 REACTIONS POST
+    // =========================
+
+    $reactions_forPost = [];
+    $isSameUser_reactPost = [];
+
+    foreach ($posts as $post) {
+        $postId = $post->getPostId();
+
+        $reactions_forPost[$postId] =
+            $this->reactionModel->selectReactionsForPost($postId);
+
+        $isSameUser_reactPost[$postId] = false;
+
+        foreach ($reactions_forPost[$postId] as $reaction) {
+            if ($reaction->getUserId() == $userid) {
+                $isSameUser_reactPost[$postId] = true;
+                break;
+            }
         }
+    }
 
-        $reactions_forPost = [];
-        foreach ($posts as $post) {
-            $reactions_forPost[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
+    // =========================
+    // 🔥 COMMENTS
+    // =========================
+    $comments = [];
+    $commentTree = [];
+
+    foreach ($posts as $post) {
+        $postId = $post->getPostId();
+
+        $comments[$postId] =
+            $this->commentModel->fetchByField('PostID', $postId);
+
+        $commentTree[$postId] = [];
+
+        foreach ($comments[$postId] as $c) {
+            $parent = $c->getParentCommentId();
+            $commentTree[$postId][$parent][] = $c;
         }
+    }
 
-        $isSameUser = [];
-        foreach ($posts as $post) {
-            $postId = $post->getPostId();
-            $isSameUser[$postId] = false;
-            foreach (($reactions_forPost[$postId] ?? []) as $reaction) {
+    // =========================
+    // 🔥 REACTION COMMENT
+    // =========================
+    $reactions_forComment = [];
+    $isSameUser_reactCmt = [];
+
+    foreach ($comments as $postComments) {
+        foreach ($postComments as $comment) {
+
+            $commentId = $comment->getCommentId();
+
+            $reactions_forComment[$commentId] =
+                $this->reactionModel->selectReactionsForComment($commentId);
+
+            // ✅ FIX
+            $isSameUser_reactCmt[$commentId] = false;
+
+            foreach ($reactions_forComment[$commentId] as $reaction) {
                 if ($reaction->getUserId() == $userid) {
-                    $isSameUser[$postId] = true;
+                    $isSameUser_reactCmt[$commentId] = true;
                     break;
                 }
             }
         }
-    
-
-        $comments = [];
-        foreach ($posts as $post) {
-            $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
-        }
-
-
-        $commentTree = [];
-
-        foreach($posts as $post){
-
-            $postId = $post->getPostId();
-            $commentTree[$postId] = [];
-
-            foreach($comments[$postId] as $c){
-                $parent = $c->getParentCommentId();
-                $commentTree[$postId][$parent][] = $c;
-            }
-        }
-
-        $reactions_forComment = [];
-        foreach ($comments as $postComments) {
-            foreach ($postComments as $comment) {
-                $commentId = $comment->getCommentId();
-                $reactions_forComment[$commentId] = $this->reactionModel->selectReactionsForComment($commentId);
-            }
-        }
-    
-
-        $isSameUser_reactCmt = [];
-        foreach ($comments as $postComments) {
-            foreach ($postComments as $comment) {
-                $commentId = $comment->getCommentId();
-                $isSameUser_reactCmt[$commentId] = false;
-                foreach (($reactions_forComment[$commentId] ?? []) as $reaction) {
-                    if ($reaction->getUserId() == $userid) {
-                        $isSameUser_reactCmt[$commentId] = true;
-                        break;
-                    }
-                }
-            }
-        }
-
-        // Load media cho từng post để hiển thị ảnh/video trên Home
-        $mediaForPost = [];
-        foreach ($posts as $post) {
-            $mediaForPost[$post->getPostId()] = $this->mediaModel->getByPostId($post->getPostId());
-        }
-    
-
-        // =======================
-        // 🔥 RENDER VIEW
-        // =======================
-        include_once __DIR__ . "/../View/home.php";
     }
-   }
+
+    // =========================
+    // 🔥 MEDIA
+    // =========================
+    $mediaForPost = [];
+
+    foreach ($posts as $post) {
+        $mediaForPost[$post->getPostId()] =
+            $this->mediaModel->getByPostId($post->getPostId());
+    }
+
+    // =========================
+    // 🔥 USER INFO
+    // =========================
+    if ($userid) {
+        $userInfo = $this->userModel->getById($userid);
+        $username = $userInfo ? $userInfo['Username'] : "Guest";
+    } else {
+        $username = "Guest";
+    }
+
+    // =========================
+    // 🔥 RENDER VIEW (DUY NHẤT 1 LẦN)
+    // =========================
+    include_once __DIR__ . "/../View/home.php";
+}
 
        
 
