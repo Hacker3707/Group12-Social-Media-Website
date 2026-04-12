@@ -202,7 +202,7 @@ class GroupController {
         // =======================
         // 🔥 CHECK USER LIKE COMMENT
         // =======================
-        $isSameUser_reactPost_reactCmt = [];
+        $isSameUser_reactCmt = [];
 
         foreach($comments as $postComments){
             foreach($postComments as $comment){
@@ -211,7 +211,7 @@ class GroupController {
 
                 foreach($reactions_forComment[$commentId] as $reaction){
                     if($reaction->getUserId() == $userid){
-                        $isSameUser_reactPost_reactCmt[$commentId] = true;
+                        $isSameUser_reactCmt[$commentId] = true;
                         break;
                     }
                 }

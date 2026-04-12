@@ -367,7 +367,7 @@ class UserController {
         // REACTION COMMENT
         // =======================
         $reactions_forComment = [];
-        $isSameUser_reactPost_reactCmt = [];
+        $isSameUser_reactCmt = [];
 
         foreach ($comments as $postComments) {
             foreach ($postComments as $comment) {
@@ -376,10 +376,10 @@ class UserController {
                 $reactions_forComment[$commentId] =
                     $this->reactionModel->selectReactionsForComment($commentId);
 
-                $isSameUser_reactPost_reactCmt[$commentId] = false;
+                $isSameUser_reactCmt[$commentId] = false;
                 foreach ($reactions_forComment[$commentId] as $reaction) {
                     if ($reaction->getUserId() == $userid) {
-                        $isSameUser_reactPost_reactCmt[$commentId] = true;
+                        $isSameUser_reactCmt[$commentId] = true;
                         break;
                     }
                 }
@@ -404,7 +404,8 @@ class UserController {
             'comments' => $comments,
             'commentTree' => $commentTree,
             'reactions_forComment' => $reactions_forComment,
-            'isSameUser_reactCmt' => $isSameUser_reactPost_reactCmt,
+            'isSameUser_reactCmt' => $isSameUser_reactCmt,
+            'isSameUser_reactPost' => $isSameUser_reactPost,
             'mediaForPost' => $mediaForPost,
             'canDel_EditPost' => $canDel_EditPost,
             'isOwnerPost' => $isOwnerPost
