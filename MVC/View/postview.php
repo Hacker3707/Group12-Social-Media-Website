@@ -482,7 +482,7 @@ document.addEventListener("submit", function(e){
     xhr.send(
         "postId=" + encodeURIComponent(postId) +
         "&content=" + encodeURIComponent(content) +
-        "&parentId=" + encodeURIComponent(parentId)
+       "&parent_comment_id=" + encodeURIComponent(parentId) // ✅ FIX 
     );
 });
 </script>

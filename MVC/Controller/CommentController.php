@@ -3,86 +3,120 @@ include_once __DIR__ . "/../Model/CommentModel.php";
 
 class CommentController {
     private $commentModel;
-
+   
     public function __construct() {
         $this->commentModel = new CommentModel();
     }
 
-    public function addComment() {
+   public function addComment() {
+     header('Content-Type: application/json');
+     ini_set('display_errors', 1);
+error_reporting(E_ALL);
+    
 
-        header('Content-Type: application/json');
+    if (!isset($_SESSION['user_id'])) {
+    echo json_encode([
+        "status" => "error",
+        "message" => "not_logged_in"
+    ]);
+    exit;
+}
 
-        if(empty($_POST['postId']) || empty($_POST['content'])){
-            echo json_encode([
-                "status" => "error",
-                "message" => "Missing data"
-            ]);
-            return;
-        }
+    if(empty($_POST['postId']) || empty($_POST['content'])){
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing data"
+        ]);
+        exit;
+    }
 
-        $postId = (int)$_POST['postId'];
-        $userId = $_SESSION['user_id'];
-        $username = $_SESSION['username']; // hoặc query DB
-        $content = $_POST['content'];
-        $parentCommentId = !empty($_POST['parentId']) ? $_POST['parentId'] : null;
+    $postId = (int)$_POST['postId'];
+    $userId = $_SESSION['user_id'];
+    $username = $_SESSION['username'];
+    $content = $_POST['content'];
 
-        $comment = new Comment(null, $parentCommentId, $postId, $userId, $content, null, []);
+    // 🔥 FIX: thống nhất biến
+    $parentCommentId = !empty($_POST['parent_comment_id']) 
+    ? (int)$_POST['parent_comment_id'] 
+    : null;
 
-        $result = $this->commentModel->createComment($comment);
+    $comment = new Comment(null, $parentCommentId, $postId, $userId, $content, null, []);
+    $result = $this->commentModel->createComment($comment);
 
-        if(!$result){
-            echo "fail";
-            die(mysqli_error($this->commentModel->getConnection()));
-        }
-        include_once __DIR__ . "/../Model/NotificationModel.php";
+    if(!$result){
+        echo json_encode([
+            "status" => "error",
+            "message" => "Insert failed"
+        ]);
+        exit;
+    }
+
+    // ================= 🔔 NOTIFICATION =================
+    include_once __DIR__ . "/../Model/NotificationModel.php";
     include_once __DIR__ . "/../Model/PostModel.php";
 
     $notiModel = new NotificationModel();
     $postModel = new PostModel();
 
     $post = $postModel->getById($postId);
-    $postOwnerId = $post->getUserId();
 
- include_once __DIR__ . "/../Model/NotificationModel.php";
-include_once __DIR__ . "/../Model/PostModel.php";
+    if ($post) {
 
-$notiModel = new NotificationModel();
-$postModel = new PostModel();
+        $postOwnerId = $post->getUserId();
 
-$post = $postModel->getById($postId);
-$postOwnerId = $post->getUserId();
+        // 🔵 COMMENT vào bài
+        if ($parentCommentId === null) {
 
-// 🔥 FIX quan trọng
-$parentCommentId = !empty($_POST['parent_comment_id']) ? $_POST['parent_comment_id'] : null;
+            if ($postOwnerId != $userId) {
+
+                $notiModel->insert(
+                    $postOwnerId,
+                    $userId,
+                    "<b>$username</b> đã bình luận bài viết của bạn",
+                    "comment"
+                );
+            }
+        }
+         // 🟣 REPLY comment
+else {
 
 
-// 🔵 CASE 1: COMMENT
-if ($parentCommentId === null) {
+    $parentComment = $this->commentModel->getById($parentCommentId);
 
-    if ($postOwnerId != $userId) {
+   if ($parentComment)  {
 
-        $notiModel->insert(
-            $postOwnerId,
-            $userId,
-            "<b>" . $_SESSION['username'] . "</b> đã bình luận bài viết của bạn",
-            "comment"
-        );
+       $commentOwnerId = $parentComment->getUserId(); 
+        // không gửi cho chính mình
+        if ($commentOwnerId != $userId) {
+
+            $notiModel->insert(
+                $commentOwnerId,
+                $userId,
+                "<b>$username</b> đã trả lời bình luận của bạn",
+                "reply"
+            );
+        }
     }
 
+        
+    }
+   
+}
+    // ==================================================
+
+    echo json_encode([
+        "status" => "success",
+        "comment" => [
+            "user_id" => $userId,
+            "username" => $username,
+            "content" => htmlspecialchars($content),
+            "created_at" => date("Y-m-d H:i")
+        ]
+    ]);
+     exit;
 }
 
-
-        echo json_encode([
-            "status" => "success",
-            "comment" => [
-                "id" => $result["id"],
-                "user_id" => $userId,
-                "username" => $username,
-                "content" => htmlspecialchars($content),
-                "created_at" => date("Y-m-d H:i")
-            ]
-        ]);
-    }
+    // ================= XÓA BÌNH LUẬN =================
 
         public function deleteComment() {
 
@@ -95,7 +129,7 @@ if ($parentCommentId === null) {
                 "status" => "error",
                 "message" => "Missing commentId"
             ]);
-            return;
+            exit;
         }
 
         $result = $this->commentModel->deleteComment($commentId);
@@ -110,6 +144,7 @@ if ($parentCommentId === null) {
                 "status" => "error",
                 "message" => "Delete failed"
             ]);
+            exit;
         }
     }
 
