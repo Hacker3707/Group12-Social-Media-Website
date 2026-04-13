@@ -60,9 +60,41 @@ $isProduct = $post->getPrice() !== null
             </div>
         
     </div>
+    
+    <div class="d-flex">
 
-    <small class="text-muted"><?= $post->getCreatedAt() ?></small>
+    <small class="text-muted align-items-end mt-2 mr-1"><?= $post->getCreatedAt() ?></small>
 
+    <!-- DROPDOWN -->
+    <div class="btn-group dropleft ml-2">
+        <button type="button"
+                class="btn btn-secondary dropdown-toggle"
+                data-toggle="dropdown"
+                style="background-color: rgb(186, 212, 230); border:none;">
+            <i class="bi bi-three-dots"></i>
+        </button>
+
+        <div class="dropdown-menu">
+            <?php if ($canDel_EditPost[$postId] ?? false)
+            echo '<button class="dropdown-item edit-btn"
+                    type="button"
+                    data-postid="<?="'.$postId.'">
+                    Edit
+                </button>';
+            ?>
+
+            <button class="dropdown-item" type="button">Report</button>
+
+            <?php if ($canDel_EditPost[$postId] ?? false)
+            echo '<button class="dropdown-item delete-btn"
+                type="button"
+                data-postid="'.$postId.'">
+                Delete
+            </button>'; ?>
+        </div>
+    </div>
+
+    </div>
 </div>
 
     <!-- CONTENT -->
@@ -122,48 +154,11 @@ $isProduct = $post->getPrice() !== null
 <div class="mt-3 d-flex align-items-center">
 
     <!-- VIEW -->
-    <button class="btn btn-sm btn-outline-primary col-md-2 col-12"
+    <!--<button class="btn btn-sm btn-outline-primary col-md-2 col-12"
         data-toggle="modal"
         data-target="#postModal<?= $postId ?>">
         View Post
-    </button>
-
-    <!-- COMMENT -->
-    <button class="btn btn-sm btn-outline-secondary ml-2">
-        Comment 
-        <span class="badge badge-light">
-            <?= count($comments[$postId] ?? []) ?>
-        </span>
-    </button>
-
-    <!-- DROPDOWN -->
-    <div class="btn-group dropright ml-2">
-        <button type="button"
-                class="btn btn-secondary dropdown-toggle"
-                data-toggle="dropdown"
-                style="background-color: rgb(186, 212, 230); border:none;">
-            <i class="bi bi-three-dots"></i>
-        </button>
-
-        <div class="dropdown-menu">
-            <?php if ($canDel_EditPost[$postId] ?? false)
-            echo '<button class="dropdown-item edit-btn"
-                    type="button"
-                    data-postid="<?="'.$postId.'">
-                    Edit
-                </button>';
-            ?>
-
-            <button class="dropdown-item" type="button">Report</button>
-
-            <?php if ($canDel_EditPost[$postId] ?? false)
-            echo '<button class="dropdown-item delete-btn"
-                type="button"
-                data-postid="'.$postId.'">
-                Delete
-            </button>'; ?>
-        </div>
-    </div>
+    </button>-->
 
     <!-- LIKE -->
     <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
@@ -178,6 +173,15 @@ $isProduct = $post->getPrice() !== null
 
         <span class="badge badge-light like-count">
             <?= count($reactions_forPost[$postId] ?? []) ?>
+        </span>
+    </button>
+
+     <!-- COMMENT -->
+    <button class="btn btn-sm btn-outline-secondary ml-2" data-toggle="modal"
+        data-target="#postModal<?= $postId ?>">
+        Comment 
+        <span class="badge badge-light">
+            <?= count($comments[$postId] ?? []) ?>
         </span>
     </button>
 
@@ -414,7 +418,7 @@ $(document).on("click", ".cancel-reply", function(){
 
 
 <!--  -->
-            <!-- Send Comment Button Script -->
+            <!-- Send Comment + Reply Button Script -->
 <!--  -->
 
 <script>
@@ -428,7 +432,7 @@ document.addEventListener("submit", function(e){
 
     let postId = form.postId.value;
     let content = form.commentContent.value;
-    let parentId = form.parentId.value; // thêm dòng này
+    let parentId = form.parentId.value || 0;
 
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function(){
@@ -450,61 +454,71 @@ document.addEventListener("submit", function(e){
 
                 let container;
 
-                if(parentId == 0){
+                if(parseInt(parentId) === 0){
                     container = form.closest(".post-modal").querySelector(".comment-list");
                 } else {
-
                     container = document.getElementById("replies-" + parentId);
 
                     if(!container){
-                        console.log("Missing reply container");
-                        return;
+                        // 🔥 tạo luôn reply container nếu chưa có
+                        let parentComment = document.querySelector(`[data-comment-id="${parentId}"]`);
+
+                        if(parentComment){
+
+                            let containerDiv = document.createElement("div");
+                            containerDiv.className = "reply-container";
+                            containerDiv.id = "replies-" + parentId;
+
+                            parentComment.appendChild(containerDiv); // ✅ đúng cây
+
+                            container = containerDiv;
+                        }
                     }
 
-                    // ✅ mở luôn box chứa reply
-                    container.classList.remove("d-none");
+                    if(container){
+                        container.classList.remove("d-none");
+                    }
+                }
 
+                // ✅ check sau khi gán
+                if(!container){
+                    console.log("Container not found!");
+                    return;
                 }
 
                 container.insertAdjacentHTML("beforeend", `
                     <div class="comment-item d-flex justify-content-between"
                         data-comment-id="${c.id}">
 
-                    <div>
-                        <strong>
-                            <a href="index.php?controller=user&action=profile&id=${c.user_id}">
-                                ${c.username}
-                            </a>
-                            <small>commented:</small>
-                        </strong>
+                        <div>
+                            <strong>
+                                <a href="index.php?controller=user&action=profile&id=${c.user_id}">
+                                    ${c.username}
+                                </a>
+                                <small>commented:</small>
+                            </strong>
 
-                        <p class="mb-1">${c.content}</p>
+                            <p class="mb-1">${c.content}</p>
+                            <small class="text-muted">${c.created_at}</small>
+                        </div>
 
-                        <small class="text-muted">${c.created_at}</small>
+                        <div class="d-flex align-items-end">
+                            <button class="btn-forModal btn-sm btn-outline-primary reply-btn"
+                                type="button"
+                                data-comment-id="${c.id}">
+                                Reply
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-2"
+                                type="button"
+                                data-comment-id="${c.id}">
+                                <i class="bi bi-heart"></i>
+                                <span class="badge badge-light like-count-cmt">0</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="d-flex align-items-end">
-
-                        <button class="btn-forModal btn-sm btn-outline-primary reply-btn"
-                            type="button"
-                            data-comment-id="${c.id}">
-                            Reply
-                        </button>
-
-                        <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-2"
-                            type="button"
-                            data-comment-id="${c.id}">
-
-                            <i class="bi bi-heart"></i>
-                            <span class="badge badge-light like-count-cmt">
-                                0
-                            </span>
-
-                        </button>
-
-                    </div>
-
-                </div>
+                    <div class="reply-container d-none" id="replies-${c.id}"></div>
                 `);
                 // reset form
                 form.commentContent.value = "";
@@ -517,9 +531,10 @@ document.addEventListener("submit", function(e){
 
                 form.parentId.value = 0;
 
-                let modal = form.closest(".post-modal");
+                let modal = $(form).closest(".post-modal");
 
                 modal.find(".reply-preview").addClass("d-none");
+
                 modal.find(".commentContent")
                     .attr("placeholder","Write a comment...");
 
@@ -529,11 +544,10 @@ document.addEventListener("submit", function(e){
 
                 modal.find(".reply-btn-disabled")
                     .removeClass("reply-btn-disabled");
-
-                }
-                else{
-                    console.log("Error:", data.message);
-                }
+                
+            }else{
+                console.log("Error:", data.message);
+            }
         }
 
     };
@@ -560,7 +574,7 @@ document.addEventListener("click", function(e){
 
     if(!e.target.classList.contains("delete-btn-cmt")) return;
 
-    let commentId = e.target.getAttribute("data-commentid");
+    let commentId = e.target.getAttribute("data-comment-id");
 
     showConfirm("Delete this comment?", function(result) {
 

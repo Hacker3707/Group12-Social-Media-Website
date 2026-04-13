@@ -19,28 +19,31 @@ function renderComments($postId, $parentId, $commentTree, $level = 0,
         // 2. CHECK CÓ REPLY KHÔNG
 
         if(!empty($commentTree[$postId][$commentId])){
-
             echo '<button class="toggle-replies btn btn-sm btn-link"
                     data-comment-id="'.$commentId.'">
                     View replies
-                  </button>';
+                </button>';
+        }
+
 
             // 3. CONTAINER CHỈ ẨN REPLY
             echo '<div class="reply-container d-none" id="replies-'.$commentId.'">';
 
-            renderComments(
-                $postId,
-                $commentId,
-                $commentTree,
-                $level + 1,
-                $allowInteraction,
-                $reactions_forComment,
-                $isSameUser_reactCmt
-            );
+            if(!empty($commentTree[$postId][$commentId])){
+                renderComments(
+                    $postId,
+                    $commentId,
+                    $commentTree,
+                    $level + 1,
+                    $allowInteraction,
+                    $reactions_forComment,
+                    $isSameUser_reactCmt
+                );
+            }
 
             echo '</div>';
             echo "<!-- parentId=$parentId count=" . count($commentTree[$postId][$parentId] ?? []) . " -->";
-        }
+        
 
         echo '<hr style="margin: 10px 15px; color:#ddd;">';
     }
