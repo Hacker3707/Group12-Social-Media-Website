@@ -3,6 +3,7 @@ include_once "MVC/Model/UserModel.php";
 include_once "Entity/User.php";
 include_once "Entity/Admin.php";
 include_once "Entity/Member.php";
+include_once "MVC/Service/Supabase/SupabaseService.php";
 include_once "MVC/Service/Cloudinary/CloudinaryService.php";
 
 class UserController {
@@ -43,6 +44,11 @@ class UserController {
 
     public function login() {
         include_once "MVC/View/User/login.php";
+    }
+
+    public function googleLogin() {
+        header('Location: ' . SupabaseService::getGoogleLoginUrl());
+        exit();
     }
 
     // ================= XỬ LÝ ĐĂNG NHẬP =================

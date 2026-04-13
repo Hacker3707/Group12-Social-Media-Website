@@ -1,8 +1,8 @@
 <?php
-include_once "MVC/Model/AppModel.php";
-include_once "Entity/User.php";
-include_once "Entity/Admin.php";
-include_once "Entity/Member.php";
+include_once __DIR__ . "/AppModel.php";
+include_once __DIR__ . "/../../Entity/User.php";
+include_once __DIR__ . "/../../Entity/Admin.php";
+include_once __DIR__ . "/../../Entity/Member.php";
 
 class UserModel extends AppModel {
 
@@ -37,14 +37,16 @@ class UserModel extends AppModel {
     }
 
     // ================= CREATE =================
-    public function insert(User $user, $password) {
+    public function insert(User $user, $password, $supabaseId = null, $provider = 'LOCAL') {
         $username = mysqli_real_escape_string($this->link, $user->getUsername());
         $email = mysqli_real_escape_string($this->link, $user->getEmail());
         $password = mysqli_real_escape_string($this->link, $password);
         $role = $user->getUserRole();
+        $supabaseValue = $supabaseId !== null ? "'" . mysqli_real_escape_string($this->link, $supabaseId) . "'" : 'NULL';
+        $providerValue = mysqli_real_escape_string($this->link, $provider);
 
-        $sql = "INSERT INTO users (Username, Email, AccountPassword, UserRole) 
-                VALUES ('$username', '$email', '$password', '$role')";
+        $sql = "INSERT INTO users (Username, Email, AccountPassword, UserRole, supabase_id, o_provider) 
+                VALUES ('$username', '$email', '$password', '$role', $supabaseValue, '$providerValue')";
         
         return $this->execute($sql);
     }
@@ -91,9 +93,31 @@ class UserModel extends AppModel {
         return null;
     }
 
+    public function getByEmail($email) {
+        $email = mysqli_real_escape_string($this->link, $email);
+        $sql = "SELECT * FROM users WHERE Email = '$email' LIMIT 1";
+        $result = $this->query($sql);
+
+        if ($row = mysqli_fetch_assoc($result)) {
+            return $row;
+        }
+        return null;
+    }
+
+    public function getBySupabaseId($supabaseId) {
+        $supabaseId = mysqli_real_escape_string($this->link, $supabaseId);
+        $sql = "SELECT * FROM users WHERE supabase_id = '$supabaseId' LIMIT 1";
+        $result = $this->query($sql);
+
+        if ($row = mysqli_fetch_assoc($result)) {
+            return $row;
+        }
+        return null;
+    }
+
     // ================= UPDATE =================
     // Thêm tham số $avatarFp = null vào cuối
-    public function update($userId, $username, $email, $bio, $phone, $avatarFp = null) {
+    public function update($userId, $username, $email, $bio, $phone, $avatarFp = null, $supabaseId = null, $provider = null) {
         $userId = (int)$userId;
         $username = mysqli_real_escape_string($this->link, $username);
         $email = mysqli_real_escape_string($this->link, $email);
@@ -111,6 +135,16 @@ class UserModel extends AppModel {
         if ($avatarFp !== null) {
             $avatarFp = mysqli_real_escape_string($this->link, $avatarFp);
             $sql .= ", AvatarFP = '$avatarFp'";
+        }
+
+        if ($supabaseId !== null) {
+            $supabaseId = mysqli_real_escape_string($this->link, $supabaseId);
+            $sql .= ", supabase_id = '$supabaseId'";
+        }
+
+        if ($provider !== null) {
+            $provider = mysqli_real_escape_string($this->link, $provider);
+            $sql .= ", o_provider = '$provider'";
         }
 
         $sql .= " WHERE UserID = $userId";
