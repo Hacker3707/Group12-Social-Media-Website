@@ -2,8 +2,14 @@
 <html>
 <head>
     <title><?= htmlspecialchars($group['GroupName']) ?> | Passo</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" type="text/css" href="MVC/View/css/home.css">
+
     <style>
         body { background-color: #f0f2f5; }
         .group-cover { height: 400px; background: #ccc; border-radius: 0 0 8px 8px; overflow: hidden; }
@@ -19,13 +25,12 @@
     <div class="group-header">
         <div class="container px-0">
             <div class="group-cover">
-                <img src="https://via.placeholder.com/1200x400/1877f2/ffffff?text=<?= urlencode($group['GroupName']) ?>" class="w-100 h-100" style="object-fit: cover;">
+                <img src="https://picsum.photos/1200/400" class="w-100 h-100" style="object-fit: cover;">
             </div>
             <div class="p-4 relative">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h1 class="font-weight-bold mb-1"><?= htmlspecialchars($group['GroupName']) ?></h1>
-                        
                         <p class="text-muted mb-0">
                             <i class="fas fa-globe"></i> Nhóm <?= $group['Privacy'] == 'public' ? 'Công khai' : 'Riêng tư' ?> · 
                             <strong><?= $memberCount ?></strong> thành viên
@@ -89,6 +94,7 @@
                     <button class="btn btn-light font-weight-bold btn-block">Xem thêm</button>
                 </div>
             </div>
+            
             <div class="col-md-8">
                 <?php if (isset($joinStatus) && $joinStatus === 'approved'): ?>
                     <div class="card border-0 shadow-sm p-3 mb-3">
@@ -99,9 +105,37 @@
                     </div>
                 <?php endif; ?>
                 
-                <div class="card border-0 shadow-sm p-5 text-center">
-                    <h5 class="text-muted">Chưa có bài viết nào.</h5>
-                </div>
+                <?php 
+                    // Nếu Controller không truyền $canViewPosts, mặc định là true để tránh lỗi
+                    $allowView = isset($canViewPosts) ? $canViewPosts : true; 
+                ?>
+
+                <?php if ($allowView): ?>
+                    <div class="card border-0 shadow-sm p-3 mb-5">
+                        <div class="text-muted mb-2 font-weight-bold">Bài viết trong nhóm</div>
+                        <?php include_once 'MVC/View/postview.php'; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="alert border-0 shadow-sm text-center py-5 mb-5" style="background-color: #fff; border-radius: 10px;">
+                        <i class="fas fa-lock fa-3x text-muted mb-3"></i>
+                        <h4 class="font-weight-bold text-dark">Nhóm Riêng Tư</h4>
+                        <p class="text-muted">Bạn phải tham gia nhóm này thì mới xem được các bài viết và bình luận.</p>
+                    </div>
+                <?php endif; ?>
+
+                <?php 
+                    $allowInteract = isset($canInteract) ? $canInteract : true; 
+                    if ($allowInteract): 
+                ?>
+                    <div class="row" id="lower-bar">
+                        <div class="col-md-1 col-12">
+                            <a href="index.php?controller=group&action=showCreateForm&id=<?= $group['GroupID'] ?>" class="btn btn-primary shadow font-weight-bold" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50px; padding: 10px 20px; z-index: 1000;">
+                                <i class="fas fa-pen mr-1"></i> Create Post
+                            </a>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
             </div>
         </div>
     </div>

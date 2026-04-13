@@ -2,6 +2,9 @@
 include_once "MVC/Model/GroupModel.php";
 include_once "MVC/Model/GroupMemberModel.php";
 include_once "MVC/Model/CategoryModel.php";
+include_once "MVC/Model/PostModel.php";
+include_once "MVC/Model/ReactionModel.php";
+include_once "MVC/Model/CommentModel.php";
 include_once "Entity/Group.php";
 
 class GroupController {
@@ -10,10 +13,19 @@ class GroupController {
     private $memberModel;
     private $categoryModel;
 
+    private $commentModel;
+
+    private $postModel;
+
+    private $reactionModel;
+
     public function __construct() {
         $this->groupModel = new GroupModel();
         $this->memberModel = new GroupMemberModel();
         $this->categoryModel = new CategoryModel();
+        $this->postModel = new PostModel();
+        $this->reactionModel = new ReactionModel();
+        $this->commentModel = new CommentModel();
     }
 
     public function handleRequest() {
@@ -90,7 +102,116 @@ class GroupController {
         $memberCount = $this->groupModel->getMemberCount($groupId);
         $joinStatus = $this->groupModel->getJoinStatus($userId, $groupId);
         $userRole = $this->groupModel->getUserRole($userId, $groupId);
-        
+
+        // ==========================================================
+        // 🔥 BỘ LỌC QUYỀN TRUY CẬP VÀ TƯƠNG TÁC (NEW)
+        // ==========================================================
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $canViewPosts = true;
+        $canInteract = true;
+
+        if (!$isSystemAdmin) {
+            // Luật 1: Nhóm Private + Chưa tham gia -> Cấm xem bài
+            if (strtolower($group['Privacy']) === 'private' && !$userRole) {
+                $canViewPosts = false; 
+            }
+            // Luật 2: Chưa tham gia -> Cấm tương tác (Comment/React)
+            if (!$userRole) {
+                $canInteract = false; 
+            }
+        }
+
+        // 🔥 Lấy filter nếu có
+        $categoryId = $_SESSION['category_filter'] ?? null;
+
+        // CHỈ TRUY VẤN BÀI VIẾT NẾU ĐƯỢC PHÉP XEM
+        if ($canViewPosts) {
+            $posts = $this->postModel->fetchByField('GroupID', $groupId) ;
+        } else {
+            $posts = []; // Không được xem thì gán mảng rỗng để các hàm dưới khỏi tốn công chạy
+        }
+
+        $userid = $_SESSION['user_id'] ?? null;
+
+    
+        // =======================
+        // 🔥 REACTIONS POST
+        // =======================
+        $reactions_forPost = [];
+
+        foreach($posts as $post){
+            $postId = $post->getPostId();
+            $reactions_forPost[$postId] = $this->reactionModel->selectReactionsForPost($postId);
+        }
+
+        // =======================
+        // 🔥 CHECK USER LIKE POST
+        // =======================
+        $isSameUser = [];
+
+        foreach($posts as $post){
+            $postId = $post->getPostId();
+            $isSameUser[$postId] = false;
+
+            foreach($reactions_forPost[$postId] as $reaction){
+                if($reaction->getUserId() == $userid){
+                    $isSameUser[$postId] = true;
+                    break;
+                }
+            }
+        }
+
+        $comments = [];
+        foreach($posts as $post) {
+            $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
+        }
+
+        $commentTree = [];
+        foreach($posts as $post){
+            $postId = $post->getPostId();
+            $commentTree[$postId] = [];
+
+            foreach($comments[$postId] as $c){
+                /* Lưu ý: Đảm bảo class Comment của bạn có hàm getParentCommentId() như code bạn viết nhé */
+                $parent = $c->getParentCommentId();
+                $commentTree[$postId][$parent][] = $c;
+            }
+        }
+
+        // =======================
+        // 🔥 REACTION COMMENT
+        // =======================
+        $reactions_forComment = [];
+
+        foreach($comments as $postComments){
+            foreach($postComments as $comment){
+                $commentId = $comment->getCommentId();
+                $reactions_forComment[$commentId] = $this->reactionModel->selectReactionsForComment($commentId);
+            }
+        }
+
+        // =======================
+        // 🔥 CHECK USER LIKE COMMENT
+        // =======================
+        $isSameUser_reactCmt = [];
+
+        foreach($comments as $postComments){
+            foreach($postComments as $comment){
+                $commentId = $comment->getCommentId();
+                $isSameUser_reactCmt[$commentId] = false;
+
+                foreach($reactions_forComment[$commentId] as $reaction){
+                    if($reaction->getUserId() == $userid){
+                        $isSameUser_reactCmt[$commentId] = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // =======================
+        // 🔥 RENDER VIEW
+        // =======================
         include_once "MVC/View/Group/detail.php";
     }
 
@@ -257,5 +378,18 @@ class GroupController {
         $myGroups = $this->groupModel->getGroupsByUser($userId);
         include_once "MVC/View/Group/my_groups.php";
     }
+
+    public function showCreateForm(){
+        $categories = $this->categoryModel->getAll(); // 👈 lấy từ DB
+
+        $groupId = $_GET['id'];
+
+        $group = $this->groupModel->getObjById($groupId);
+
+        include __DIR__ . "/../View/createpost_view.php";
+        
+        die();
+    }
+
 }
 ?>

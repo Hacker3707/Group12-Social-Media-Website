@@ -18,8 +18,6 @@ class MediaController extends AppController {
     }
 
     // ================= UPLOAD MEDIA CHO POST =================
-    // Gọi bằng AJAX từ createpost.php sau khi tạo post thành công
-    // Nhận: $_FILES['media'], $_POST['post_id'], $_SESSION['user_id']
     public function uploadForPost() {
 
         if (!isset($_SESSION['user_id'])) {
@@ -31,23 +29,22 @@ class MediaController extends AppController {
         $postId = isset($_POST['post_id']) ? (int)$_POST['post_id'] : null;
 
         if (!$postId) {
-            echo "fail";
+            echo "fail:no_post_id";
             exit;
         }
 
         if (!isset($_FILES['media']) || $_FILES['media']['error'] !== 0) {
-            echo "fail";
+            echo "fail:no_file";
             exit;
         }
 
         $result = $this->handleUpload($_FILES['media'], $userId, $postId, null);
 
-        echo $result ? "success" : "fail";
+        echo $result ? "success" : "fail:upload_error";
         exit;
     }
 
     // ================= UPLOAD MEDIA CHO COMMENT =================
-    // Nhận: $_FILES['media'], $_POST['comment_id'], $_SESSION['user_id']
     public function uploadForComment() {
 
         if (!isset($_SESSION['user_id'])) {
@@ -59,23 +56,22 @@ class MediaController extends AppController {
         $commentId = isset($_POST['comment_id']) ? (int)$_POST['comment_id'] : null;
 
         if (!$commentId) {
-            echo "fail";
+            echo "fail:no_comment_id";
             exit;
         }
 
         if (!isset($_FILES['media']) || $_FILES['media']['error'] !== 0) {
-            echo "fail";
+            echo "fail:no_file";
             exit;
         }
 
         $result = $this->handleUpload($_FILES['media'], $userId, null, $commentId);
 
-        echo $result ? "success" : "fail";
+        echo $result ? "success" : "fail:upload_error";
         exit;
     }
 
     // ================= XÓA MEDIA =================
-    // Nhận: $_POST['media_id']
     public function deleteMedia() {
 
         if (!isset($_SESSION['user_id'])) {
@@ -90,11 +86,13 @@ class MediaController extends AppController {
             exit;
         }
 
-        // Lấy thông tin để xóa file vật lý trên server trước
         $media = $this->mediaModel->getById($mediaId);
 
-        if ($media && file_exists($media->getFilePath())) {
-            unlink($media->getFilePath());
+        if ($media) {
+            $absolutePath = __DIR__ . "/../../" . $media->getFilePath();
+            if (file_exists($absolutePath)) {
+                unlink($absolutePath);
+            }
         }
 
         $result = $this->mediaModel->deleteById($mediaId);
@@ -104,13 +102,12 @@ class MediaController extends AppController {
     }
 
     // ================= LẤY MEDIA THEO POST (AJAX) =================
-    // Trả về JSON — dùng cho modal xem ảnh/video trong postview.php
-    // Nhận: $_GET['post_id']
     public function getByPost() {
 
         $postId = isset($_GET['post_id']) ? (int)$_GET['post_id'] : null;
 
         if (!$postId) {
+            header('Content-Type: application/json');
             echo json_encode([]);
             exit;
         }
@@ -120,7 +117,7 @@ class MediaController extends AppController {
         $output = [];
         foreach ($mediaList as $media) {
             $output[] = [
-                'media_id'   => $media->getMediaId(),
+                'media_id'   => $media->getMediaID(),
                 'media_type' => $media->getMediaType(),
                 'file_path'  => $media->getFilePath(),
                 'created_at' => $media->getCreatedAt(),
@@ -133,8 +130,11 @@ class MediaController extends AppController {
     }
 
     // ================= PRIVATE HELPER: XỬ LÝ UPLOAD FILE =================
-    // Dùng chung cho uploadForPost() và uploadForComment()
     private function handleUpload($file, $userId, $postId, $commentId) {
+
+        if (!isset($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
+            return false;
+        }
 
         // 1. Xác định loại file — chỉ chấp nhận ảnh và video
         $mimeType  = mime_content_type($file['tmp_name']);
@@ -154,16 +154,18 @@ class MediaController extends AppController {
             mkdir($uploadDir, 0755, true);
         }
 
-        // 3. Đặt tên file: timestamp_userId_tênGốc để tránh trùng
-        $safeName = time() . "_" . $userId . "_" . basename($file['name']);
+        // 3. Đặt tên file an toàn
+        $safeName = time() . "_" . $userId . "_" . preg_replace('/[^A-Za-z0-9._-]/', '_', basename($file['name']));
         $destPath = $uploadDir . $safeName;
-        $dbPath   = "uploads/" . $safeName; // Đường dẫn tương đối lưu vào DB
+
+        // 4. Đường dẫn lưu vào DB để browser đọc được
+        $dbPath = "uploads/" . $safeName;
 
         if (!move_uploaded_file($file['tmp_name'], $destPath)) {
             return false;
         }
 
-        // 4. Ghi vào bảng media
+        // 5. Ghi vào bảng media
         if ($postId !== null) {
             $mediaId = $this->mediaModel->insertMediaForPost($userId, $postId, $mediaType, $dbPath);
         } else {
