@@ -254,6 +254,22 @@ class UserController {
         if (!$user || $user['AccountStatus'] === 'deleted') {
             $this->back('Người dùng không tồn tại hoặc đã bị xóa.');
         }
+         // 🔥 THÊM ĐOẠN NÀY
+    include_once "MVC/Model/FollowModel.php";
+
+    $followModel = new FollowModel();
+
+    $currentUserId = $_SESSION['user_id'] ?? 0;
+    $profileUserId = $user['UserID'];
+
+    $isFollowing = false;
+
+    if ($currentUserId && $currentUserId != $profileUserId) {
+        $isFollowing = $followModel->exists($currentUserId, $profileUserId);
+    }
+
+    // (optional) lấy số follower luôn
+    $followerCount = $followModel->countFollowers($profileUserId);
 
         // 🔥 truyền userId vào
         $data = $this -> getPostforUserId($id);
