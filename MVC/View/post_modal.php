@@ -24,7 +24,8 @@ tabindex="-1">
 
         <div class="modal-header">
             <h5 class="modal-title">
-                <img src="" alt="???" class="rounded-circle mr-2" width="40" height="40">
+             <?php $avatarUrl = $post->getAvatar() ? htmlspecialchars($post->getAvatar()) : 'https://via.placeholder.com/40'; ?>
+                <img src="<?= $avatarUrl ?>" alt="avatar" class="rounded-circle mr-2 shadow-sm" style="width: 40px; height: 40px; object-fit: cover; border: 1px solid #eee;">
                 <a href="index.php?controller=user&action=profile&id=<?= $post->getUserId() ?>">
                     <?= htmlspecialchars($post->getUsername()) ?>
                 </a>

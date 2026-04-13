@@ -92,23 +92,32 @@ class UserModel extends AppModel {
     }
 
     // ================= UPDATE =================
-    public function update($userId, $username, $email, $bio, $phone) {
+    // Thêm tham số $avatarFp = null vào cuối
+    public function update($userId, $username, $email, $bio, $phone, $avatarFp = null) {
         $userId = (int)$userId;
         $username = mysqli_real_escape_string($this->link, $username);
         $email = mysqli_real_escape_string($this->link, $email);
         $bio = mysqli_real_escape_string($this->link, $bio);
         $phone = mysqli_real_escape_string($this->link, $phone);
 
+        // Câu lệnh update cơ bản
         $sql = "UPDATE users 
                 SET Username = '$username', 
                     Email = '$email', 
                     Bio = '$bio', 
-                    Phone = '$phone'
-                WHERE UserID = $userId";
+                    Phone = '$phone'";
+
+        // Nếu có đường dẫn ảnh mới truyền vào thì mới update cột AvatarFP
+        if ($avatarFp !== null) {
+            $avatarFp = mysqli_real_escape_string($this->link, $avatarFp);
+            $sql .= ", AvatarFP = '$avatarFp'";
+        }
+
+        $sql .= " WHERE UserID = $userId";
 
         return $this->execute($sql);
     }
-
+    
     // ================= DELETE (SOFT DELETE) =================
     public function delete($userId) {
         $userId = (int)$userId;

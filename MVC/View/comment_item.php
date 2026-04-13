@@ -2,12 +2,15 @@
 
     <div class="d-flex justify-content-between align-items-start">
 
-        <strong>
-            <a href="index.php?controller=user&action=profile&id=<?= $c->getUserId() ?>">
-                <?= htmlspecialchars($c->getUsername()) ?>
-            </a>
-            <small>commented:</small>
-        </strong>
+        <div class="d-flex align-items-center">
+            <?php $cmtAvatar = $c->getAvatar() ? htmlspecialchars($c->getAvatar()) : 'https://via.placeholder.com/30'; ?>
+            <img src="<?= $cmtAvatar ?>" class="rounded-circle mr-2 shadow-sm" style="width: 32px; height: 32px; object-fit: cover; border: 1px solid #eee;">
+            <strong>
+                <a href="index.php?controller=user&action=profile&id=<?= $c->getUserId() ?>" class="text-dark">
+                    <?= htmlspecialchars($c->getUsername()) ?>
+                </a>
+            </strong>
+        </div>
 
         <div class="btn-group dropdown mt-1">
             <button type="button"

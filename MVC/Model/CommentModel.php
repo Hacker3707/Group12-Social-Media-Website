@@ -43,26 +43,26 @@ class CommentModel extends AppModel {
         $value = mysqli_real_escape_string($this->link, $value);
         $value = (int)$value;
         $data = array();
+        // Thêm c.AvatarFP vào câu SELECT
         $sql = "SELECT 
-            c.CommentID,
-            c.CommentParentID,
-            c.PostID,
-            c.UserID,
-            c.Content,
-            c.CreatedAt,
-            u.Username
+            c.CommentID, c.CommentParentID, c.PostID, c.UserID, c.Content, c.CreatedAt,
+            u.Username, u.AvatarFP
         FROM comment c
         JOIN users u ON c.UserID = u.UserID
         WHERE c.$field = $value
         ORDER BY c.CreatedAt DESC";
+
         $result = $this->query($sql);
         while ($row = mysqli_fetch_assoc($result)) {
             $comment = new Comment(
-                $row['CommentID'], $row['CommentParentID'],
-                $row['PostID'], $row['UserID'],
+                $row['CommentID'], $row['CommentParentID'], $row['PostID'], $row['UserID'],
                 $row['Content'], $row['CreatedAt'], []
             );
             $comment->setUsername($row['Username']);
+            
+            // DÒNG THÊM MỚI
+            $comment->setAvatar($row['AvatarFP']);
+
             array_push($data, $comment);
         }
         return $data;
