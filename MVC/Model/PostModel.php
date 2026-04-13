@@ -59,10 +59,11 @@ class PostModel extends AppModel {
         $data = [];
 
         // Đã thêm: u.AvatarFP
-        $sql = "SELECT p.*, u.Username, u.AvatarFP, c.CategoryName
+        $sql = "SELECT p.*, u.Username, u.AvatarFP, c.CategoryName, g.GroupName
                 FROM post p
                 JOIN users u ON p.UserID = u.UserID
                 LEFT JOIN category c ON p.CategoryID = c.CategoryID
+                LEFT JOIN groups g ON g.GroupID = p.GroupID
                 WHERE p.$field = $value
                 ORDER BY p.CreatedAt DESC";
 
@@ -78,6 +79,7 @@ class PostModel extends AppModel {
             $post->setCreatedAt($row['CreatedAt']);
             $post->setCategoryName($row['CategoryName'] ?? 'No Category');
             $post->setAvatar($row['AvatarFP']); // Gán Avatar
+            $post->setGroupName($row['GroupName'] ?? 'No Group');
 
             $data[] = $post;
         }

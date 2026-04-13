@@ -3,6 +3,13 @@ include_once "MVC/Model/UserModel.php";
 include_once "Entity/User.php";
 include_once "Entity/Admin.php";
 include_once "Entity/Member.php";
+include_once __DIR__ . "/../Model/PostModel.php";
+include_once __DIR__ . "/../Model/ReactionModel.php";
+include_once __DIR__ . "/../../Entity/Media.php";
+include_once __DIR__ . "/../Model/CategoryModel.php";
+include_once __DIR__ . "/../Model/CommentModel.php";
+include_once __DIR__ . "/../Model/GroupModel.php";
+include_once __DIR__ . "/../Model/MediaModel.php";
 include_once "MVC/Service/Supabase/SupabaseService.php";
 include_once "MVC/Service/Cloudinary/CloudinaryService.php";
 
