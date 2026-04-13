@@ -103,11 +103,33 @@ class GroupController {
         $joinStatus = $this->groupModel->getJoinStatus($userId, $groupId);
         $userRole = $this->groupModel->getUserRole($userId, $groupId);
 
+        // ==========================================================
+        // 🔥 BỘ LỌC QUYỀN TRUY CẬP VÀ TƯƠNG TÁC (NEW)
+        // ==========================================================
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $canViewPosts = true;
+        $canInteract = true;
+
+        if (!$isSystemAdmin) {
+            // Luật 1: Nhóm Private + Chưa tham gia -> Cấm xem bài
+            if (strtolower($group['Privacy']) === 'private' && !$userRole) {
+                $canViewPosts = false; 
+            }
+            // Luật 2: Chưa tham gia -> Cấm tương tác (Comment/React)
+            if (!$userRole) {
+                $canInteract = false; 
+            }
+        }
 
         // 🔥 Lấy filter nếu có
         $categoryId = $_SESSION['category_filter'] ?? null;
 
-        $posts = $this->postModel->fetchByField('GroupID', $groupId) ;
+        // CHỈ TRUY VẤN BÀI VIẾT NẾU ĐƯỢC PHÉP XEM
+        if ($canViewPosts) {
+            $posts = $this->postModel->fetchByField('GroupID', $groupId) ;
+        } else {
+            $posts = []; // Không được xem thì gán mảng rỗng để các hàm dưới khỏi tốn công chạy
+        }
 
         $userid = $_SESSION['user_id'] ?? null;
 
@@ -119,9 +141,7 @@ class GroupController {
 
         foreach($posts as $post){
             $postId = $post->getPostId();
-
-            $reactions_forPost[$postId] =
-                $this->reactionModel->selectReactionsForPost($postId);
+            $reactions_forPost[$postId] = $this->reactionModel->selectReactionsForPost($postId);
         }
 
         // =======================
@@ -130,7 +150,6 @@ class GroupController {
         $isSameUser = [];
 
         foreach($posts as $post){
-
             $postId = $post->getPostId();
             $isSameUser[$postId] = false;
 
@@ -142,32 +161,21 @@ class GroupController {
             }
         }
 
-            $comments = [];
-            foreach($posts as $post) {
-                $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
-            }
+        $comments = [];
+        foreach($posts as $post) {
+            $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
+        }
 
-
-            $commentTree = [];
-
-            foreach($posts as $post){
-
-                $postId = $post->getPostId();
-                $commentTree[$postId] = [];
-
-                foreach($comments[$postId] as $c){
-                    $parent = $c->getParentCommentId();
-                    $commentTree[$postId][$parent][] = $c;
-                }
-            }
-
-            $reactions_forComment = [];
-
+        $commentTree = [];
         foreach($posts as $post){
             $postId = $post->getPostId();
+            $commentTree[$postId] = [];
 
-            $comments[$postId] =
-                $this->commentModel->fetchByField('PostID', $postId);
+            foreach($comments[$postId] as $c){
+                /* Lưu ý: Đảm bảo class Comment của bạn có hàm getParentCommentId() như code bạn viết nhé */
+                $parent = $c->getParentCommentId();
+                $commentTree[$postId][$parent][] = $c;
+            }
         }
 
         // =======================
@@ -176,13 +184,9 @@ class GroupController {
         $reactions_forComment = [];
 
         foreach($comments as $postComments){
-
             foreach($postComments as $comment){
-
                 $commentId = $comment->getCommentId();
-
-                $reactions_forComment[$commentId] =
-                    $this->reactionModel->selectReactionsForComment($commentId);
+                $reactions_forComment[$commentId] = $this->reactionModel->selectReactionsForComment($commentId);
             }
         }
 
@@ -192,9 +196,7 @@ class GroupController {
         $isSameUser_reactCmt = [];
 
         foreach($comments as $postComments){
-
             foreach($postComments as $comment){
-
                 $commentId = $comment->getCommentId();
                 $isSameUser_reactCmt[$commentId] = false;
 
@@ -207,10 +209,9 @@ class GroupController {
             }
         }
 
-    // =======================
-    // 🔥 RENDER VIEW
-    // =======================
-    
+        // =======================
+        // 🔥 RENDER VIEW
+        // =======================
         include_once "MVC/View/Group/detail.php";
     }
 
