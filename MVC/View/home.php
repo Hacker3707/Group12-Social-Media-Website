@@ -25,6 +25,7 @@
             <div class="col-md-10 col-12" id="main-content">
                 <?php include_once(__DIR__ . "/postview.php"); ?>
             </div>
+            
         </div>
 
         <div class="row" id="lower-bar">

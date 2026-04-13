@@ -3,6 +3,12 @@
 <head>
     <title><?= htmlspecialchars($user['Username']) ?> | Passo</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="MVC/View/css/home.css">
+
     <style>
         body { background-color: #f0f2f5; }
         .cover-photo { height: 350px; background-color: #ced4da; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; overflow: hidden; position: relative; }
@@ -43,7 +49,7 @@
         </div>
     </div>
 
-    <div class="profile-header">
+    <div class="profile-header" style="background: linear-gradient(225deg, #feffe9, rgb(238, 246, 255));">
         <div class="container">
             <div class="cover-photo">
                 <img src="https://via.placeholder.com/1200x350/cccccc/ffffff?text=Cover+Photo" alt="Cover">
@@ -94,7 +100,9 @@
         </div>
     </div>
 
-    <div class="container content-section">
+    <div class="container content-section" style="background-color: #e6efff; /* test màu */
+    padding: 20px;
+    border-radius: 10px;">
         <div class="row">
             <div class="col-md-5">
                 <div class="card card-custom p-3">
@@ -115,7 +123,7 @@
                 </div>
             </div>
 
-            <div class="col-md-7">
+            <div class="col-md-7" >
                 <?php if(isset($_SESSION['user_id']) && $_SESSION['user_id'] == $user['UserID']): ?>
                 <div class="card card-custom p-3 mb-3">
                     <div class="d-flex align-items-center">

@@ -115,11 +115,27 @@ class PostController extends AppController
         } else {
             $username = "Guest";
         }
+    }
 
-        $reactions_forPost = [];
-        foreach ($posts as $post) {
-            $reactions_forPost[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
+    // =========================
+    // 🔥 COMMENTS
+    // =========================
+    $comments = [];
+    $commentTree = [];
+
+    foreach ($posts as $post) {
+        $postId = $post->getPostId();
+
+        $comments[$postId] =
+            $this->commentModel->fetchByField('PostID', $postId);
+
+        $commentTree[$postId] = [];
+
+        foreach ($comments[$postId] as $c) {
+            $parent = $c->getParentCommentId();
+            $commentTree[$postId][$parent][] = $c;
         }
+    }
 
         $isSameUser = [];
         foreach ($posts as $post) {
@@ -128,55 +144,72 @@ class PostController extends AppController
 
             foreach (($reactions_forPost[$postId] ?? []) as $reaction) {
                 if ($reaction->getUserId() == $userid) {
-                    $isSameUser[$postId] = true;
+                    $isSameUser_reactCmt[$commentId] = true;
                     break;
                 }
             }
+        }
+    }
+
+    // =========================
+    // 🔥 MEDIA
+    // =========================
+    $mediaForPost = [];
+
+    foreach ($posts as $post) {
+        $mediaForPost[$post->getPostId()] =
+            $this->mediaModel->getByPostId($post->getPostId());
+    }
+
+    // =========================
+    // 🔥 USER INFO
+    // =========================
+    if ($userid) {
+        $userInfo = $this->userModel->getById($userid);
+        $username = $userInfo ? $userInfo['Username'] : "Guest";
+    } else {
+        $username = "Guest";
+    }
+
+    // =========================
+    // 🔥 RENDER VIEW (DUY NHẤT 1 LẦN)
+    // =========================
+    include_once __DIR__ . "/../View/home.php";
+}
+
+       
+
+    public function PostAction(){
+        $action = $_GET['action'] ?? "home";
+
+        switch($action){
+
+            case "createPost":
+                $this->createPost();
+                break;
+
+            case "home":
+                 unset($_SESSION['category_filter']); // 🔥 tránh bị kẹt filter
+                $this->showHome();
+                break;
+            case "create":
+            $this->showCreateForm();
+             break;
+
+        }
+    }
+
+    public function getAllPosts() {
+        $posts = $this->postModel->getAll() ?? [];
+
+        $reactions = [];
+        foreach ($posts as $post) {
+            $reactions[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
         }
 
         $comments = [];
         foreach ($posts as $post) {
             $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
-        }
-
-        $commentTree = [];
-        foreach ($posts as $post) {
-            $postId = $post->getPostId();
-            $commentTree[$postId] = [];
-
-            foreach (($comments[$postId] ?? []) as $c) {
-                $parent = $c->getParentCommentId();
-                $commentTree[$postId][$parent][] = $c;
-            }
-        }
-
-        $reactions_forComment = [];
-        foreach ($comments as $postComments) {
-            foreach ($postComments as $comment) {
-                $commentId = $comment->getCommentId();
-                $reactions_forComment[$commentId] = $this->reactionModel->selectReactionsForComment($commentId);
-            }
-        }
-
-        $isSameUser_reactCmt = [];
-        foreach ($comments as $postComments) {
-            foreach ($postComments as $comment) {
-                $commentId = $comment->getCommentId();
-                $isSameUser_reactCmt[$commentId] = false;
-
-                foreach (($reactions_forComment[$commentId] ?? []) as $reaction) {
-                    if ($reaction->getUserId() == $userid) {
-                        $isSameUser_reactCmt[$commentId] = true;
-                        break;
-                    }
-                }
-            }
-        }
-
-        // Load media cho tung post de hien thi anh/video tren Home
-        $mediaForPost = [];
-        foreach ($posts as $post) {
-            $mediaForPost[$post->getPostId()] = $this->mediaModel->getByPostId($post->getPostId());
         }
 
         include_once __DIR__ . "/../View/home.php";

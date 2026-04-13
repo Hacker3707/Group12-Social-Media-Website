@@ -19,33 +19,47 @@ class FollowController extends AppController {
     // follow user
     public function follow() {
 
-        // ✅ check login
-        if (!isset($_SESSION['user_id'])) {
-            $this->jsonResponse(["status" => "error", "message" => "not_logged_in"]);
-        }
+    if (!isset($_SESSION['user_id'])) {
+        $this->jsonResponse(["status" => "error", "message" => "not_logged_in"]);
+    }
 
-        $followerId = (int)$_SESSION['user_id'];
-        $followingId = (int)($_POST['following_id'] ?? 0);
+    $followerId = (int)$_SESSION['user_id'];
+    $followingId = (int)($_POST['following_id'] ?? 0);
 
-        // ✅ validate
-        if (!$followingId || $followerId === $followingId) {
-            $this->jsonResponse(["status" => "error", "message" => "invalid_data"]);
-        }
+    if (!$followingId || $followerId === $followingId) {
+        $this->jsonResponse(["status" => "error", "message" => "invalid_data"]);
+    }
 
-        if ($this->followModel->exists($followerId, $followingId)) {
-            $this->jsonResponse(["status" => "already"]);
-        }
+    if ($this->followModel->exists($followerId, $followingId)) {
+        $this->jsonResponse(["status" => "already"]);
+    }
 
-        $this->followModel->followUser($followerId, $followingId);
+    // 🔥 FOLLOW
+    $this->followModel->followUser($followerId, $followingId);
 
-      
+    // ================= 🔔 NOTIFICATION =================
+    include_once __DIR__ . "/../Model/NotificationModel.php";
+    $notiModel = new NotificationModel();
+
+    if ($followerId != $followingId) {
+        $content = "<b>" . $_SESSION['username'] . "</b> vừa theo dõi bạn";
+
+        $notiModel->insert(
+            $followingId,
+            $followerId,
+            $content,
+            "follow"
+        );
+    }
+    // ==================================================
+
     $count = $this->followModel->countFollowers($followingId);
 
-        $this->jsonResponse([
-            "status" => "followed",
-            "count" => $count
-        ]);
-    }
+    $this->jsonResponse([
+        "status" => "followed",
+        "count" => $count
+    ]);
+}
 
     // unfollow
     public function unfollow() {

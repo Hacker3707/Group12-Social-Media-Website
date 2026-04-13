@@ -60,9 +60,41 @@ $isProduct = $post->getPrice() !== null
             </div>
         
     </div>
+    
+    <div class="d-flex">
 
-    <small class="text-muted"><?= $post->getCreatedAt() ?></small>
+    <small class="text-muted align-items-end mt-2 mr-1"><?= $post->getCreatedAt() ?></small>
 
+    <!-- DROPDOWN -->
+    <div class="btn-group dropleft ml-2">
+        <button type="button"
+                class="btn btn-secondary dropdown-toggle"
+                data-toggle="dropdown"
+                style="background-color: rgb(186, 212, 230); border:none;">
+            <i class="bi bi-three-dots"></i>
+        </button>
+
+        <div class="dropdown-menu">
+            <?php if ($canDel_EditPost[$postId] ?? false)
+            echo '<button class="dropdown-item edit-btn"
+                    type="button"
+                    data-postid="<?="'.$postId.'">
+                    Edit
+                </button>';
+            ?>
+
+            <button class="dropdown-item" type="button">Report</button>
+
+            <?php if ($canDel_EditPost[$postId] ?? false)
+            echo '<button class="dropdown-item delete-btn"
+                type="button"
+                data-postid="'.$postId.'">
+                Delete
+            </button>'; ?>
+        </div>
+    </div>
+
+    </div>
 </div>
 
     <!-- CONTENT -->
@@ -122,46 +154,18 @@ $isProduct = $post->getPrice() !== null
 <div class="mt-3 d-flex align-items-center">
 
     <!-- VIEW -->
-    <button class="btn btn-sm btn-outline-primary col-md-2 col-12"
+    <!--<button class="btn btn-sm btn-outline-primary col-md-2 col-12"
         data-toggle="modal"
         data-target="#postModal<?= $postId ?>">
         View Post
-    </button>
-
-    <!-- COMMENT -->
-    <button class="btn btn-sm btn-outline-secondary ml-2">
-        Comment 
-        <span class="badge badge-light">
-            <?= count($comments[$postId] ?? []) ?>
-        </span>
-    </button>
-
-    <!-- DROPDOWN -->
-    <div class="btn-group dropright ml-2">
-        <button type="button"
-                class="btn btn-secondary dropdown-toggle"
-                data-toggle="dropdown"
-                style="background-color: rgb(186, 212, 230); border:none;">
-            <i class="bi bi-three-dots"></i>
-        </button>
-
-        <div class="dropdown-menu">
-            <button class="dropdown-item" type="button">Edit</button>
-            <button class="dropdown-item" type="button">Report</button>
-            <button class="dropdown-item delete-btn"
-                    type="button"
-                    data-postid="<?= $postId ?>">
-                Delete
-            </button>
-        </div>
-    </div>
+    </button>-->
 
     <!-- LIKE -->
     <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
             type="button"
             data-postid="<?= $postId ?>">
 
-        <?php if($isSameUser[$postId] ?? false): ?>
+        <?php if($isSameUser_reactPost[$postId] ?? false): ?>
             <i class="bi bi-heart-fill"></i>
         <?php else: ?>
             <i class="bi bi-heart"></i>
@@ -169,6 +173,15 @@ $isProduct = $post->getPrice() !== null
 
         <span class="badge badge-light like-count">
             <?= count($reactions_forPost[$postId] ?? []) ?>
+        </span>
+    </button>
+
+     <!-- COMMENT -->
+    <button class="btn btn-sm btn-outline-secondary ml-2" data-toggle="modal"
+        data-target="#postModal<?= $postId ?>">
+        Comment 
+        <span class="badge badge-light">
+            <?= count($comments[$postId] ?? []) ?>
         </span>
     </button>
 
@@ -242,63 +255,82 @@ document.addEventListener("click", function(e){
 document.addEventListener("click", function(e){
     let btn = e.target.closest(".like-btn");
     if(!btn) return;
-    let postId = btn.getAttribute("data-postid");
+
+    let postId = btn.dataset.postid;
+
     let xhr = new XMLHttpRequest();
+
     xhr.onreadystatechange = function(){
-        if(xhr.readyState === 4 && xhr.status === 200){
-            console.log(xhr.responseText);
-            if(xhr.responseText.trim() === "success"){
-                document.querySelectorAll(`.like-btn[data-postid="${postId}"]`).forEach(button => {
-                    let badge = button.querySelector(".like-count");
-                    let icon  = button.querySelector("i");
-                    if(icon.classList.contains("bi-heart")){
-                        icon.classList.replace("bi-heart","bi-heart-fill");
-                        badge.textContent = parseInt(badge.textContent) + 1;
-                    } else {
-                        icon.classList.replace("bi-heart-fill","bi-heart");
-                        badge.textContent = Math.max(0, parseInt(badge.textContent) - 1);
-                    }
-                });
+    if(xhr.readyState === 4 && xhr.status === 200){
+
+        let data = JSON.parse(xhr.responseText);
+
+        document.querySelectorAll(`.like-btn[data-postid="${postId}"]`)
+        .forEach(button => {
+
+            let badge = button.querySelector(".like-count");
+            let icon  = button.querySelector("i");
+
+            badge.textContent = data.total;
+
+            if(data.reacted === 1){
+                icon.classList.replace("bi-heart","bi-heart-fill");
+            } else {
+                icon.classList.replace("bi-heart-fill","bi-heart");
             }
-        }
-    };
-    xhr.open("POST", "index.php?controller=reaction&action=addReaction", true);
+
+        });
+    }
+};
+
+    xhr.open("POST", "index.php?controller=reaction&action=action_forReaction", true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhr.send("postId=" + encodeURIComponent(postId) + "&type=like");
+    xhr.send("postId=" + postId + "&type=like");
 });
 </script>
 
 
-            <!-- Like Comment Script -->
+    <!-- == React + Remove react Comment Script == -->
 
 <script>
+document.addEventListener("click", function(e){
 
-    document.addEventListener("click", function(e){
-    
     let btn = e.target.closest(".like-btn-cmt");
     if(!btn) return;
-    let commentId = btn.getAttribute("data-commentid");
+
+    let commentId = btn.dataset.commentId;
+
     let xhr = new XMLHttpRequest();
+
     xhr.onreadystatechange = function(){
         if(xhr.readyState === 4 && xhr.status === 200){
-            if(xhr.responseText.trim() === "success"){
+
+            console.log(xhr.responseText);
+
+            let data = JSON.parse(xhr.responseText); // ✅ FIX QUAN TRỌNG
+
+            if(data){
                 let badge = btn.querySelector(".like-count-cmt");
                 let icon  = btn.querySelector("i");
-                if(icon.classList.contains("bi-heart")){
+
+                badge.textContent = data.total;
+
+                if(data.reacted === 1){
                     icon.classList.replace("bi-heart","bi-heart-fill");
-                    badge.textContent = parseInt(badge.textContent) + 1;
                 } else {
                     icon.classList.replace("bi-heart-fill","bi-heart");
-                    badge.textContent = Math.max(0, parseInt(badge.textContent) - 1);
                 }
-            } else { alert("Failed to react to comment"); }
+            }
         }
     };
 
-
-    xhr.open("POST", "index.php?controller=reaction&action=addReaction", true);
+    xhr.open("POST", "index.php?controller=reaction&action=action_forReaction", true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhr.send("commentId=" + encodeURIComponent(commentId) + "&type=like");
+
+    xhr.send(
+        "commentId=" + encodeURIComponent(commentId) +
+        "&type=like"
+    );
 });
 
 </script>
@@ -328,6 +360,8 @@ $(document).on("click", ".reply-btn", function(){
         .removeClass("reply-cmt-btn");
 
     /* bắt đầu reply comment mới */
+
+    
 
     let commentItem = $(this).closest(".comment-item");
     let repbtn = $(this);
@@ -384,7 +418,7 @@ $(document).on("click", ".cancel-reply", function(){
 
 
 <!--  -->
-            <!-- Send Comment Button Script -->
+            <!-- Send Comment + Reply Button Script -->
 <!--  -->
 
 <script>
@@ -398,7 +432,7 @@ document.addEventListener("submit", function(e){
 
     let postId = form.postId.value;
     let content = form.commentContent.value;
-    let parentId = form.parentId.value; // thêm dòng này
+    let parentId = form.parentId.value || 0;
 
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function(){
@@ -418,46 +452,73 @@ document.addEventListener("submit", function(e){
 
                 let c = data.comment;
 
-                let commentList = form.closest(".post-modal").querySelector(".comment-list");
+                let container;
 
-                commentList.insertAdjacentHTML("beforeend", `
-                <div class="comment-item mb-2 d-flex justify-content-between" data-commentid="${c.id}">
+                if(parseInt(parentId) === 0){
+                    container = form.closest(".post-modal").querySelector(".comment-list");
+                } else {
+                    container = document.getElementById("replies-" + parentId);
 
-                    <div>
-                        <strong>
-                            <a href="index.php?controller=user&action=profile&id=${c.user_id}">
-                                ${c.username}
-                            </a>
-                            <small>commented:</small>
-                        </strong>
+                    if(!container){
+                        // 🔥 tạo luôn reply container nếu chưa có
+                        let parentComment = document.querySelector(`[data-comment-id="${parentId}"]`);
 
-                        <p class="mb-1">${c.content}</p>
+                        if(parentComment){
 
-                        <small class="text-muted">${c.created_at}</small>
+                            let containerDiv = document.createElement("div");
+                            containerDiv.className = "reply-container";
+                            containerDiv.id = "replies-" + parentId;
+
+                            parentComment.appendChild(containerDiv); // ✅ đúng cây
+
+                            container = containerDiv;
+                        }
+                    }
+
+                    if(container){
+                        container.classList.remove("d-none");
+                    }
+                }
+
+                // ✅ check sau khi gán
+                if(!container){
+                    console.log("Container not found!");
+                    return;
+                }
+
+                container.insertAdjacentHTML("beforeend", `
+                    <div class="comment-item d-flex justify-content-between"
+                        data-comment-id="${c.id}">
+
+                        <div>
+                            <strong>
+                                <a href="index.php?controller=user&action=profile&id=${c.user_id}">
+                                    ${c.username}
+                                </a>
+                                <small>commented:</small>
+                            </strong>
+
+                            <p class="mb-1">${c.content}</p>
+                            <small class="text-muted">${c.created_at}</small>
+                        </div>
+
+                        <div class="d-flex align-items-end">
+                            <button class="btn-forModal btn-sm btn-outline-primary reply-btn"
+                                type="button"
+                                data-comment-id="${c.id}">
+                                Reply
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-2"
+                                type="button"
+                                data-comment-id="${c.id}">
+                                <i class="bi bi-heart"></i>
+                                <span class="badge badge-light like-count-cmt">0</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="d-flex align-items-end">
-
-                        <button class="btn-forModal btn-sm btn-outline-primary reply-btn"
-                            type="button"
-                            data-comment-id="${c.id}">
-                            Reply
-                        </button>
-
-                        <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-2"
-                            type="button"
-                            data-commentid="${c.id}">
-
-                            <i class="bi bi-heart"></i>
-                            <span class="badge badge-light like-count-cmt">
-                                0
-                            </span>
-
-                        </button>
-
-                    </div>
-
-                </div>
+                    <div class="reply-container d-none" id="replies-${c.id}"></div>
                 `);
                 // reset form
                 form.commentContent.value = "";
@@ -466,8 +527,25 @@ document.addEventListener("submit", function(e){
                     noCmt.remove();
                 }
 
-            }
-            else{
+                container.scrollIntoView({ behavior: "smooth", block: "end" });
+
+                form.parentId.value = 0;
+
+                let modal = $(form).closest(".post-modal");
+
+                modal.find(".reply-preview").addClass("d-none");
+
+                modal.find(".commentContent")
+                    .attr("placeholder","Write a comment...");
+
+                modal.find(".cmt-btn")
+                    .text("Comment")
+                    .removeClass("reply-cmt-btn");
+
+                modal.find(".reply-btn-disabled")
+                    .removeClass("reply-btn-disabled");
+                
+            }else{
                 console.log("Error:", data.message);
             }
         }
@@ -482,7 +560,7 @@ document.addEventListener("submit", function(e){
     xhr.send(
         "postId=" + encodeURIComponent(postId) +
         "&content=" + encodeURIComponent(content) +
-        "&parentId=" + encodeURIComponent(parentId)
+       "&parent_comment_id=" + encodeURIComponent(parentId) // ✅ FIX 
     );
 });
 </script>
@@ -496,7 +574,7 @@ document.addEventListener("click", function(e){
 
     if(!e.target.classList.contains("delete-btn-cmt")) return;
 
-    let commentId = e.target.getAttribute("data-commentid");
+    let commentId = e.target.getAttribute("data-comment-id");
 
     showConfirm("Delete this comment?", function(result) {
 
@@ -508,7 +586,7 @@ document.addEventListener("click", function(e){
 
             if(xhr.readyState === 4 && xhr.status === 200){
 
-                let response = JSON.parse(xhr.responseText);
+                let response;
 
                 try{
                     response = JSON.parse(xhr.responseText);
@@ -553,8 +631,14 @@ document.addEventListener("click", function(e){
 
     if(!e.target.classList.contains("toggle-replies")) return;
 
-    let id = e.target.dataset.commentid;
+    let id = e.target.dataset.commentId;
     let box = document.getElementById("replies-" + id);
+
+    // 🔥 FIX: chống null
+    if(!box){
+        console.log("Không tìm thấy replies box:", id);
+        return;
+    }
 
     if(box.classList.contains("d-none")){
         box.classList.remove("d-none");
