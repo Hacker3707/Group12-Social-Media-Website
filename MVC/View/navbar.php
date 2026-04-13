@@ -18,7 +18,7 @@ if (!($currentController === 'user' && ($currentAction === 'register' || $curren
 ?>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
-  <a class="navbar-brand" href="index.php" style="margin-right: 55px;">
+  <a class="navbar-brand" href="index.php" style="margin-right: 65px;">
     <img src="Materials/Picture/Passo.png" alt="Logo" width="150" height="50" class="d-inline-block align-top">
   </a>
   
@@ -47,17 +47,15 @@ if (!($currentController === 'user' && ($currentAction === 'register' || $curren
         </div>
       </li>
       <li class="nav-item">
-        <a class="nav-link disabled" href="#">
-          <button type="button" class="btn btn-primary font-weight-bold">
-            Notifications <span class="badge badge-light ml-1">?</span>
-          </button>
-        </a>
+        <button class="btn btn-primary font-weight-bold ml-lg-2 mt-2 mt-lg-0">
+          Notifications <span class="badge badge-light ml-1">?</span>
+        </button>
       </li>
-      <li class="nav-item ml-2">
-        <a class="nav-link p-0" href="index.php?controller=group&action=create">
-          <button type="button" class="btn btn-outline-secondary rounded-pill font-italic" title="Tạo nhóm mới">
-            Create Group
-          </button>
+
+      <li class="nav-item ml-lg-2 mt-2 mt-lg-0">
+        <a href="index.php?controller=group&action=create"
+          class="btn btn-outline-secondary rounded-pill font-italic">
+          Create Group
         </a>
       </li>
     </ul>

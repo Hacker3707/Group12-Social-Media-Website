@@ -17,18 +17,13 @@ class ReactionModel extends AppModel {
 
         $sql = "CALL createReaction($postId,$userId,$commentId,'$type')";
 
-        $result = $this -> execute($sql);
+        $result = $this->query($sql);
+        $row = mysqli_fetch_assoc($result);
 
-        if(!$result){
-            echo mysqli_error($this->link);
-            return false;
-        }
-
-        while(mysqli_more_results($this->link)){
-            mysqli_next_result($this->link);
-        }
-
-        return true;
+        return [
+            "reacted" => (int)$row['reacted'],
+            "total" => (int)$row['total']
+        ];
     }
 
 

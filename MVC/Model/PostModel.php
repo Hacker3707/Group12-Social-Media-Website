@@ -97,10 +97,11 @@ class PostModel extends AppModel {
         $value = mysqli_real_escape_string($this->link, $value);
         $data = [];
 
-        $sql = "SELECT p.*, u.Username, c.CategoryName
+        $sql = "SELECT p.*, u.Username, c.CategoryName, g.GroupName
                 FROM post p
                 JOIN users u ON p.UserID = u.UserID
                 LEFT JOIN category c ON p.CategoryID = c.CategoryID
+                LEFT JOIN groups g ON g.GroupID = p.GroupID
                 WHERE p.$field = $value
                 ORDER BY p.CreatedAt DESC";
 
@@ -125,6 +126,7 @@ class PostModel extends AppModel {
             $post->setUsername($row['Username']);
             $post->setCreatedAt($row['CreatedAt']);
             $post->setCategoryName($row['CategoryName'] ?? 'No Category');
+            $post->setGroupName($row['GroupName'] ?? 'No Group');
 
             $data[] = $post;
         }

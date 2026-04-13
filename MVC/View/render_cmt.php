@@ -1,37 +1,51 @@
 <?php
-// Bổ sung các tham số: $allowInteraction, $reactions_forComment, $isSameUser_reactCmt
-function renderComments($postId, $parentId, $commentTree, $allowInteraction = true, $reactions_forComment = [], $isSameUser_reactCmt = []){
+// Bổ sung các tham số: $allowInteraction, $reactions_forComment, $isSameUser_reactPost_reactCmt
+function renderComments($postId, $parentId, $commentTree, $level = 0,
+    $allowInteraction = true,
+    $reactions_forComment = [],
+    $isSameUser_reactCmt = []
+){
 
+    
     if(empty($commentTree[$postId][$parentId])) return;
 
     foreach($commentTree[$postId][$parentId] as $c){
 
-        // Lúc này file comment_item.php được include vào sẽ NHÌN THẤY toàn bộ các biến trên
-        include 'comment_item.php';
-
         $commentId = $c->getCommentId();
 
-        if(!empty($commentTree[$postId][$commentId])){
+        // 1. COMMENT ITEM (LUÔN HIỂN THỊ)
+        include 'comment_item.php';
 
+        // 2. CHECK CÓ REPLY KHÔNG
+
+        if(!empty($commentTree[$postId][$commentId])){
             echo '<button class="toggle-replies btn btn-sm btn-link"
-                    data-commentid="'.$commentId.'">
+                    data-comment-id="'.$commentId.'">
                     View replies
                 </button>';
+        }
 
-            echo '<hr style="margin: 10px 15px; color:#ddd;">';
 
-            echo '<div class="reply-container d-none"
-                    id="replies-'.$commentId.'">';
+            // 3. CONTAINER CHỈ ẨN REPLY
+            echo '<div class="reply-container d-none" id="replies-'.$commentId.'">';
 
-            // Cực kỳ quan trọng: Phải truyền tiếp các biến này xuống các comment con (đệ quy)
-            renderComments($postId, $commentId, $commentTree, $allowInteraction, $reactions_forComment, $isSameUser_reactCmt);
+            if(!empty($commentTree[$postId][$commentId])){
+                renderComments(
+                    $postId,
+                    $commentId,
+                    $commentTree,
+                    $level + 1,
+                    $allowInteraction,
+                    $reactions_forComment,
+                    $isSameUser_reactCmt
+                );
+            }
 
             echo '</div>';
-        }
-        else {
-            echo '<hr style="margin: 10px 15px; color:#ddd;">';
-        }
+            echo "<!-- parentId=$parentId count=" . count($commentTree[$postId][$parentId] ?? []) . " -->";
+        
 
+        echo '<hr style="margin: 10px 15px; color:#ddd;">';
     }
 }
 ?>

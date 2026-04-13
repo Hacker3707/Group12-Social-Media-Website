@@ -19,14 +19,17 @@
         </div>
 
         <div class="row" id = "middle-content">
-            <div class= "col-md-2 col-12" id = "left-sidebar">
+
+            <div class= "col-md-2 col-12 d-none d-md-block" id = "left-sidebar">
                 <?php include(__DIR__ . "/leftsidebar.php");; ?>
             </div>
+
             <div class= "col-md-10 col-12" id = "main-content">
                 <?php
                 include_once(__DIR__ . "/postview.php");
                 ?>
             </div>
+            
         </div>
 
         <div class="row" id = "lower-bar">
