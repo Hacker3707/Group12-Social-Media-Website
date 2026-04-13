@@ -10,41 +10,40 @@
 
 </head>
 <body>
-    <div class="container-fluid" id = "home-container">
+    <div class="container-fluid" id="home-container">
 
-        <div class="row" id = "navbar">
-            <div class= "col-md-12 col-12">
-                <?php include(__DIR__ . "/navbar.php");; ?>
+        <div class="row" id="navbar">
+            <div class="col-md-12 col-12">
+                <?php include(__DIR__ . "/navbar.php"); ?>
             </div>
         </div>
 
-        <div class="row" id = "middle-content">
-
-            <div class= "col-md-2 col-12 d-none d-md-block" id = "left-sidebar">
-                <?php include(__DIR__ . "/leftsidebar.php");; ?>
+        <div class="row" id="middle-content">
+            <div class="col-md-2 col-12" id="left-sidebar">
+                <?php include(__DIR__ . "/leftsidebar.php"); ?>
             </div>
-
-            <div class= "col-md-10 col-12" id = "main-content">
-                <?php
-                include_once(__DIR__ . "/postview.php");
-                ?>
+            <div class="col-md-10 col-12" id="main-content">
+                <?php include_once(__DIR__ . "/postview.php"); ?>
             </div>
             
         </div>
 
-        <div class="row" id = "lower-bar">
-            <div class= "col-md-1 col-12">
-            <a href="index.php?controller=post&action=showCreateForm" class="btn btn-primary" id="create-post-btn">
-                + Create Post
-            </a>
+        <div class="row" id="lower-bar">
+            <div class="col-md-1 col-12">
+                <a href="index.php?controller=post&action=showCreateForm" class="btn btn-primary" id="create-post-btn">
+                    + Create Post
+                </a>
             </div>
         </div>
 
-        <div class="row" id = "footer">
-            <div class= "col-md-12 col-12">
+        <div class="row" id="footer">
+            <div class="col-md-12 col-12">
                 <p class="text-center">© 2026 Passo Social Media. All rights reserved.</p>
             </div>
         </div>
-        
+
     </div>
+
+    <?php include_once(__DIR__ . "/chat_widget.php"); ?>
+
 </body>

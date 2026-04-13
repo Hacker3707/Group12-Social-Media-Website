@@ -3,32 +3,13 @@ include_once "MVC/Model/UserModel.php";
 include_once "Entity/User.php";
 include_once "Entity/Admin.php";
 include_once "Entity/Member.php";
-include_once __DIR__ . "/../Model/PostModel.php";
-include_once __DIR__ . "/../Model/ReactionModel.php";
-include_once __DIR__ . "/../../Entity/Media.php";
-include_once __DIR__ . "/../Model/CategoryModel.php";
-include_once __DIR__ . "/../Model/CommentModel.php";
-include_once __DIR__ . "/../Model/UserModel.php";
-include_once __DIR__ . "/../Model/GroupModel.php";
-include_once __DIR__ . "/../Model/MediaModel.php";
 
 class UserController {
-    private $postModel;
-    private $reactionModel;
-    private $categoryModel;
-    private $commentModel;
+
     private $userModel;
-    private $groupModel;
-    private $mediaModel;
 
     public function __construct() {
-       $this->postModel     = new PostModel();
-        $this->reactionModel = new ReactionModel();
-        $this->categoryModel = new CategoryModel();
-        $this->commentModel = new CommentModel();
         $this->userModel = new UserModel();
-        $this->groupModel = new GroupModel();
-        $this->mediaModel    = new MediaModel();
     }
 
     public function handleRequest() {
@@ -254,179 +235,9 @@ class UserController {
         if (!$user || $user['AccountStatus'] === 'deleted') {
             $this->back('Người dùng không tồn tại hoặc đã bị xóa.');
         }
-         // 🔥 THÊM ĐOẠN NÀY
-    include_once "MVC/Model/FollowModel.php";
-
-    $followModel = new FollowModel();
-
-    $currentUserId = $_SESSION['user_id'] ?? 0;
-    $profileUserId = $user['UserID'];
-
-    $isFollowing = false;
-
-    if ($currentUserId && $currentUserId != $profileUserId) {
-        $isFollowing = $followModel->exists($currentUserId, $profileUserId);
-    }
-
-    // (optional) lấy số follower luôn
-    $followerCount = $followModel->countFollowers($profileUserId);
-
-        // 🔥 truyền userId vào
-        $data = $this -> getPostforUserId($id);
-
-        extract($data); // tạo biến $posts, $comments,...
 
         include_once "MVC/View/User/profile_view.php";
     }
-
-    public function getPostforUserId($userId) {
-
-        // 🔥 chỉ lấy post của user này
-        $posts = $this->postModel->fetchByField('UserID', $userId) ?? [];
-
-        $userid = $_SESSION['user_id'] ?? null;
-
-        // =======================
-        // FILTER GROUP
-        // =======================
-        $filteredPosts = [];
-        $canInteract = [];
-        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
-
-        foreach ($posts as $post) {
-            $postId = $post->getPostId();
-            $groupId = $post->getGroupId();
-
-            $viewFlag = true;
-            $interactFlag = true;
-
-            $group = null;
-
-            if ($groupId) {
-                $group = $this->groupModel->getById($groupId);
-                $userRoleInGroup = $this->groupModel->getUserRole($userid, $groupId);
-
-                if (!$isSystemAdmin) {
-                    if ($group && strtolower($group['Privacy']) === 'private' && !$userRoleInGroup) {
-                        $viewFlag = false;
-                    }
-
-                    if (!$userRoleInGroup) {
-                        $interactFlag = false;
-                    }
-                }
-            }
-
-            if ($viewFlag) {
-                $filteredPosts[] = $post;
-                $canInteract[$postId] = $interactFlag;
-            }
-        }
-
-        $posts = $filteredPosts;
-
-        $isOwnerPost = [];
-        $canDel_EditPost = [];
-
-        foreach ($posts as $post) {
-            $postId = $post->getPostId();
-
-            // check chủ bài
-            $isOwnerPost[$postId] = ($post->getUserId() == $userid);
-
-            // check quyền delete
-            $canDel_EditPost[$postId] =
-            $isOwnerPost[$postId] || $isSystemAdmin;
-        }
-
-        // =======================
-        // REACTIONS POST
-        // =======================
-        $reactions_forPost = [];
-        $isSameUser_reactPost = [];
-
-        foreach ($posts as $post) {
-            $postId = $post->getPostId();
-
-            $reactions_forPost[$postId] = $this->reactionModel->selectReactionsForPost($postId);
-
-            $isSameUser_reactPost[$postId] = false;
-            foreach ($reactions_forPost[$postId] as $reaction) {
-                if ($reaction->getUserId() == $userid) {
-                    $isSameUser_reactPost[$postId] = true;
-                    break;
-                }
-            }
-        }
-
-        // =======================
-        // COMMENTS
-        // =======================
-        $comments = [];
-        foreach ($posts as $post) {
-            $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
-        }
-
-        // TREE
-        $commentTree = [];
-        foreach ($posts as $post) {
-            $postId = $post->getPostId();
-            $commentTree[$postId] = [];
-
-            foreach ($comments[$postId] as $c) {
-                $parent = $c->getParentCommentId();
-                $commentTree[$postId][$parent][] = $c;
-            }
-        }
-
-        // =======================
-        // REACTION COMMENT
-        // =======================
-        $reactions_forComment = [];
-        $isSameUser_reactCmt = [];
-
-        foreach ($comments as $postComments) {
-            foreach ($postComments as $comment) {
-                $commentId = $comment->getCommentId();
-
-                $reactions_forComment[$commentId] =
-                    $this->reactionModel->selectReactionsForComment($commentId);
-
-                $isSameUser_reactCmt[$commentId] = false;
-                foreach ($reactions_forComment[$commentId] as $reaction) {
-                    if ($reaction->getUserId() == $userid) {
-                        $isSameUser_reactCmt[$commentId] = true;
-                        break;
-                    }
-                }
-            }
-        }
-
-        // =======================
-        // MEDIA
-        // =======================
-        $mediaForPost = [];
-        foreach ($posts as $post) {
-            $mediaForPost[$post->getPostId()] =
-                $this->mediaModel->getByPostId($post->getPostId());
-        }
-
-        // 🔥 trả data về controller
-        return [
-            'posts' => $posts,
-            'canInteract' => $canInteract,
-            'reactions_forPost' => $reactions_forPost,
-            'isSameUser' => $isSameUser_reactPost,
-            'comments' => $comments,
-            'commentTree' => $commentTree,
-            'reactions_forComment' => $reactions_forComment,
-            'isSameUser_reactCmt' => $isSameUser_reactCmt,
-            'isSameUser_reactPost' => $isSameUser_reactPost,
-            'mediaForPost' => $mediaForPost,
-            'canDel_EditPost' => $canDel_EditPost,
-            'isOwnerPost' => $isOwnerPost
-        ];
-}
 
     // ================= QUÊN MẬT KHẨU =================
     public function forgotPassword() {
