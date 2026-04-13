@@ -6,6 +6,7 @@ include_once __DIR__ . "/../../Entity/Media.php";
 include_once __DIR__ . "/../Model/CategoryModel.php";
 include_once __DIR__ . "/../Model/CommentModel.php";
 include_once __DIR__ . "/../Model/UserModel.php";
+include_once __DIR__ . "/../Model/GroupModel.php";
 include_once __DIR__ . "/../Model/MediaModel.php";
 
 class PostController extends AppController
@@ -15,6 +16,7 @@ class PostController extends AppController
     private $categoryModel;
     private $commentModel;
     private $userModel;
+    private $groupModel;
     private $mediaModel;
 
     public function __construct()
@@ -22,8 +24,9 @@ class PostController extends AppController
         $this->postModel     = new PostModel();
         $this->reactionModel = new ReactionModel();
         $this->categoryModel = new CategoryModel();
-        $this->commentModel  = new CommentModel();
-        $this->userModel     = new UserModel();
+        $this->commentModel = new CommentModel();
+        $this->userModel = new UserModel();
+        $this->groupModel = new GroupModel();
         $this->mediaModel    = new MediaModel();
     }
 
@@ -176,12 +179,18 @@ class PostController extends AppController
         foreach ($posts as $post) {
             $mediaForPost[$post->getPostId()] = $this->mediaModel->getByPostId($post->getPostId());
         }
+    
 
+        // =======================
+        // 🔥 RENDER VIEW
+        // =======================
         include_once __DIR__ . "/../View/home.php";
     }
+   }
 
-    public function PostAction()
-    {
+       
+
+    public function PostAction(){
         $action = $_GET['action'] ?? "home";
 
         switch ($action) {

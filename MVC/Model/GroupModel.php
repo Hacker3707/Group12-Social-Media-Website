@@ -65,7 +65,7 @@ class GroupModel extends AppModel {
         $result = $this->query($sql);
 
         $group = null;
-        
+
         while ($row = mysqli_fetch_assoc($result)) {
             $group = new Group(
                     $row['GroupID'],
