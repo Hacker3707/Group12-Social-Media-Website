@@ -377,17 +377,11 @@ class PostController extends AppController
     public function editPost() {
         $postId = $_GET["id"] ?? null;
         $post = $this->postModel->getById($postId);
-        if (!$post) {
-            echo "wop wop cant edit post";
-        }
 
-        if (($post -> getGroupId()) !== null) {
-        $group = $this->groupModel->getObjById($post -> getGroupId());
+        if (!$post) {
+            echo "Post not found";
+            exit;
         }
-        else {
-            $group = null;
-        }
-     
         
         
         include "MVC/View/Post/edit_view.php";
