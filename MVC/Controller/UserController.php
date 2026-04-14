@@ -146,7 +146,7 @@ class UserController {
         $keyword = trim($_GET['keyword'] ?? '');
         
         if ($keyword !== '') {
-            $users = $this->userModel->searchUsers($keyword);
+            $users = $this->userModel->searchUsers($keyword, true);
         } else {
             $users = $this->userModel->getAll();
         }
@@ -314,7 +314,7 @@ class UserController {
 
         extract($data); // tạo biến $posts, $comments,...
 
-        include_once "MVC/View/User/profile_view.php";
+        include_once "MVC/View/User/profile.php";
     }
 
     public function getPostforUserId($userId) {

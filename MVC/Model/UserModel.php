@@ -67,9 +67,15 @@ class UserModel extends AppModel {
     }
 
     // ================= SEARCH =================
-    public function searchUsers($keyword) {
+    public function searchUsers($keyword, $includeEmail = false) {
         $keyword = mysqli_real_escape_string($this->link, $keyword);
-        $sql = "SELECT * FROM users WHERE AccountStatus != 'deleted' AND (Username LIKE '%$keyword%' OR Email LIKE '%$keyword%') ORDER BY UserID DESC";
+        $condition = "Username LIKE '%$keyword%'";
+
+        if ($includeEmail) {
+            $condition .= " OR Email LIKE '%$keyword%'";
+        }
+
+        $sql = "SELECT * FROM users WHERE AccountStatus != 'deleted' AND ($condition) ORDER BY UserID DESC";
         $result = $this->query($sql);
         $list = [];
 

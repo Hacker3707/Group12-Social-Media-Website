@@ -89,20 +89,20 @@ if (!($currentController === 'user' && ($currentAction === 'register' || $curren
                     Chào, <strong><?= htmlspecialchars($_SESSION['username']) ?></strong>
                 </button>
                 <div class="dropdown-menu dropdown-menu-right">
-                    <a class="dropdown-item" href="/Group12-Social-Media-Website/ndex.php?controller=user&action=profile&id=<?= $_SESSION['user_id'] ?>">Hồ sơ cá nhân</a>
+                    <a class="dropdown-item" href="/index.php?controller=user&action=profile&id=<?= $_SESSION['user_id'] ?>">Hồ sơ cá nhân</a>
                     
                     <?php if($_SESSION['role'] === 'admin'): ?>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item text-info" href="/Group12-Social-Media-Website/index.php?controller=user&action=list">Quản lý hệ thống</a>
+                        <a class="dropdown-item text-info" href="/index.php?controller=user&action=list">Quản lý hệ thống</a>
                     <?php endif; ?>
                     
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item text-danger" href="/Group12-Social-Media-Website/index.php?controller=user&action=logout">Đăng xuất</a>
+                    <a class="dropdown-item text-danger" href="/index.php?controller=user&action=logout">Đăng xuất</a>
                 </div>
             </div>
         <?php else: ?>
-            <a href="/Group12-Social-Media-Website/index.php?controller=user&action=login" class="btn btn-outline-primary mr-2">Login</a>
-            <a href="/Group12-Social-Media-Website/index.php?controller=user&action=register" class="btn btn-primary">Register</a>
+            <a href="/index.php?controller=user&action=login" class="btn btn-outline-primary mr-2">Login</a>
+            <a href="/index.php?controller=user&action=register" class="btn btn-primary">Register</a>
         <?php endif; ?>
     </div>
 
@@ -117,11 +117,11 @@ endif;
 $(document).ready(function(){
 
     function loadNotifications(){
-        $("#notiList").load("/Group12-Social-Media-Website/index.php?controller=notification&action=get");
+        $("#notiList").load("/index.php?controller=notification&action=get");
     }
 
     function loadCount(){
-        $.get("/Group12-Social-Media-Website/index.php?controller=notification&action=count", function(res){
+        $.get("/index.php?controller=notification&action=count", function(res){
             $("#notiCount").text(res.count);
         });
     }
@@ -150,7 +150,7 @@ $(document).click(function(){
 
         let id = $(this).data("id");
 
-        $.post("/Group12-Social-Media-Website/index.php?controller=notification&action=markRead", {
+        $.post("/index.php?controller=notification&action=markRead", {
             notification_id: id
         });
 
