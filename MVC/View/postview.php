@@ -461,7 +461,7 @@ document.addEventListener("submit", function(e){
 
                     if(!container){
                         // 🔥 tạo luôn reply container nếu chưa có
-                        let parentComment = document.querySelector(`[data-comment-id="${parentId}"]`);
+                        let parentComment = document.querySelector(`.comment-item[data-comment-id="${parentId}"]`);
 
                         if(parentComment){
 

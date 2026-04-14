@@ -25,6 +25,28 @@
                 <?php
                 include_once __DIR__ . "/../userlist_view.php";
                 ?>
+
+                <?php if (($totalPages ?? 1) > 1): ?>
+                    <nav aria-label="User search pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <?php $prevPage = max(1, ($currentPage ?? 1) - 1); ?>
+                            <li class="page-item <?= ($currentPage ?? 1) <= 1 ? 'disabled' : '' ?>">
+                                <a class="page-link" href="index.php?controller=search&action=searchUsers&searchResults=<?= urlencode($keyword ?? '') ?>&page=<?= $prevPage ?>">Previous</a>
+                            </li>
+
+                            <?php for ($p = 1; $p <= ($totalPages ?? 1); $p++): ?>
+                                <li class="page-item <?= $p == ($currentPage ?? 1) ? 'active' : '' ?>">
+                                    <a class="page-link" href="index.php?controller=search&action=searchUsers&searchResults=<?= urlencode($keyword ?? '') ?>&page=<?= $p ?>"><?= $p ?></a>
+                                </li>
+                            <?php endfor; ?>
+
+                            <?php $nextPage = min(($totalPages ?? 1), ($currentPage ?? 1) + 1); ?>
+                            <li class="page-item <?= ($currentPage ?? 1) >= ($totalPages ?? 1) ? 'disabled' : '' ?>">
+                                <a class="page-link" href="index.php?controller=search&action=searchUsers&searchResults=<?= urlencode($keyword ?? '') ?>&page=<?= $nextPage ?>">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                <?php endif; ?>
             </div>
         </div>
 

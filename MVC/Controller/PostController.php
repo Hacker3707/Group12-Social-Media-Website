@@ -103,166 +103,90 @@ class PostController extends AppController
         exit;
     }
 
-    public function showHome() {
+    public function showHome()
+    {
+        $posts  = $this->postModel->getAll() ?? [];
+        $userid = $_SESSION['user_id'] ?? null;
 
-    // 🔥 Filter category
-    $categoryId = $_GET['category_id'] ?? null;
+        $reactions_forPost = [];
+        $isSameUser_reactPost = [];
+        $reactions_forComment = [];
+        $isSameUser_reactCmt = [];
 
-    if ($categoryId) {
-        $posts = $this->postModel->fetchByField('CategoryID', $categoryId);
-    } else {
-        $posts = $this->postModel->getAll();
-    }
-
-    $posts = $posts ?? [];
-    $userid = $_SESSION['user_id'] ?? null;
-    $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
-
-    // =========================
-    // 🔥 FILTER GROUP
-    // =========================
-    $filteredPosts = [];
-    $canInteract = [];
-
-    foreach ($posts as $post) {
-        $postId = $post->getPostId();
-        $groupId = $post->getGroupId();
-
-        $viewFlag = true;
-        $interactFlag = true;
-
-        if ($groupId) {
-            $group = $this->groupModel->getById($groupId);
-            $userRoleInGroup = $this->groupModel->getUserRole($userid, $groupId);
-
-            if (!$isSystemAdmin) {
-                if ($group && strtolower($group['Privacy']) === 'private' && !$userRoleInGroup) {
-                    $viewFlag = false;
-                }
-
-                if (!$userRoleInGroup) {
-                    $interactFlag = false;
-                }
-            }
+        // Lay thong tin user
+        if ($userid) {
+            $userInfo = $this->userModel->getById($userid);
+            $username = $userInfo ? ($userInfo['Username'] ?? 'Guest') : "Guest";
+        } else {
+            $username = "Guest";
         }
+        // LỖI Ở ĐÂY: Dấu '}' đóng hàm showHome() bị đặt sai vị trí đã được gỡ bỏ
 
-        if ($viewFlag) {
-            $filteredPosts[] = $post;
-            $canInteract[$postId] = $interactFlag;
-        }
-    }
+        // =========================
+        // 🔥 COMMENTS
+        // =========================
+        $comments = [];
+        $commentTree = [];
 
-    $posts = $filteredPosts;
+        foreach ($posts as $post) {
+            $postId = $post->getPostId();
 
+            $reactions_forPost[$postId] = $this->reactionModel->selectReactionsForPost($postId);
+            $isSameUser_reactPost[$postId] = false;
 
-    $isOwnerPost = [];
-    $canDel_EditPost = [];
-
-    foreach ($posts as $post) {
-        $postId = $post->getPostId();
-
-        // check chủ bài
-        $isOwnerPost[$postId] = ($post->getUserId() == $userid);
-
-        // check quyền delete
-        $canDel_EditPost[$postId] =
-            $isOwnerPost[$postId] || $isSystemAdmin;
-    }
-
-    // =========================
-    // 🔥 REACTIONS POST
-    // =========================
-
-    $reactions_forPost = [];
-    $isSameUser_reactPost = [];
-
-    foreach ($posts as $post) {
-        $postId = $post->getPostId();
-
-        $reactions_forPost[$postId] =
-            $this->reactionModel->selectReactionsForPost($postId);
-
-        $isSameUser_reactPost[$postId] = false;
-
-        foreach ($reactions_forPost[$postId] as $reaction) {
-            if ($reaction->getUserId() == $userid) {
-                $isSameUser_reactPost[$postId] = true;
-                break;
-            }
-        }
-    }
-
-    // =========================
-    // 🔥 COMMENTS
-    // =========================
-    $comments = [];
-    $commentTree = [];
-
-    foreach ($posts as $post) {
-        $postId = $post->getPostId();
-
-        $comments[$postId] =
-            $this->commentModel->fetchByField('PostID', $postId);
-
-        $commentTree[$postId] = [];
-
-        foreach ($comments[$postId] as $c) {
-            $parent = $c->getParentCommentId();
-            $commentTree[$postId][$parent][] = $c;
-        }
-    }
-
-    // =========================
-    // 🔥 REACTION COMMENT
-    // =========================
-    $reactions_forComment = [];
-    $isSameUser_reactCmt = [];
-
-    foreach ($comments as $postComments) {
-        foreach ($postComments as $comment) {
-
-            $commentId = $comment->getCommentId();
-
-            $reactions_forComment[$commentId] =
-                $this->reactionModel->selectReactionsForComment($commentId);
-
-            // ✅ FIX
-            $isSameUser_reactCmt[$commentId] = false;
-
-            foreach ($reactions_forComment[$commentId] as $reaction) {
-                if ($reaction->getUserId() == $userid) {
-                    $isSameUser_reactCmt[$commentId] = true;
+            foreach ($reactions_forPost[$postId] as $reaction) {
+                if ($userid && $reaction->getUserId() == $userid) {
+                    $isSameUser_reactPost[$postId] = true;
                     break;
                 }
             }
+
+            $comments[$postId] = $this->commentModel->fetchByField('PostID', $postId);
+
+            $commentTree[$postId] = [];
+
+            foreach ($comments[$postId] as $c) {
+                $parent = $c->getParentCommentId();
+                $commentId = $c->getCommentId();
+                $commentTree[$postId][$parent][] = $c;
+
+                $reactions_forComment[$commentId] = $this->reactionModel->selectReactionsForComment($commentId);
+                $isSameUser_reactCmt[$commentId] = false;
+
+                foreach ($reactions_forComment[$commentId] as $reaction) {
+                    if ($userid && $reaction->getUserId() == $userid) {
+                        $isSameUser_reactCmt[$commentId] = true;
+                        break;
+                    }
+                }
+            }
         }
+
+        // =========================
+        // 🔥 MEDIA
+        // =========================
+        $mediaForPost = [];
+
+        foreach ($posts as $post) {
+            $mediaForPost[$post->getPostId()] = $this->mediaModel->getByPostId($post->getPostId());
+        }
+
+        // =========================
+        // 🔥 USER INFO
+        // =========================
+        if ($userid) {
+            $userInfo = $this->userModel->getById($userid);
+            $username = $userInfo ? $userInfo['Username'] : "Guest";
+        } else {
+            $username = "Guest";
+        }
+
+        // =========================
+        // 🔥 RENDER VIEW (DUY NHẤT 1 LẦN)
+        // =========================
+        include_once __DIR__ . "/../View/home.php";
     }
 
-    // =========================
-    // 🔥 MEDIA
-    // =========================
-    $mediaForPost = [];
-
-    foreach ($posts as $post) {
-        $mediaForPost[$post->getPostId()] =
-            $this->mediaModel->getByPostId($post->getPostId());
-    }
-
-    // =========================
-    // 🔥 USER INFO
-    // =========================
-    if ($userid) {
-        $userInfo = $this->userModel->getById($userid);
-        $username = $userInfo ? $userInfo['Username'] : "Guest";
-    } else {
-        $username = "Guest";
-    }
-
-    // =========================
-    // 🔥 RENDER VIEW (DUY NHẤT 1 LẦN)
-    // =========================
-    include_once __DIR__ . "/../View/home.php";
-}
        
 
     public function PostAction(){
@@ -311,6 +235,37 @@ class PostController extends AppController
 
         include_once __DIR__ . "/../View/home.php";
         return $posts;
+    }
+
+    public function getPostById($postId) {
+        return $this->postModel->getById($postId);
+    }
+
+    public function getPostsByUserId($userId) {
+        if (isset($_GET['user_id'])) {
+            $userId = $_GET['user_id'];
+            $posts  = $this->postModel->fetchByField('UserID', $userId);
+            include_once "../View/postview.php";
+        }
+        return [];
+    }
+
+    public function getPostsByGroupId($groupId) {
+        if (isset($_GET['group_id'])) {
+            $groupId = $_GET['group_id'];
+            $posts   = $this->postModel->fetchByField('GroupID', $groupId);
+            include_once "../View/postview.php";
+        }
+        return [];
+    }
+
+    public function getPostsByCategoryId() {
+        if (isset($_GET['category_id'])) {
+            $categoryId = $_GET['category_id'];
+            $posts      = $this->postModel->fetchByField('CategoryID', $categoryId);
+            include_once __DIR__ . "/../View/home.php";
+        }
+        return [];
     }
 
     public function deletePost()
@@ -367,7 +322,7 @@ class PostController extends AppController
         $post   = $this->postModel->getById($postId);
 
         if (!$post) {
-            $this->redirect('/Group12-Social-Media-Website/index.php', 'Bai viet nay khong ton tai hoac da bi xoa!');
+            $this->redirect('/index.php', 'Bai viet nay khong ton tai hoac da bi xoa!');
         }
 
         $reactions = $this->reactionModel->selectReactionsForPost($postId);
