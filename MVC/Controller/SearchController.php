@@ -42,7 +42,7 @@ class SearchController extends AppController {
             $posts = $this->postModel->searchPosts($keyword);
             $categories = $this->categoryModel->searchCategories($keyword);
             $groups = $this->groupModel->searchGroups($keyword);
-            $users = $this-> userModel->searchUsers($keyword);
+            $users = $this-> userModel->searchUsers($keyword, "NormalSearch");
             foreach($posts as $post) {
             $reactions[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
             }
@@ -158,7 +158,7 @@ class SearchController extends AppController {
         if (empty($keyword)) {
             $users = [];
         } else {
-            $users = $this->userModel->searchUsers($keyword);
+            $users = $this->userModel->searchUsers($keyword, "NormalSearch");
         }
         include_once __DIR__ . "/../View/Search/search_user.php";
     }

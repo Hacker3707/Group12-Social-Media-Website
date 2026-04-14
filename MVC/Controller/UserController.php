@@ -140,7 +140,7 @@ class UserController {
         $keyword = trim($_GET['keyword'] ?? '');
         
         if ($keyword !== '') {
-            $users = $this->userModel->searchUsers($keyword);
+            $users = $this->userModel->searchUsers($keyword, "Admin");
         } else {
             $users = $this->userModel->getAll();
         }

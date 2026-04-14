@@ -13,7 +13,7 @@
     <div class="container-fluid" id = "home-container">
 
         <div class="row" id = "navbar">
-            <div class= "col-md-12 col-12">
+            <div class= "col-md-12 col-12 px-0">
                 <?php include(__DIR__ . "/navbar.php");; ?>
             </div>
         </div>

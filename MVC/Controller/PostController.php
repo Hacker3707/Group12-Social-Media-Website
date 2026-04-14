@@ -278,6 +278,17 @@ class PostController extends AppController {
         }
     }
 
+    public function loadMore() {
+        $offset = $_GET['offset'] ?? 0;
+        $limit  = $_GET['limit'] ?? 5;
+
+        $posts = $this->postModel->getPostsLimit($offset, $limit);
+
+        foreach ($posts as $post) {
+            include "MVC/View/post_item.php";
+        }
+    }
+
     public function getAllPosts() {
         $posts = $this->postModel->getAll() ?? [];
 
@@ -370,6 +381,25 @@ class PostController extends AppController {
 
         $reactions = $this->reactionModel->selectReactionsForPost($postId);
         include_once "MVC/View/home.php";
+    }
+
+    public function editPost() {
+        $postId = $_GET["id"] ?? null;
+        $post = $this->postModel->getById($postId);
+        if (!$post) {
+            echo "wop wop cant edit post";
+        }
+
+        if (($post -> getGroupId()) !== null) {
+        $group = $this->groupModel->getObjById($post -> getGroupId());
+        }
+        else {
+            $group = null;
+        }
+     
+        
+        
+        include "MVC/View/Post/edit_view.php";
     }
     
     // ====================================================================
