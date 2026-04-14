@@ -11,15 +11,24 @@ class PostModel extends AppModel {
         $title = mysqli_real_escape_string($this->link,$post->getTitle());
         $content = mysqli_real_escape_string($this->link,$post->getContent());
         $price = $post->getPrice() === null ? "NULL" : intval($post->getPrice());
-        $condition = mysqli_real_escape_string($this->link, $post->getCondition());
-        $location = mysqli_real_escape_string($this->link, $post->getLocation());
+        $condition = $post->getCondition() 
+        ? "'" . mysqli_real_escape_string($this->link, $post->getCondition()) . "'" 
+        : "NULL";
+
+        $location = $post->getLocation() 
+        ? "'" . mysqli_real_escape_string($this->link, $post->getLocation()) . "'" 
+        : "NULL";
+
         $brand = $post->getBrand() ? "'" . mysqli_real_escape_string($this->link, $post->getBrand()) . "'" : "NULL";
-        $status = mysqli_real_escape_string($this->link, $post->getStatus());
+
+        $status = $post->getStatus() 
+        ? "'" . mysqli_real_escape_string($this->link, $post->getStatus()) . "'" 
+        : "NULL";
 
         $sql = "INSERT INTO post 
                 (UserID, GroupID, CategoryID, Title, Content, Price, ProductCondition, Location, Brand, PostStatus)
                 VALUES 
-                ($userId, $groupId, $categoryId, '$title', '$content', $price, '$condition', '$location', $brand, '$status')";
+                ($userId, $groupId, $categoryId, '$title', '$content', $price, $condition, $location, $brand, $status)";
 
         return $this->execute($sql);
     }

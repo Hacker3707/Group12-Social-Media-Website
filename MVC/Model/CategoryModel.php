@@ -102,7 +102,6 @@ class CategoryModel extends AppModel {
             $list[] = new Category(
                 $row['CategoryID'],
                 $row['CategoryName'],
-                $row['PostCount']
             );
         }
         return $list;

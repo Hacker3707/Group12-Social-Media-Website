@@ -45,7 +45,7 @@ $isProduct = $post->getPrice() !== null
                 <?php if ($post -> getCategoryName() !== 'No Category'): ?>
                 <span style="margin: 0 5px;">›</span>
                 <a href="index.php?controller=post&action=getPostsByCategoryId&category_id=<?= $post->getCategoryId() ?>">
-                        <button class="btn btn-outline-secondary btn-sm" style="color: cornflowerblue;">
+                        <button class="btn btn-outline-secondary btn-sm" style="color: cornflowerblue;" data-toggle="tooltip" data-html="true" title="Click to view related post!">
                             <?= htmlspecialchars($post->getCategoryName() ?? '') ?>
                         </button>
                 </a>
@@ -54,7 +54,7 @@ $isProduct = $post->getPrice() !== null
                 <?php if ($post -> getGroupName() !== 'No Group'):?>
                 <span style="margin: 0 5px;">››</span>
                     <a href="index.php?controller=group&action=detail&id=<?= $post->getGroupId() ?>">
-                        <button class="btn btn-outline-secondary btn-sm" style="color: cornflowerblue;">
+                        <button class="btn btn-outline-secondary btn-sm" style="color: cornflowerblue;" data-toggle="tooltip" data-html="true" title="Click to view group detail!">
                             <?= htmlspecialchars($post->getGroupName() ?? '')?>
                         </button>
                     </a>
@@ -78,11 +78,11 @@ $isProduct = $post->getPrice() !== null
 
         <div class="dropdown-menu">
             <?php if ($canDel_EditPost[$postId] ?? false)
-            echo '<button class="dropdown-item edit-btn"
-                    type="button"
-                    data-postid="<?="'.$postId.'">
+            echo '<button class="dropdown-item edit-btn"  data-toggle="modal"
+                    data-target="#editpost-Modal<?= $postId ?>"
+                    type="button">
                     Edit
-                </button>';
+                </button></a>';
             ?>
 
             <button class="dropdown-item" type="button">Report</button>
@@ -159,13 +159,6 @@ $isProduct = $post->getPrice() !== null
     <?php if($allowInteraction): ?>
 
 <div class="mt-3 d-flex align-items-center">
-
-    <!-- VIEW -->
-    <!--<button class="btn btn-sm btn-outline-primary col-md-2 col-12"
-        data-toggle="modal"
-        data-target="#postModal<?= $postId ?>">
-        View Post
-    </button>-->
 
     <!-- LIKE -->
     <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
@@ -598,22 +591,22 @@ document.addEventListener("click", function(e){
                 try{
                     response = JSON.parse(xhr.responseText);
                 }catch(e){
-                    alert("Server error");
+                    showAlert("Error", "Oops!", "Server Error")
                     return;
                 }
 
                 if(response.status === "success"){
 
-                    alert("Comment deleted");
+                    showAlert("Success", "Success","Comment deleted !");
 
                     let commentItem = e.target.closest(".comment-item");
                     if(commentItem){
                         commentItem.remove();
                     }
-                    location.reload();
+                    
 
                 }else{
-                    alert(response.message || "Delete failed");
+                    showAlert("Error", "Something went wrong...", response.message || "Delete failed");
                 }
 
             }
