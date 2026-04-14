@@ -31,6 +31,14 @@ if ($commentId === null || $commentId === '') {
         $result = $this->query($sql);
         $row = mysqli_fetch_assoc($result);
 
+        if ($result instanceof mysqli_result) {
+            mysqli_free_result($result);
+        }
+
+        while (mysqli_more_results($this->link)) {
+            mysqli_next_result($this->link);
+        }
+
         return [
             "reacted" => (int)$row['reacted'],
             "total" => (int)$row['total']

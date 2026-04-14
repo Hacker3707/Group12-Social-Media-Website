@@ -1,4 +1,4 @@
-<div class="comment-item" style="margin-left: <?= $level * 10 ?>px;">
+<div class="comment-item" data-comment-id="<?= $c->getCommentId() ?>" style="margin-left: <?= $level * 10 ?>px;">
 
     <div class="d-flex justify-content-between align-items-start">
 

@@ -1,5 +1,7 @@
 <?php 
 include_once __DIR__ . "/../Model/CommentModel.php";
+include_once __DIR__ . "/../Model/NotificationModel.php";
+include_once __DIR__ . "/../Model/PostModel.php";
 
 class CommentController {
     private $commentModel;
@@ -10,8 +12,6 @@ class CommentController {
 
    public function addComment() {
      header('Content-Type: application/json');
-     ini_set('display_errors', 1);
-error_reporting(E_ALL);
     
 
     if (!isset($_SESSION['user_id'])) {
@@ -32,8 +32,16 @@ error_reporting(E_ALL);
 
     $postId = (int)$_POST['postId'];
     $userId = $_SESSION['user_id'];
-    $username = $_SESSION['username'];
-    $content = $_POST['content'];
+    $username = $_SESSION['username'] ?? 'User';
+    $content = trim($_POST['content']);
+
+    if ($content === '') {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing data"
+        ]);
+        exit;
+    }
 
     // 🔥 FIX: thống nhất biến
     $parentCommentId = !empty($_POST['parent_comment_id']) 
@@ -41,9 +49,9 @@ error_reporting(E_ALL);
     : null;
 
     $comment = new Comment(null, $parentCommentId, $postId, $userId, $content, null, []);
-    $result = $this->commentModel->createComment($comment);
+    $newCommentId = $this->commentModel->createComment($comment);
 
-    if(!$result){
+    if($newCommentId === false){
         echo json_encode([
             "status" => "error",
             "message" => "Insert failed"
@@ -52,9 +60,6 @@ error_reporting(E_ALL);
     }
 
     // ================= 🔔 NOTIFICATION =================
-    include_once __DIR__ . "/../Model/NotificationModel.php";
-    include_once __DIR__ . "/../Model/PostModel.php";
-
     $notiModel = new NotificationModel();
     $postModel = new PostModel();
 
@@ -76,30 +81,37 @@ error_reporting(E_ALL);
                     "comment"
                 );
             }
+        } else {
+            // 🟣 REPLY comment: thông báo cho cả chủ comment và chủ bài viết
+            $parentComment = $this->commentModel->getById($parentCommentId);
+            $notifiedUsers = [];
+
+            if ($parentComment && isset($parentComment['user_id'])) {
+                $commentOwnerId = (int)$parentComment['user_id'];
+
+                // Không gửi cho chính mình và không gửi trùng
+                if ($commentOwnerId !== (int)$userId && !isset($notifiedUsers[$commentOwnerId])) {
+                    $notiModel->insert(
+                        $commentOwnerId,
+                        $userId,
+                        "<b>$username</b> đã trả lời bình luận của bạn",
+                        "reply"
+                    );
+                    $notifiedUsers[$commentOwnerId] = true;
+                }
+            }
+
+            // Chủ bài viết cũng nhận thông báo khi có reply
+            if ((int)$postOwnerId !== (int)$userId && !isset($notifiedUsers[(int)$postOwnerId])) {
+                $notiModel->insert(
+                    $postOwnerId,
+                    $userId,
+                    "<b>$username</b> đã trả lời trong bài viết của bạn",
+                    "reply"
+                );
+                $notifiedUsers[(int)$postOwnerId] = true;
+            }
         }
-         // 🟣 REPLY comment
-else {
-
-
-    $parentComment = $this->commentModel->getById($parentCommentId);
-
-   if ($parentComment)  {
-
-       $commentOwnerId = $parentComment->getUserId(); 
-        // không gửi cho chính mình
-        if ($commentOwnerId != $userId) {
-
-            $notiModel->insert(
-                $commentOwnerId,
-                $userId,
-                "<b>$username</b> đã trả lời bình luận của bạn",
-                "reply"
-            );
-        }
-    }
-
-        
-    }
    
 }
     // ==================================================
@@ -107,6 +119,7 @@ else {
     echo json_encode([
         "status" => "success",
         "comment" => [
+            "id" => $newCommentId,
             "user_id" => $userId,
             "username" => $username,
             "content" => htmlspecialchars($content),
