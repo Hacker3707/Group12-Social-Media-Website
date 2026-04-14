@@ -33,7 +33,9 @@ $isProduct = $post->getPrice() !== null
     <div class="d-flex justify-content-between align-items-center mb-2">
 
     <div class="d-flex align-items-center">
-        <img src="" alt="avatar" class="rounded-circle mr-2" width="30">
+        
+        <?php $avatarUrl = $post->getAvatar() ? htmlspecialchars($post->getAvatar()) : 'https://via.placeholder.com/40'; ?>
+        <img src="<?= $avatarUrl ?>" alt="avatar" class="rounded-circle mr-2 shadow-sm" style="width: 40px; height: 40px; object-fit: cover; border: 1px solid #eee;">
 
             <a href="index.php?controller=user&action=profile&user_id=<?= $post->getUserId() ?>">
                 <strong><?= htmlspecialchars($post->getUsername()) ?></strong>
@@ -43,7 +45,7 @@ $isProduct = $post->getPrice() !== null
                 <?php if ($post -> getCategoryName() !== 'No Category'): ?>
                 <span style="margin: 0 5px;">›</span>
                 <a href="index.php?controller=post&action=getPostsByCategoryId&category_id=<?= $post->getCategoryId() ?>">
-                        <button class="btn btn-outline-secondary btn-sm" style="color: cornflowerblue;">
+                        <button class="btn btn-outline-secondary btn-sm" style="color: cornflowerblue;" data-toggle="tooltip" data-html="true" title="Click to view related post!">
                             <?= htmlspecialchars($post->getCategoryName() ?? '') ?>
                         </button>
                 </a>
@@ -52,7 +54,7 @@ $isProduct = $post->getPrice() !== null
                 <?php if ($post -> getGroupName() !== 'No Group'):?>
                 <span style="margin: 0 5px;">››</span>
                     <a href="index.php?controller=group&action=detail&id=<?= $post->getGroupId() ?>">
-                        <button class="btn btn-outline-secondary btn-sm" style="color: cornflowerblue;">
+                        <button class="btn btn-outline-secondary btn-sm" style="color: cornflowerblue;" data-toggle="tooltip" data-html="true" title="Click to view group detail!">
                             <?= htmlspecialchars($post->getGroupName() ?? '')?>
                         </button>
                     </a>
@@ -76,11 +78,11 @@ $isProduct = $post->getPrice() !== null
 
         <div class="dropdown-menu">
             <?php if ($canDel_EditPost[$postId] ?? false)
-            echo '<button class="dropdown-item edit-btn"
-                    type="button"
-                    data-postid="<?="'.$postId.'">
+            echo '<button class="dropdown-item edit-btn"  data-toggle="modal"
+                    data-target="#editpost-Modal<?= $postId ?>"
+                    type="button">
                     Edit
-                </button>';
+                </button></a>';
             ?>
 
             <button class="dropdown-item" type="button">Report</button>
@@ -103,18 +105,23 @@ $isProduct = $post->getPrice() !== null
 
     <!-- MEDIA (giữ từ code trên) -->
     <?php if (!empty($mediaForPost[$postId])): ?>
-        <div class="mb-2">
+        <div class="mb-3 text-center" style="background-color: #f8f9fa; border-radius: 8px; border: 1px solid #eee; overflow: hidden;">
+            
             <?php foreach ($mediaForPost[$postId] as $media): ?>
+                
                 <?php if ($media->getMediaType() === 'photo'): ?>
                     <img src="/<?= htmlspecialchars($media->getFilePath()) ?>"
-                         class="img-fluid rounded mb-1"
-                         style="max-height:400px; width:100%; object-fit:cover;">
+                         class="img-fluid rounded"
+                         style="max-height: 500px; max-width: 100%; object-fit: contain; margin: 0 auto; display: block;">
+                
                 <?php elseif ($media->getMediaType() === 'video'): ?>
-                    <video controls class="w-100 rounded mb-1" style="max-height:400px;">
+                    <video controls class="w-100 rounded" style="max-height: 500px; background-color: #000; outline: none;">
                         <source src="/<?= htmlspecialchars($media->getFilePath()) ?>">
                     </video>
                 <?php endif; ?>
+                
             <?php endforeach; ?>
+            
         </div>
     <?php endif; ?>
 
@@ -152,13 +159,6 @@ $isProduct = $post->getPrice() !== null
     <?php if($allowInteraction): ?>
 
 <div class="mt-3 d-flex align-items-center">
-
-    <!-- VIEW -->
-    <!--<button class="btn btn-sm btn-outline-primary col-md-2 col-12"
-        data-toggle="modal"
-        data-target="#postModal<?= $postId ?>">
-        View Post
-    </button>-->
 
     <!-- LIKE -->
     <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
@@ -461,7 +461,7 @@ document.addEventListener("submit", function(e){
 
                     if(!container){
                         // 🔥 tạo luôn reply container nếu chưa có
-                        let parentComment = document.querySelector(`[data-comment-id="${parentId}"]`);
+                        let parentComment = document.querySelector(`.comment-item[data-comment-id="${parentId}"]`);
 
                         if(parentComment){
 
@@ -591,22 +591,22 @@ document.addEventListener("click", function(e){
                 try{
                     response = JSON.parse(xhr.responseText);
                 }catch(e){
-                    alert("Server error");
+                    showAlert("Error", "Oops!", "Server Error")
                     return;
                 }
 
                 if(response.status === "success"){
 
-                    alert("Comment deleted");
+                    showAlert("Success", "Success","Comment deleted !");
 
                     let commentItem = e.target.closest(".comment-item");
                     if(commentItem){
                         commentItem.remove();
                     }
-                    location.reload();
+                    
 
                 }else{
-                    alert(response.message || "Delete failed");
+                    showAlert("Error", "Something went wrong...", response.message || "Delete failed");
                 }
 
             }

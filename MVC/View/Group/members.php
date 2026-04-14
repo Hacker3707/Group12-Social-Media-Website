@@ -21,7 +21,8 @@
                     <?php foreach ($pendingMembers as $req): ?>
                         <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-warning">
                             <div class="d-flex align-items-center">
-                                <img src="https://via.placeholder.com/50" class="rounded-circle mr-3">
+                                <?php $myAvatar = $_SESSION['avatar'] ?? 'https://via.placeholder.com/40'; ?>
+                            <img src="<?= htmlspecialchars($myAvatar) ?>" class="rounded-circle mr-2" style="width: 40px; height: 40px; object-fit: cover; border: 1px solid #ddd;">
                                 <div>
                                     <h6 class="font-weight-bold m-0"><?= htmlspecialchars($req['Username']) ?></h6>
                                     <small class="text-muted"><?= htmlspecialchars($req['Email']) ?></small>
@@ -43,7 +44,8 @@
             <?php foreach ($members as $mem): ?>
                 <div class="d-flex justify-content-between align-items-center py-3 member-row">
                     <div class="d-flex align-items-center">
-                        <img src="https://via.placeholder.com/50" class="rounded-circle mr-3">
+                        <?php $myAvatar = $_SESSION['avatar'] ?? 'https://via.placeholder.com/40'; ?>
+                            <img src="<?= htmlspecialchars($myAvatar) ?>" class="rounded-circle mr-2" style="width: 40px; height: 40px; object-fit: cover; border: 1px solid #ddd;">
                         <div>
                             <h6 class="font-weight-bold m-0 text-primary"><?= htmlspecialchars($mem['Username']) ?></h6>
                             <small class="text-muted"><?= htmlspecialchars($mem['Email']) ?></small>

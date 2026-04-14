@@ -17,21 +17,46 @@ class CommentModel extends AppModel {
         $sql = "CALL createComment($postId, $userId, '$content', $parentCommentId)";
         $result = $this->query($sql);
 
-        if(!$result){
-            return false;
-        }
+        $commentId = 0;
 
-        $commentId = mysqli_insert_id($this->link);
+        if ($result instanceof mysqli_result) {
+            $row = mysqli_fetch_assoc($result);
+            if ($row) {
+                if (isset($row['CommentID'])) {
+                    $commentId = (int)$row['CommentID'];
+                } elseif (isset($row['id'])) {
+                    $commentId = (int)$row['id'];
+                }
+            }
+            mysqli_free_result($result);
+        }
 
         while(mysqli_more_results($this->link)){
             mysqli_next_result($this->link);
         }
 
-        return [
-            "id" => $commentId,
-            "user_id" => $userId,
-            "content" => $content
-        ];
+        if ($commentId <= 0) {
+            $commentId = (int)mysqli_insert_id($this->link);
+        }
+
+        // Fallback an toàn cho trường hợp CALL không trả insert_id
+        if ($commentId <= 0) {
+            $fallbackSql = "SELECT CommentID
+                            FROM comment
+                            WHERE PostID = $postId AND UserID = $userId
+                            ORDER BY CommentID DESC
+                            LIMIT 1";
+            $fallbackResult = $this->query($fallbackSql);
+            if ($fallbackResult instanceof mysqli_result) {
+                $fallbackRow = mysqli_fetch_assoc($fallbackResult);
+                if ($fallbackRow && isset($fallbackRow['CommentID'])) {
+                    $commentId = (int)$fallbackRow['CommentID'];
+                }
+                mysqli_free_result($fallbackResult);
+            }
+        }
+
+        return $commentId > 0 ? $commentId : false;
     }
 
     public function fetchByField($field, $value) 
@@ -43,26 +68,26 @@ class CommentModel extends AppModel {
         $value = mysqli_real_escape_string($this->link, $value);
         $value = (int)$value;
         $data = array();
+        // Thêm c.AvatarFP vào câu SELECT
         $sql = "SELECT 
-            c.CommentID,
-            c.CommentParentID,
-            c.PostID,
-            c.UserID,
-            c.Content,
-            c.CreatedAt,
-            u.Username
+            c.CommentID, c.CommentParentID, c.PostID, c.UserID, c.Content, c.CreatedAt,
+            u.Username, u.AvatarFP
         FROM comment c
         JOIN users u ON c.UserID = u.UserID
         WHERE c.$field = $value
         ORDER BY c.CreatedAt DESC";
+
         $result = $this->query($sql);
         while ($row = mysqli_fetch_assoc($result)) {
             $comment = new Comment(
-                $row['CommentID'], $row['CommentParentID'],
-                $row['PostID'], $row['UserID'],
+                $row['CommentID'], $row['CommentParentID'], $row['PostID'], $row['UserID'],
                 $row['Content'], $row['CreatedAt'], []
             );
             $comment->setUsername($row['Username']);
+            
+            // DÒNG THÊM MỚI
+            $comment->setAvatar($row['AvatarFP']);
+
             array_push($data, $comment);
         }
         return $data;

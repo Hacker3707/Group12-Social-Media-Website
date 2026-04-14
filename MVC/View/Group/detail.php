@@ -20,6 +20,7 @@
     </style>
 </head>
 <body>
+
     <?php include 'MVC/View/navbar.php'; ?>
 
     <div class="group-header">
@@ -99,7 +100,8 @@
                 <?php if (isset($joinStatus) && $joinStatus === 'approved'): ?>
                     <div class="card border-0 shadow-sm p-3 mb-3">
                         <div class="d-flex">
-                            <img src="https://via.placeholder.com/40" class="rounded-circle mr-2">
+                            <?php $myAvatar = $_SESSION['avatar'] ?? 'https://via.placeholder.com/40'; ?>
+                            <img src="<?= htmlspecialchars($myAvatar) ?>" class="rounded-circle mr-2" style="width: 40px; height: 40px; object-fit: cover; border: 1px solid #ddd;">
                             <input type="text" class="form-control rounded-pill bg-light border-0" placeholder="Viết gì đó cho nhóm...">
                         </div>
                     </div>
