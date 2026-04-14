@@ -103,22 +103,43 @@ class PostController extends AppController
         exit;
     }
 
-    public function showHome()
-    {
-        $posts  = $this->postModel->getAll() ?? [];
-        $userid = $_SESSION['user_id'] ?? null;
+   public function showHome()
+{
+    $posts  = $this->postModel->getAll() ?? [];
+    $userid = $_SESSION['user_id'] ?? null;
 
-        // Lay thong tin user
-        if ($userid) {
-            $userInfo = $this->userModel->getById($userid);
-            $username = $userInfo ? ($userInfo['Username'] ?? 'Guest') : "Guest";
-        } else {
-            $username = "Guest";
+    // Lay thong tin user
+    if ($userid) {
+        $userInfo = $this->userModel->getById($userid);
+        $username = $userInfo ? ($userInfo['Username'] ?? 'Guest') : "Guest";
+    } else {
+        $username = "Guest";
+    }
+
+    // =========================
+    // REACTIONS FOR POST
+    // =========================
+    $reactions_forPost = [];
+    foreach ($posts as $post) {
+        $postId = $post->getPostId();
+        $reactions_forPost[$postId] = $this->reactionModel->selectReactionsForPost($postId);
+    }
+
+    $isSameUser = [];
+    foreach ($posts as $post) {
+        $postId = $post->getPostId();
+        $isSameUser[$postId] = false;
+
+        foreach (($reactions_forPost[$postId] ?? []) as $reaction) {
+            if ($reaction->getUserId() == $userid) {
+                $isSameUser[$postId] = true;
+                break;
+            }
         }
     }
 
     // =========================
-    // 🔥 COMMENTS
+    // COMMENTS
     // =========================
     $comments = [];
     $commentTree = [];
@@ -126,79 +147,52 @@ class PostController extends AppController
     foreach ($posts as $post) {
         $postId = $post->getPostId();
 
-        $comments[$postId] =
-            $this->commentModel->fetchByField('PostID', $postId);
-
+        $comments[$postId] = $this->commentModel->fetchByField('PostID', $postId);
         $commentTree[$postId] = [];
 
-        foreach ($comments[$postId] as $c) {
+        foreach (($comments[$postId] ?? []) as $c) {
             $parent = $c->getParentCommentId();
             $commentTree[$postId][$parent][] = $c;
         }
     }
 
-        $isSameUser = [];
-        foreach ($posts as $post) {
-            $postId = $post->getPostId();
-            $isSameUser[$postId] = false;
-
-            foreach (($reactions_forPost[$postId] ?? []) as $reaction) {
-                if ($reaction->getUserId() == $userid) {
-                    $isSameUser_reactCmt[$commentId] = true;
-                    break;
-                }
-            }
-        }
-    }
-
     // =========================
-    // 🔥 MEDIA
+    // MEDIA
     // =========================
     $mediaForPost = [];
-
     foreach ($posts as $post) {
-        $mediaForPost[$post->getPostId()] =
-            $this->mediaModel->getByPostId($post->getPostId());
+        $mediaForPost[$post->getPostId()] = $this->mediaModel->getByPostId($post->getPostId());
     }
 
     // =========================
-    // 🔥 USER INFO
-    // =========================
-    if ($userid) {
-        $userInfo = $this->userModel->getById($userid);
-        $username = $userInfo ? $userInfo['Username'] : "Guest";
-    } else {
-        $username = "Guest";
-    }
-
-    // =========================
-    // 🔥 RENDER VIEW (DUY NHẤT 1 LẦN)
+    // RENDER VIEW
     // =========================
     include_once __DIR__ . "/../View/home.php";
 }
 
-       
+public function PostAction()
+{
+    $action = $_GET['action'] ?? "home";
 
-    public function PostAction(){
-        $action = $_GET['action'] ?? "home";
+    switch ($action) {
+        case "createPost":
+            $this->createPost();
+            break;
 
-        switch($action){
+        case "home":
+            unset($_SESSION['category_filter']);
+            $this->showHome();
+            break;
 
-            case "createPost":
-                $this->createPost();
-                break;
-
-            case "home":
-                 unset($_SESSION['category_filter']); // 🔥 tránh bị kẹt filter
-                $this->showHome();
-                break;
-            case "create":
+        case "create":
             $this->showCreateForm();
-             break;
+            break;
 
-        }
+        default:
+            $this->showHome();
+            break;
     }
-
+}
     public function getAllPosts() {
         $posts = $this->postModel->getAll() ?? [];
 
