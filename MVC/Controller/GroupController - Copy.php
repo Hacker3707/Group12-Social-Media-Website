@@ -94,8 +94,6 @@ class GroupController {
         $userId = $_SESSION['user_id'] ?? 0;
         
         $group = $this->groupModel->getById($groupId);
-
-        
         
         if (!$group) {
             $this->redirect('index.php', 'Nhóm này không tồn tại hoặc đã bị xóa!');
@@ -133,16 +131,9 @@ class GroupController {
             $posts = []; // Không được xem thì gán mảng rỗng để các hàm dưới khỏi tốn công chạy
         }
 
-        foreach ($posts as $post) {
-            if ($post -> getGroupName() !== null) {
-                $post -> setGroupName('No Group');
-            }
-        
-        }   
-
         $userid = $_SESSION['user_id'] ?? null;
 
-        
+    
         // =======================
         // 🔥 REACTIONS POST
         // =======================
@@ -156,15 +147,15 @@ class GroupController {
         // =======================
         // 🔥 CHECK USER LIKE POST
         // =======================
-        $isSameUser_reactPost = [];
+        $isSameUser = [];
 
         foreach($posts as $post){
             $postId = $post->getPostId();
-            $isSameUser_reactPost[$postId] = false;
+            $isSameUser[$postId] = false;
 
             foreach($reactions_forPost[$postId] as $reaction){
                 if($reaction->getUserId() == $userid){
-                    $isSameUser_reactPost[$postId] = true;
+                    $isSameUser[$postId] = true;
                     break;
                 }
             }
@@ -207,7 +198,7 @@ class GroupController {
         foreach($comments as $postComments){
             foreach($postComments as $comment){
                 $commentId = $comment->getCommentId();
-                $isSameUser_reactPost_reactCmt[$commentId] = false;
+                $isSameUser_reactCmt[$commentId] = false;
 
                 foreach($reactions_forComment[$commentId] as $reaction){
                     if($reaction->getUserId() == $userid){

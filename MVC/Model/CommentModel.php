@@ -73,6 +73,39 @@ class CommentModel extends AppModel {
         return $this->execute($sql);
     }
 
+    public function getById($commentId) {
+
+    $commentId = (int)$commentId;
+
+    $sql = "SELECT 
+        c.CommentID,
+        c.CommentParentID,
+        c.PostID,
+        c.UserID,
+        c.Content,
+        c.CreatedAt,
+        u.Username
+    FROM comment c
+    JOIN users u ON c.UserID = u.UserID
+    WHERE c.CommentID = $commentId
+    LIMIT 1";
+
+    $result = $this->query($sql);
+
+    if($row = mysqli_fetch_assoc($result)){
+        return [
+            "id" => $row['CommentID'],
+            "parent_id" => $row['CommentParentID'],
+            "user_id" => $row['UserID'],
+            "username" => $row['Username'],
+            "content" => htmlspecialchars($row['Content']),
+            "created_at" => $row['CreatedAt']
+        ];
+    }
+
+    return null;
+}
+
     
     
 }

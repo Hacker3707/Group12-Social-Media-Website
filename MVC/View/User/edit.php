@@ -3,6 +3,12 @@
 <head>
     <title>Chỉnh sửa hồ sơ - Passo</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="MVC/View/css/home.css">
+    
     <style>
         body { background-color: #f0f2f5; } /* Màu nền xám nhạt đặc trưng của FB */
         .settings-card { border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); border: none; }

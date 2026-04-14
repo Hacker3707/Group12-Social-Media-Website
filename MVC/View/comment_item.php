@@ -1,4 +1,4 @@
-<div class="comment-item mb-2">
+<div class="comment-item" style="margin-left: <?= $level * 10 ?>px;">
 
     <div class="d-flex justify-content-between align-items-start">
 
@@ -22,9 +22,11 @@
 
             <div class="dropdown-menu dropdown-menu-right">
                 <button class="dropdown-item" type="button">Report</button>
+
+
                 <button class="dropdown-item delete-btn-cmt"
                         type="button"
-                        data-commentid="<?= $c->getCommentId() ?>">
+                        data-comment-id="<?= $c->getCommentId() ?>">
                     Delete
                 </button>
             </div>
@@ -49,7 +51,7 @@
             <?php if($isSameUser_reactCmt[$c->getCommentId()] ?? false): ?>
                 <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-2"
                         type="button"
-                        data-commentid="<?= $c->getCommentId() ?>">
+                        data-comment-id="<?= $c->getCommentId() ?>">
                     <i class="bi bi-heart-fill"></i>
                     <span class="badge badge-light like-count-cmt">
                         <?= count($reactions_forComment[$c->getCommentId()] ?? []) ?>
@@ -58,7 +60,7 @@
             <?php else: ?>
                 <button class="btn btn-sm btn-outline-primary like-btn-cmt ml-2"
                         type="button"
-                        data-commentid="<?= $c->getCommentId() ?>">
+                        data-comment-id="<?= $c->getCommentId() ?>">
                     <i class="bi bi-heart"></i>
                     <span class="badge badge-light like-count-cmt">
                         <?= count($reactions_forComment[$c->getCommentId()] ?? []) ?>

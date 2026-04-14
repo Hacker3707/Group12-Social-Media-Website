@@ -46,16 +46,16 @@ class SearchController extends AppController {
             foreach($posts as $post) {
             $reactions[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
             }
-            $isSameUser = [];
+            $isSameUser_reactPost = [];
 
         foreach($posts as $post){
 
             $postId = $post->getPostId();
-            $isSameUser[$postId] = false;
+            $isSameUser_reactPost[$postId] = false;
 
             foreach($reactions[$postId] ?? [] as $reaction){
                 if($reaction->getUserId() == $userid){
-                    $isSameUser[$postId] = true;
+                    $isSameUser_reactPost[$postId] = true;
                     break;
                 }
             }
@@ -79,7 +79,7 @@ class SearchController extends AppController {
                 $commentTree[$postId][$parent][] = $c;
             }
         }
-        
+
         $reactions_forComment = [];
 
         foreach($comments as $postComments){
@@ -95,18 +95,18 @@ class SearchController extends AppController {
 
         }
 
-        $isSameUser_reactCmt = [];
+        $isSameUser_reactPost_reactCmt = [];
 
             foreach($comments as $postComments){
 
                 foreach($postComments as $comment){
 
                     $commentId = $comment->getCommentId();
-                    $isSameUser_reactCmt[$commentId] = false;
+                    $isSameUser_reactPost_reactCmt[$commentId] = false;
 
                     foreach(($reactions_forComment[$commentId] ?? []) as $reaction){
                         if($reaction->getUserId() == $userid){
-                            $isSameUser_reactCmt[$commentId] = true;
+                            $isSameUser_reactPost_reactCmt[$commentId] = true;
                             break;
                         }
                     }

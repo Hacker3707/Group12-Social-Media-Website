@@ -80,7 +80,7 @@ tabindex="-1">
                 </small>
 
                 <?php if ($allowInteraction): ?>
-                    <?php if($isSameUser[$postId] ?? false): ?>
+                    <?php if($isSameUser_reactPost[$postId] ?? false): ?>
                         <button class="btn-forModal btn-sm btn-outline-primary like-btn ml-auto" type="button" data-postid="<?= $postId ?>">
                             <i class="bi bi-heart-fill"></i>
                             <span class="badge badge-light like-count"><?= count($reactions_forPost[$postId] ?? []) ?></span>
@@ -108,7 +108,15 @@ tabindex="-1">
             <?php if (!empty($comments[$postId])): ?>
                 <?php
                     // CHÍNH LÀ CHỖ NÀY: Truyền $allowInteraction và các mảng đếm Like vào hàm
-                    renderComments($postId, null, $commentTree, $allowInteraction, $reactions_forComment ?? [], $isSameUser_reactCmt ?? []);
+                    renderComments(
+                        $postId,
+                        null,
+                        $commentTree,
+                        0,
+                        $allowInteraction,
+                        $reactions_forComment ?? [],
+                        $isSameUser_reactCmt ?? []
+                    );
                 ?>
                 
             <?php else: ?>
