@@ -187,26 +187,27 @@ class PostController extends AppController
         include_once __DIR__ . "/../View/home.php";
     }
 
-       
+public function PostAction()
+{
+    $action = $_GET['action'] ?? "home";
 
-    public function PostAction(){
-        $action = $_GET['action'] ?? "home";
+    switch ($action) {
+        case "createPost":
+            $this->createPost();
+            break;
 
-        switch($action){
+        case "home":
+            unset($_SESSION['category_filter']);
+            $this->showHome();
+            break;
 
-            case "createPost":
-                $this->createPost();
-                break;
-
-            case "home":
-                 unset($_SESSION['category_filter']); // 🔥 tránh bị kẹt filter
-                $this->showHome();
-                break;
-            case "create":
+        case "create":
             $this->showCreateForm();
-             break;
+            break;
 
-        }
+        default:
+            $this->showHome();
+            break;
     }
 
     public function loadMore() {
