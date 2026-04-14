@@ -52,19 +52,12 @@
   <div class="card-body">
 
     <div class="custom-file mb-2">
-      <input type="file" name="media" id="mediaInput"
+      <input type="file" name="media[]" id="mediaInput" multiple
              class="custom-file-input" accept="image/*,video/*">
-      <label class="custom-file-label">Choose file</label>
+      <label class="custom-file-label">Choose files</label>
     </div>
 
-    <div id="mediaPreview" style="display:none;">
-      <img id="previewImg" class="img-fluid rounded mb-2"
-           style="max-height:300px; display:none;">
-      <video id="previewVideo" controls
-             class="w-100 rounded"
-             style="max-height:300px; display:none;">
-        <source id="previewVideoSrc">
-      </video>
+    <div id="mediaPreview" class="row" style="display:none;"></div>
     </div>
 
   </div>
@@ -178,33 +171,35 @@
 
 // ===== XEM TRƯỚC ẢNH/VIDEO KHI CHỌN FILE =====
 document.getElementById("mediaInput").addEventListener("change", function(){
-    let file    = this.files[0];
+  let files   = Array.from(this.files || []);
     let preview = document.getElementById("mediaPreview");
-    let imgEl   = document.getElementById("previewImg");
-    let videoEl = document.getElementById("previewVideo");
-    let videoSrc = document.getElementById("previewVideoSrc");
-
-    imgEl.style.display    = "none";
-    videoEl.style.display  = "none";
-    preview.style.display  = "none";
+  preview.innerHTML = "";
+  preview.style.display = "none";
 
     let label = document.querySelector(".custom-file-label");
-    label.textContent = file ? file.name : "Choose file";
+  label.textContent = files.length > 0
+    ? `${files.length} file(s) selected`
+    : "Choose files";
 
-    if (!file) return;
+  if (files.length === 0) return;
 
+  files.forEach(file => {
     let url = URL.createObjectURL(file);
+    let col = document.createElement("div");
+    col.className = "col-md-4 col-6 mb-2";
 
     if (file.type.startsWith("image/")) {
-        imgEl.src           = url;
-        imgEl.style.display = "block";
-        preview.style.display = "block";
+      col.innerHTML = `<img src="${url}" class="img-fluid rounded" style="max-height:200px; width:100%; object-fit:cover;">`;
     } else if (file.type.startsWith("video/")) {
-        videoSrc.src          = url;
-        videoEl.load();
-        videoEl.style.display = "block";
-        preview.style.display = "block";
+      col.innerHTML = `<video controls class="w-100 rounded" style="max-height:200px;"><source src="${url}"></video>`;
+    } else {
+      return;
     }
+
+    preview.appendChild(col);
+  });
+
+  preview.style.display = preview.children.length > 0 ? "flex" : "none";
 });
 
 
@@ -214,6 +209,9 @@ document.getElementById("postForm").addEventListener("submit", function(e){
     e.preventDefault();
 
     let formData = new FormData(this);
+    // Tao post truoc, media se upload o buoc tiep theo de tranh luu trung.
+    formData.delete("media[]");
+    formData.delete("media");
 
     if (!formData.get("category_id")) {
         alert("Please choose category");
@@ -250,7 +248,9 @@ document.getElementById("postForm").addEventListener("submit", function(e){
         if (mediaFile && mediaFile.files.length > 0) {
 
             let mediaData = new FormData();
-            mediaData.append("media",   mediaFile.files[0]);
+          Array.from(mediaFile.files).forEach(file => {
+            mediaData.append("media[]", file);
+          });
             mediaData.append("post_id", postId);
 
             fetch("index.php?controller=media&action=uploadForPost", {

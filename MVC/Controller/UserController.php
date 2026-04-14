@@ -8,9 +8,10 @@ include_once __DIR__ . "/../Model/ReactionModel.php";
 include_once __DIR__ . "/../../Entity/Media.php";
 include_once __DIR__ . "/../Model/CategoryModel.php";
 include_once __DIR__ . "/../Model/CommentModel.php";
-include_once __DIR__ . "/../Model/UserModel.php";
 include_once __DIR__ . "/../Model/GroupModel.php";
 include_once __DIR__ . "/../Model/MediaModel.php";
+include_once "MVC/Service/Supabase/SupabaseService.php";
+include_once "MVC/Service/Cloudinary/CloudinaryService.php";
 
 class UserController {
     private $postModel;
@@ -61,6 +62,11 @@ class UserController {
 
     public function login() {
         include_once "MVC/View/User/login.php";
+    }
+
+    public function googleLogin() {
+        header('Location: ' . SupabaseService::getGoogleLoginUrl());
+        exit();
     }
 
     // ================= XỬ LÝ ĐĂNG NHẬP =================
@@ -211,7 +217,6 @@ class UserController {
         if (isset($_POST['userId'])) {
             $userId = (int)$_POST['userId'];
 
-            // Nếu không phải Admin và không phải đang tự sửa hồ sơ của mình -> Chặn
             if ($_SESSION['role'] !== 'admin' && $_SESSION['user_id'] != $userId) {
                 $this->back('Lỗi: Bạn không có quyền chỉnh sửa hồ sơ của người khác!');
             }
@@ -225,13 +230,46 @@ class UserController {
                 $this->back('Username này đã được người khác sử dụng!');
             }
 
-            $result = $this->userModel->update($userId, $username, $email, $bio, $phone);
+            // ================= XỬ LÝ UPLOAD AVATAR LÊN CLOUDINARY =================
+            $avatarUrl = null;
+
+            if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+                try {
+                    // Gọi Singleton Cloudinary
+                    $cloudinary = CloudinaryService::getInstance();
+                    
+                    // Upload file tmp_name lên Cloudinary
+                    $uploadResult = $cloudinary->uploadApi()->upload($_FILES['avatar']['tmp_name'], [
+                        'folder' => 'avatars', // Lưu vào thư mục passo_avatars trên Cloudinary
+                        'transformation' => [
+                            'width' => 400, 
+                            'height' => 400, 
+                            'crop' => 'fill', 
+                            'gravity' => 'face' // Tự động nhận diện khuôn mặt và cắt vuông ảnh
+                        ]
+                    ]);
+                    
+                    // Lấy link ảnh an toàn (https) trả về từ Cloudinary
+                    $avatarUrl = $uploadResult['secure_url'];
+
+                } catch (Exception $e) {
+                    $this->back('Lỗi khi tải ảnh lên Cloudinary: ' . $e->getMessage());
+                }
+            }
+            // =====================================================================
+
+            // Truyền thêm $avatarUrl vào hàm update của Model
+            $result = $this->userModel->update($userId, $username, $email, $bio, $phone, $avatarUrl);
 
             if ($result) {
                 if ($_SESSION['user_id'] == $userId) {
                     $_SESSION['username'] = $username; 
+                    // Nếu muốn, có thể lưu luôn Avatar vào Session để hiện trên Navbar
+                    if ($avatarUrl) {
+                        $_SESSION['avatar'] = $avatarUrl; 
+                    }
                 }
-                // Nếu Admin sửa thì đưa về trang List, nếu User tự sửa thì đưa về Profile
+                
                 $redirectUrl = ($_SESSION['role'] === 'admin' && $_SESSION['user_id'] != $userId) 
                                 ? "index.php?controller=user&action=list" 
                                 : "index.php?controller=user&action=profile&id=$userId";
@@ -254,13 +292,29 @@ class UserController {
         if (!$user || $user['AccountStatus'] === 'deleted') {
             $this->back('Người dùng không tồn tại hoặc đã bị xóa.');
         }
+         // 🔥 THÊM ĐOẠN NÀY
+    include_once "MVC/Model/FollowModel.php";
+
+    $followModel = new FollowModel();
+
+    $currentUserId = $_SESSION['user_id'] ?? 0;
+    $profileUserId = $user['UserID'];
+
+    $isFollowing = false;
+
+    if ($currentUserId && $currentUserId != $profileUserId) {
+        $isFollowing = $followModel->exists($currentUserId, $profileUserId);
+    }
+
+    // (optional) lấy số follower luôn
+    $followerCount = $followModel->countFollowers($profileUserId);
 
         // 🔥 truyền userId vào
         $data = $this -> getPostforUserId($id);
 
         extract($data); // tạo biến $posts, $comments,...
 
-        include_once "MVC/View/User/profile.php";
+        include_once "MVC/View/User/profile_view.php";
     }
 
     public function getPostforUserId($userId) {

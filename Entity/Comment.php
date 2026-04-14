@@ -8,6 +8,7 @@ class Comment {
     private $Content;
     private array $MediaList; // Array to hold media objects (images, videos, etc.)
     private $CreatedAt;
+    private $Avatar;
     
 
     public function __construct($comment_id, $reply_to_comment_id, $post_id, $user_id, $content, $created_at, $media_list = []) {
@@ -62,6 +63,14 @@ class Comment {
 
     public function setUsername($username) {
         $this->Username = $username;
+    }
+
+    public function getAvatar() {
+        return $this->Avatar;
+    }
+
+    public function setAvatar($avatar) {
+        $this->Avatar = $avatar;
     }
 }
 ?>

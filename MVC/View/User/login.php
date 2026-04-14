@@ -35,6 +35,12 @@
                         </div>
                         <button type="submit" class="btn btn-login btn-primary btn-block shadow-none">Đăng nhập</button>
                     </form>
+
+                    <div class="text-center mt-3">
+                        <a href="index.php?controller=user&action=googleLogin" class="btn btn-outline-primary btn-block" style="font-weight: 600;">
+                            Đăng nhập bằng Google
+                        </a>
+                    </div>
                     
                     <div class="text-center mt-3 mb-3">
                         <a href="index.php?controller=user&action=forgotPassword" style="text-decoration: none; color: #1877f2; font-size: 14px;">Quên mật khẩu?</a>
