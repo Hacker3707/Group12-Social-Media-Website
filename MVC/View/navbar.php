@@ -32,9 +32,7 @@ if (!($currentController === 'user' && ($currentAction === 'register' || $curren
       <li class="nav-item active">
         <a class="nav-link" href="index.php?controller=post&action=showHome">Home <span class="sr-only">(current)</span></a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">Categories</a>
-      </li>
+
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
           Dropdown

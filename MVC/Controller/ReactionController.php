@@ -1,43 +1,44 @@
 <?php
 include_once __DIR__ . "/../Model/ReactionModel.php";
+include_once __DIR__ . "/../Model/NotificationModel.php";
+include_once __DIR__ . "/../Model/PostModel.php";
+include_once __DIR__ . "/../Model/CommentModel.php";
 
 class ReactionController {
-
     private $reactionModel;
-
+    private $notiModel;
     public function __construct() {
         $this->reactionModel = new ReactionModel();
+        $this -> notiModel = new NotificationModel();
     }
 
     public function action_forReaction() {
 
-    $postId = $_POST['postId'] ?? null;
-    $userId = $_SESSION['user_id'] ?? null;
-    $commentId = $_POST['commentId'] ?? null;
-    $type = $_POST['type'] ?? 'like';
+        $postId = $_POST['postId'] ?? null;
+        $userId = $_SESSION['user_id'] ?? null;
+        $commentId = $_POST['commentId'] ?? null;
+        $type = $_POST['type'] ?? 'like';
 
-    if (empty($userId) || (empty($postId) && empty($commentId))) {
-        http_response_code(400);
-        echo "fail";
-        return;
-    }
+        if (empty($userId) || (empty($postId) && empty($commentId))) {
+            http_response_code(400);
+            echo "fail";
+            return;
+        }
 
-    $reaction = new Reaction(null, $postId, $commentId, $userId, $type);
-    $result = $this->reactionModel->insertReaction($reaction);
-
-        // Create reaction
+        $reaction = new Reaction(null, $postId, $commentId, $userId, $type);
         $result = $this->reactionModel->insertReaction($reaction);
 
-        echo json_encode($result);
-        exit;
-    }
+            // Create reaction
+            $result = $this->reactionModel->insertReaction($reaction);
+
+            echo json_encode($result);
+            exit;
+    
 
     // ================= 🔔 NOTIFICATION =================
-    include_once __DIR__ . "/../Model/NotificationModel.php";
-    include_once __DIR__ . "/../Model/PostModel.php";
-    include_once __DIR__ . "/../Model/CommentModel.php";
 
-    $notiModel = new NotificationModel();
+    
+    
     $username = $_SESSION['username'];
 
     // 🔵 LIKE POST
