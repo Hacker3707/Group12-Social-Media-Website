@@ -33,14 +33,29 @@ class MediaController extends AppController {
             exit;
         }
 
-        if (!isset($_FILES['media']) || $_FILES['media']['error'] !== 0) {
+        if (!isset($_FILES['media'])) {
             echo "fail:no_file";
             exit;
         }
 
-        $result = $this->handleUpload($_FILES['media'], $userId, $postId, null);
+        $files = $this->normalizeUploadedFiles($_FILES['media']);
+        if (empty($files)) {
+            echo "fail:no_file";
+            exit;
+        }
 
-        echo $result ? "success" : "fail:upload_error";
+        $successCount = 0;
+        foreach ($files as $file) {
+            if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+                continue;
+            }
+
+            if ($this->handleUpload($file, $userId, $postId, null)) {
+                $successCount++;
+            }
+        }
+
+        echo $successCount > 0 ? "success" : "fail:upload_error";
         exit;
     }
 
@@ -173,6 +188,30 @@ class MediaController extends AppController {
         }
 
         return $mediaId !== null;
+    }
+
+    private function normalizeUploadedFiles($files) {
+        if (!isset($files['name'])) {
+            return [];
+        }
+
+        if (!is_array($files['name'])) {
+            return [$files];
+        }
+
+        $normalized = [];
+        $count = count($files['name']);
+        for ($i = 0; $i < $count; $i++) {
+            $normalized[] = [
+                'name' => $files['name'][$i] ?? '',
+                'type' => $files['type'][$i] ?? '',
+                'tmp_name' => $files['tmp_name'][$i] ?? '',
+                'error' => $files['error'][$i] ?? UPLOAD_ERR_NO_FILE,
+                'size' => $files['size'][$i] ?? 0,
+            ];
+        }
+
+        return $normalized;
     }
 }
 ?>

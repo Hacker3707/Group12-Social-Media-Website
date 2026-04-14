@@ -8,10 +8,21 @@ class ReactionModel extends AppModel {
     public function insertReaction(Reaction $reaction) {
 
         $postId = $reaction->getPostId();
+
+if ($postId === null || $postId === '') {
+    $postId = "NULL";
+} else {
+    $postId = intval($postId);
+}
         $commentId = $reaction->getCommentId();
 
-        $postId = $postId !== null ? intval($postId) : "NULL";
-        $commentId = $commentId !== null ? intval($commentId) : "NULL";
+if ($commentId === null || $commentId === '') {
+    $commentId = "NULL";
+} else {
+    $commentId = intval($commentId);
+}
+
+       
         $userId = intval($reaction->getUserId());
         $type = mysqli_real_escape_string($this->link, $reaction->getType());
 

@@ -38,9 +38,24 @@
                     </div>
                     <div class="card-body p-4 bg-white" style="border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
                         
-                        <form method="POST" action="index.php?controller=user&action=update">
+                        <form method="POST" action="index.php?controller=user&action=update" enctype="multipart/form-data">
                             <input type="hidden" name="userId" value="<?= $user['UserID'] ?>">
                             
+                            <div class="form-group row align-items-center mb-4">
+                                <label class="col-sm-3 col-form-label font-weight-bold text-md-right">Ảnh đại diện</label>
+                                <div class="col-sm-9 d-flex align-items-center">
+                                    <img src="<?= !empty($user['AvatarFP']) ? htmlspecialchars($user['AvatarFP']) : 'https://via.placeholder.com/80' ?>" 
+                                         alt="Avatar" 
+                                         class="rounded-circle mr-3 shadow-sm" 
+                                         style="width: 80px; height: 80px; object-fit: cover; border: 2px solid #e4e6eb;">
+                                    
+                                    <div>
+                                        <input type="file" name="avatar" class="form-control-file" accept="image/jpeg, image/png, image/jpg, image/gif">
+                                        <small class="form-text text-muted mt-1">Hỗ trợ JPG, PNG, GIF. Ảnh sẽ được tự động cắt vuông.</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr class="mb-4">
                             <div class="form-group row align-items-center">
                                 <label class="col-sm-3 col-form-label font-weight-bold text-md-right">Tên đăng nhập</label>
                                 <div class="col-sm-9">
@@ -71,7 +86,7 @@
                             </div>
                             
                             <hr class="mt-4 mb-4">
-                            
+
                             <div class="d-flex justify-content-end">
                                 <a href="index.php?controller=user&action=profile&id=<?= $user['UserID'] ?>" class="btn btn-cancel mr-2">Hủy</a>
                                 <button type="submit" class="btn btn-save">Lưu thay đổi</button>

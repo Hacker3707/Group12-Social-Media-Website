@@ -33,7 +33,9 @@ $isProduct = $post->getPrice() !== null
     <div class="d-flex justify-content-between align-items-center mb-2">
 
     <div class="d-flex align-items-center">
-        <img src="" alt="avatar" class="rounded-circle mr-2" width="30">
+        
+        <?php $avatarUrl = $post->getAvatar() ? htmlspecialchars($post->getAvatar()) : 'https://via.placeholder.com/40'; ?>
+        <img src="<?= $avatarUrl ?>" alt="avatar" class="rounded-circle mr-2 shadow-sm" style="width: 40px; height: 40px; object-fit: cover; border: 1px solid #eee;">
 
             <a href="index.php?controller=user&action=profile&user_id=<?= $post->getUserId() ?>">
                 <strong><?= htmlspecialchars($post->getUsername()) ?></strong>
@@ -103,18 +105,23 @@ $isProduct = $post->getPrice() !== null
 
     <!-- MEDIA (giữ từ code trên) -->
     <?php if (!empty($mediaForPost[$postId])): ?>
-        <div class="mb-2">
+        <div class="mb-3 text-center" style="background-color: #f8f9fa; border-radius: 8px; border: 1px solid #eee; overflow: hidden;">
+            
             <?php foreach ($mediaForPost[$postId] as $media): ?>
+                
                 <?php if ($media->getMediaType() === 'photo'): ?>
                     <img src="/<?= htmlspecialchars($media->getFilePath()) ?>"
-                         class="img-fluid rounded mb-1"
-                         style="max-height:400px; width:100%; object-fit:cover;">
+                         class="img-fluid rounded"
+                         style="max-height: 500px; max-width: 100%; object-fit: contain; margin: 0 auto; display: block;">
+                
                 <?php elseif ($media->getMediaType() === 'video'): ?>
-                    <video controls class="w-100 rounded mb-1" style="max-height:400px;">
+                    <video controls class="w-100 rounded" style="max-height: 500px; background-color: #000; outline: none;">
                         <source src="/<?= htmlspecialchars($media->getFilePath()) ?>">
                     </video>
                 <?php endif; ?>
+                
             <?php endforeach; ?>
+            
         </div>
     <?php endif; ?>
 
@@ -560,7 +567,7 @@ document.addEventListener("submit", function(e){
     xhr.send(
         "postId=" + encodeURIComponent(postId) +
         "&content=" + encodeURIComponent(content) +
-        "&parentId=" + encodeURIComponent(parentId)
+       "&parent_comment_id=" + encodeURIComponent(parentId) // ✅ FIX 
     );
 });
 </script>

@@ -46,16 +46,25 @@ if (!($currentController === 'user' && ($currentAction === 'register' || $curren
           <a class="dropdown-item" href="#">Something else here</a>
         </div>
       </li>
-      <li class="nav-item">
-        <button class="btn btn-primary font-weight-bold ml-lg-2 mt-2 mt-lg-0">
-          Notifications <span class="badge badge-light ml-1">?</span>
-        </button>
-      </li>
+     <li class="nav-item dropdown">
+  <button id="notiBtn" class="btn btn-primary font-weight-bold position-relative">
+    🔔 Notifications
+    <span id="notiCount" class="badge badge-light ml-1">0</span>
+  </button>
 
-      <li class="nav-item ml-lg-2 mt-2 mt-lg-0">
-        <a href="index.php?controller=group&action=create"
-          class="btn btn-outline-secondary rounded-pill font-italic">
-          Create Group
+ <div id="notiDropdown" class="dropdown-menu dropdown-menu-right p-2"
+     style="width:320px; max-height:400px; overflow:auto;">
+       
+    <div id="notiList" class="text-center text-muted">
+      Đang tải...
+    </div>
+  </div>
+</li>
+      <li class="nav-item ml-2">
+        <a class="nav-link p-0" href="index.php?controller=group&action=create">
+          <button type="button" class="btn btn-outline-secondary rounded-pill font-italic" title="Tạo nhóm mới">
+            Create Group
+          </button>
         </a>
       </li>
     </ul>
@@ -80,20 +89,20 @@ if (!($currentController === 'user' && ($currentAction === 'register' || $curren
                     Chào, <strong><?= htmlspecialchars($_SESSION['username']) ?></strong>
                 </button>
                 <div class="dropdown-menu dropdown-menu-right">
-                    <a class="dropdown-item" href="index.php?controller=user&action=profile&id=<?= $_SESSION['user_id'] ?>">Hồ sơ cá nhân</a>
+                    <a class="dropdown-item" href="/Group12-Social-Media-Website/ndex.php?controller=user&action=profile&id=<?= $_SESSION['user_id'] ?>">Hồ sơ cá nhân</a>
                     
                     <?php if($_SESSION['role'] === 'admin'): ?>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item text-info" href="index.php?controller=user&action=list">Quản lý hệ thống</a>
+                        <a class="dropdown-item text-info" href="/Group12-Social-Media-Website/index.php?controller=user&action=list">Quản lý hệ thống</a>
                     <?php endif; ?>
                     
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item text-danger" href="index.php?controller=user&action=logout">Đăng xuất</a>
+                    <a class="dropdown-item text-danger" href="/Group12-Social-Media-Website/index.php?controller=user&action=logout">Đăng xuất</a>
                 </div>
             </div>
         <?php else: ?>
-            <a href="index.php?controller=user&action=login" class="btn btn-outline-primary mr-2">Login</a>
-            <a href="index.php?controller=user&action=register" class="btn btn-primary">Register</a>
+            <a href="/Group12-Social-Media-Website/index.php?controller=user&action=login" class="btn btn-outline-primary mr-2">Login</a>
+            <a href="/Group12-Social-Media-Website/index.php?controller=user&action=register" class="btn btn-primary">Register</a>
         <?php endif; ?>
     </div>
 
@@ -104,3 +113,49 @@ if (!($currentController === 'user' && ($currentAction === 'register' || $curren
 // 3. Đóng khối IF lại
 endif; 
 ?>
+<script>
+$(document).ready(function(){
+
+    function loadNotifications(){
+        $("#notiList").load("/Group12-Social-Media-Website/index.php?controller=notification&action=get");
+    }
+
+    function loadCount(){
+        $.get("/Group12-Social-Media-Website/index.php?controller=notification&action=count", function(res){
+            $("#notiCount").text(res.count);
+        });
+    }
+
+    // load lần đầu
+    loadNotifications();
+    loadCount();
+
+    // 🔥 auto refresh
+    setInterval(function(){
+        loadNotifications();
+        loadCount();
+    }, 5000);
+
+    // mở dropdown
+    $("#notiBtn").click(function(e){
+    e.stopPropagation();
+    $("#notiDropdown").toggleClass("show");
+});
+
+$(document).click(function(){
+    $("#notiDropdown").removeClass("show");
+});
+    // mark read
+    $(document).on("click", ".noti-item", function(){
+
+        let id = $(this).data("id");
+
+        $.post("/Group12-Social-Media-Website/index.php?controller=notification&action=markRead", {
+            notification_id: id
+        });
+
+        $(this).removeClass("font-weight-bold");
+    });
+
+});
+</script>

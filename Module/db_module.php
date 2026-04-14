@@ -7,7 +7,7 @@ function taoKetNoi(&$link){
         die("Không thể kết nối CSDL: ".mysqli_connect_error());
     }
 
-    mysqli_set_charset($link, "utf8");
+    mysqli_set_charset($this->link, "utf8mb4");
 }
 
 function chayTruyVanTraVeDL($link, $sql){

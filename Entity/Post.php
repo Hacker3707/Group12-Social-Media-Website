@@ -15,6 +15,7 @@ class Post {
     private $Brand;
     private $PostStatus;
     private $CategoryName;
+    private $Avatar;
     
     private $GroupName;
 
@@ -150,6 +151,14 @@ class Post {
 
     public function getGroupName() {
         return $this->GroupName;
+    }
+
+    public function getAvatar() {
+        return $this->Avatar;
+    }
+
+    public function setAvatar($avatar) {
+        $this->Avatar = $avatar;
     }
 
 }

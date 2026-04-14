@@ -741,3 +741,12 @@ INSERT INTO group_member (UserID, GroupID, Role, Status) VALUES
 --
 
 ALTER TABLE users MODIFY COLUMN AccountStatus ENUM('active', 'banned', 'deleted') NOT NULL DEFAULT 'active';
+
+--
+-- UPDATE 13/04/2026: Thêm cột mới cho bảng users
+--
+
+ALTER TABLE users
+ADD COLUMN supabase_id char(36),
+ADD COLUMN o_provider enum('LOCAL', 'GOOGLE')
+
