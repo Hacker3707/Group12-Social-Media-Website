@@ -215,6 +215,7 @@ public function PostAction()
             include "MVC/View/post_item.php";
         }
     }
+}
 
     public function getAllPosts() {
         $posts = $this->postModel->getAll() ?? [];
