@@ -5,9 +5,12 @@ include_once __DIR__ . "/../Model/PostModel.php";
 
 class CommentController {
     private $commentModel;
-   
+    private $notiModel;
+    private $postModel;
     public function __construct() {
         $this->commentModel = new CommentModel();
+        $this -> notiModel = new NotificationModel();
+        $this -> postModel = new PostModel();
     }
 
    public function addComment() {
@@ -60,10 +63,9 @@ class CommentController {
     }
 
     // ================= 🔔 NOTIFICATION =================
-    $notiModel = new NotificationModel();
-    $postModel = new PostModel();
+    
 
-    $post = $postModel->getById($postId);
+    $post = $this -> postModel->getById($postId);
 
     if ($post) {
 
@@ -74,7 +76,7 @@ class CommentController {
 
             if ($postOwnerId != $userId) {
 
-                $notiModel->insert(
+                $this -> notiModel->insert(
                     $postOwnerId,
                     $userId,
                     "<b>$username</b> đã bình luận bài viết của bạn",
@@ -91,7 +93,7 @@ class CommentController {
 
                 // Không gửi cho chính mình và không gửi trùng
                 if ($commentOwnerId !== (int)$userId && !isset($notifiedUsers[$commentOwnerId])) {
-                    $notiModel->insert(
+                    $this -> notiModel->insert(
                         $commentOwnerId,
                         $userId,
                         "<b>$username</b> đã trả lời bình luận của bạn",
@@ -103,7 +105,7 @@ class CommentController {
 
             // Chủ bài viết cũng nhận thông báo khi có reply
             if ((int)$postOwnerId !== (int)$userId && !isset($notifiedUsers[(int)$postOwnerId])) {
-                $notiModel->insert(
+                $this -> notiModel->insert(
                     $postOwnerId,
                     $userId,
                     "<b>$username</b> đã trả lời trong bài viết của bạn",

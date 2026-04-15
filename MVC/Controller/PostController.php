@@ -209,6 +209,7 @@ public function PostAction()
             $this->showHome();
             break;
     }
+}
 
     public function loadMore() {
         $offset = $_GET['offset'] ?? 0;
