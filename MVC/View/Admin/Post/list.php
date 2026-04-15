@@ -8,18 +8,18 @@
 </head>
 <body style="background-color: #f0f2f5;">
     <div class="container-fluid" id="home-container">
-        <div class="row" id="upper-bar">
+        <div class="row" id="navbar">
             <div class="col-md-12 col-12 px-0">
                 <?php include 'MVC/View/navbar.php'; ?>
             </div>
         </div>
 
-        <div class="row mt-4 px-md-3" id="middle-content">
-            <div class="col-md-3 col-lg-2 col-12 mb-3" id="left-sidebar">
+        <div class="row" id="middle-content">
+            <div class="col-md-2 col-12 d-none d-md-block" id="left-sidebar" style="">
                 <?php include 'MVC/View/leftsidebar.php'; ?>
             </div>
             
-            <div class="col-md-9 col-lg-10 col-12" id="main-content">
+            <div class="col-md-10 col-12" id="main-content">
                 <div class="card shadow-sm border-0 rounded-lg">
                     <div class="card-header bg-white py-3">
                         <h4 class="mb-0 font-weight-bold text-info"><i class="fas fa-newspaper"></i> Quản lý Hệ thống Bài đăng</h4>
@@ -67,6 +67,11 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+        <div class="row" id = "footer">
+            <div class= "col-md-12 col-12">
+                <p class="text-center">© 2026 Passo Social Media. All rights reserved.</p>
             </div>
         </div>
     </div>

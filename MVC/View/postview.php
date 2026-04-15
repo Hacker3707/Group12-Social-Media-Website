@@ -200,13 +200,6 @@ $isProduct = $post->getPrice() !== null
 
 <div class="mt-3 d-flex align-items-center">
 
-    <!-- VIEW -->
-    <!--<button class="btn btn-sm btn-outline-primary col-md-2 col-12"
-        data-toggle="modal"
-        data-target="#postModal<?= $postId ?>">
-        View Post
-    </button>-->
-
     <!-- LIKE -->
     <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
             type="button"
@@ -653,22 +646,22 @@ document.addEventListener("click", function(e){
                 try{
                     response = JSON.parse(xhr.responseText);
                 }catch(e){
-                    alert("Server error");
+                    showAlert("Error", "Oops!", "Server Error")
                     return;
                 }
 
                 if(response.status === "success"){
 
-                    alert("Comment deleted");
+                    showAlert("Success", "Success","Comment deleted !");
 
                     let commentItem = e.target.closest(".comment-item");
                     if(commentItem){
                         commentItem.remove();
                     }
-                    location.reload();
+                    
 
                 }else{
-                    alert(response.message || "Delete failed");
+                    showAlert("Error", "Something went wrong...", response.message || "Delete failed");
                 }
 
             }

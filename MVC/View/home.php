@@ -12,9 +12,9 @@
 <body>
     <div class="container-fluid" id="home-container">
 
-        <div class="row" id="navbar">
-            <div class="col-md-12 col-12">
-                <?php include(__DIR__ . "/navbar.php"); ?>
+        <div class="row" id = "navbar">
+            <div class= "col-md-12 col-12 px-0">
+                <?php include(__DIR__ . "/navbar.php");; ?>
             </div>
         </div>
 
@@ -44,6 +44,6 @@
 
     </div>
 
-    <?php include_once(__DIR__ . "/chat_widget.php"); ?>
+    <?php include_once __DIR__ . "/chat_widget.php"; ?>
 
 </body>

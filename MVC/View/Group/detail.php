@@ -20,6 +20,7 @@
     </style>
 </head>
 <body>
+
     <?php include 'MVC/View/navbar.php'; ?>
 
     <div class="group-header">

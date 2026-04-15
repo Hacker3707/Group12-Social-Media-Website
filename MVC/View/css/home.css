@@ -12,7 +12,7 @@
     z-index: 1000;
 }
 
-.flex-column {
+#left-sidebar .flex-column {
     position: sticky;
     top: 100px;
     height: fit-content;
@@ -23,6 +23,7 @@
     background-color: rgb(244, 248, 176);
     width: 250px;              /* 🔥 FIX CHÍNH */
     flex-shrink: 0;   
+    font-size: 15px;
 }
 
 
@@ -299,4 +300,36 @@
 
 .post-item {
     background: linear-gradient(235deg, #fefff4, rgb(255, 255, 255));
+}
+
+#load-trigger {
+    height: 20px;
+    background: red;
+}
+
+.noti-box {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    pointer-events: none; /* click xuyên */
+}
+
+.toast {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease;
+}
+
+/* khi hiện */
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* khi biến mất */
+.toast.hide {
+    opacity: 0;
+    transform: translateY(-20px);
 }
