@@ -135,6 +135,7 @@ class SearchController extends AppController {
 
     public function searchPosts() {
         $userid = $_SESSION['user_id'] ?? null;
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
         $keyword = $_GET['searchResults'] ?? '';
         $page = max(1, (int)($_GET['page'] ?? 1));
         $perPage = 5;
@@ -163,7 +164,7 @@ class SearchController extends AppController {
 
                 $reactions_forPost[$postId] = $this->reactionModel->selectReactionsForPost($postId);
                 $isSameUser_reactPost[$postId] = false;
-                $canDel_EditPost[$postId] = ($userid && $post->getUserId() == $userid);
+                $canDel_EditPost[$postId] = ($userid && (int)$post->getUserId() === (int)$userid) || $isSystemAdmin;
 
                 foreach (($reactions_forPost[$postId] ?? []) as $reaction) {
                     if ($userid && $reaction->getUserId() == $userid) {

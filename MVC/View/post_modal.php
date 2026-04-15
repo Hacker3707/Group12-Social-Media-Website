@@ -42,22 +42,66 @@ tabindex="-1">
 
             <!-- ✅ HIỂN THỊ ẢNH / VIDEO CỦA POST -->
             <?php if (!empty($mediaForPost[$postId])): ?>
-                <div class="post-media mb-3">
-                    <?php foreach ($mediaForPost[$postId] as $media): ?>
-
+                <?php
+                    $modalMediaItems = $mediaForPost[$postId];
+                    $modalMediaCount = count($modalMediaItems);
+                    $modalPhotoCount = 0;
+                    foreach ($modalMediaItems as $mediaItem) {
+                        if ($mediaItem->getMediaType() === 'photo') {
+                            $modalPhotoCount++;
+                        }
+                    }
+                    $useModalCarousel = ($modalPhotoCount > 1 && $modalPhotoCount === $modalMediaCount);
+                    $modalCarouselId = 'postMediaCarouselModal' . $postId;
+                ?>
+                <div class="post-media mb-3" style="border-radius: 14px; overflow: hidden; border: 1px solid #e9ecef; background-color: #f8f9fa; max-height: 420px;">
+                    <?php if ($modalMediaCount === 1): ?>
+                        <?php $media = $modalMediaItems[0]; ?>
                         <?php if ($media->getMediaType() === 'photo'): ?>
                             <img src="/<?= htmlspecialchars($media->getFilePath()) ?>"
-                                 class="img-fluid rounded mb-2"
-                                 style="max-height: 400px; object-fit: cover; width: 100%;"
+                                 class="img-fluid"
+                                 style="height: 420px; width: 100%; object-fit: contain; background-color: #f8f9fa;"
                                  alt="Post image">
-
                         <?php elseif ($media->getMediaType() === 'video'): ?>
-                            <video controls class="w-100 rounded mb-2" style="max-height: 400px;">
+                            <video controls class="w-100" style="height: 420px; width: 100%; object-fit: contain; background: #000;">
                                 <source src="/<?= htmlspecialchars($media->getFilePath()) ?>">
                             </video>
                         <?php endif; ?>
-
-                    <?php endforeach; ?>
+                    <?php elseif ($useModalCarousel): ?>
+                        <div id="<?= $modalCarouselId ?>" class="carousel slide" data-interval="false">
+                            <div class="carousel-inner">
+                                <?php foreach ($modalMediaItems as $index => $media): ?>
+                                    <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                                        <img src="/<?= htmlspecialchars($media->getFilePath()) ?>"
+                                             class="d-block w-100"
+                                             style="height: 420px; width: 100%; object-fit: contain; background-color: #f8f9fa;"
+                                             alt="Post image <?= $index + 1 ?>">
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <a class="carousel-control-prev" href="#<?= $modalCarouselId ?>" role="button" data-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="sr-only">Previous</span>
+                            </a>
+                            <a class="carousel-control-next" href="#<?= $modalCarouselId ?>" role="button" data-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="sr-only">Next</span>
+                            </a>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($modalMediaItems as $media): ?>
+                            <?php if ($media->getMediaType() === 'photo'): ?>
+                                <img src="/<?= htmlspecialchars($media->getFilePath()) ?>"
+                                     class="d-block w-100"
+                                     style="height: 420px; width: 100%; object-fit: contain; background-color: #f8f9fa;"
+                                     alt="Post image">
+                            <?php elseif ($media->getMediaType() === 'video'): ?>
+                                <video controls class="d-block w-100" style="height: 420px; width: 100%; object-fit: contain; background: #000;">
+                                    <source src="/<?= htmlspecialchars($media->getFilePath()) ?>">
+                                </video>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
 
@@ -115,7 +159,8 @@ tabindex="-1">
                         0,
                         $allowInteraction,
                         $reactions_forComment ?? [],
-                        $isSameUser_reactCmt ?? []
+                        $isSameUser_reactCmt ?? [],
+                        $post->getUserId()
                     );
                 ?>
                 

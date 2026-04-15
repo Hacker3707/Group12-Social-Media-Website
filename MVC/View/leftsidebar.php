@@ -30,13 +30,8 @@
         <a href="index.php?controller=group&action=myGroups" class="list-group-item list-group-item-action border-0 font-weight-bold py-3">
             <i class="fas fa-users mr-2 text-info" style="width: 25px;"></i> Groups
         </a>
-
         <a href="index.php?controller=chat&action=inbox" class="list-group-item list-group-item-action border-0 font-weight-bold py-3">
             <i class="fas fa-comments mr-2 text-warning" style="width: 25px;"></i> Tin nhắn
-        </a>
-
-        <a href="#" class="list-group-item list-group-item-action border-0 font-weight-bold py-3">
-            <i class="fas fa-cog mr-2 text-secondary" style="width: 25px;"></i> Setting
         </a>
     <?php endif; ?>
 

@@ -94,8 +94,30 @@ class CommentModel extends AppModel {
     }   
 
     public function deleteComment($commentId) {
+        $commentId = (int)$commentId;
         $sql = "DELETE FROM comment WHERE CommentID = $commentId";
         return $this->execute($sql);
+    }
+
+    public function softDeleteComment($commentId) {
+        $commentId = (int)$commentId;
+        $deletedText = mysqli_real_escape_string($this->link, 'Tin nhắn đã bị xóa');
+        $sql = "UPDATE comment SET Content = '$deletedText' WHERE CommentID = $commentId";
+        return $this->execute($sql);
+    }
+
+    public function hasReplies($commentId) {
+        $commentId = (int)$commentId;
+        $sql = "SELECT COUNT(*) AS total FROM comment WHERE CommentParentID = $commentId";
+        $result = $this->query($sql);
+
+        if ($result instanceof mysqli_result) {
+            $row = mysqli_fetch_assoc($result);
+            mysqli_free_result($result);
+            return ((int)($row['total'] ?? 0)) > 0;
+        }
+
+        return false;
     }
 
     public function getById($commentId) {
@@ -121,6 +143,7 @@ class CommentModel extends AppModel {
         return [
             "id" => $row['CommentID'],
             "parent_id" => $row['CommentParentID'],
+            "post_id" => $row['PostID'],
             "user_id" => $row['UserID'],
             "username" => $row['Username'],
             "content" => htmlspecialchars($row['Content']),

@@ -62,10 +62,9 @@ class ChatModel extends AppModel {
     public function getMessages($convId, $limit = 200) {
         $convId = (int)$convId;
         $limit  = (int)$limit;
-
-        $sql = "SELECT m.*, u.Username, u.AvatarFP AS Avatar
-                FROM messages m
-                JOIN users u ON m.SenderID = u.UserID
+        $sql = "SELECT m.*, u.Username, u.AvatarFP AS AvatarFP
+                FROM Messages m
+                JOIN Users u ON m.SenderID = u.UserID
                 WHERE m.ConversationID = $convId
                 ORDER BY m.CreatedAt ASC
                 LIMIT $limit";
@@ -87,12 +86,10 @@ class ChatModel extends AppModel {
     public function getNewMessages($convId, $lastId) {
         $convId = (int)$convId;
         $lastId = (int)$lastId;
-
-        $sql = "SELECT m.*, u.Username, u.AvatarFP AS Avatar
-                FROM messages m
-                JOIN users u ON m.SenderID = u.UserID
-                WHERE m.ConversationID = $convId
-                  AND m.MessageID > $lastId
+        $sql = "SELECT m.*, u.Username, u.AvatarFP AS AvatarFP
+                FROM Messages m
+                JOIN Users u ON m.SenderID = u.UserID
+                WHERE m.ConversationID = $convId AND m.MessageID > $lastId
                 ORDER BY m.CreatedAt ASC";
 
         $res = mysqli_query($this->link, $sql);
@@ -137,15 +134,12 @@ class ChatModel extends AppModel {
                     IF(c.User1ID=$userId, c.User2ID, c.User1ID) AS OtherUserID,
                     u.Username AS OtherUsername,
                     u.AvatarFP AS OtherAvatar,
-                    (SELECT Content FROM messages WHERE ConversationID=c.ConversationID ORDER BY CreatedAt DESC LIMIT 1) AS LastMessage,
-                    (SELECT ImagePath FROM messages WHERE ConversationID=c.ConversationID ORDER BY CreatedAt DESC LIMIT 1) AS LastImage,
-                    (SELECT CreatedAt FROM messages WHERE ConversationID=c.ConversationID ORDER BY CreatedAt DESC LIMIT 1) AS LastMessageAt,
-                    (SELECT COUNT(*) FROM messages
-                        WHERE ConversationID=c.ConversationID
-                          AND SenderID != $userId
-                          AND IsRead = 0) AS UnreadCount
-                FROM conversations c
-                JOIN users u ON u.UserID = IF(c.User1ID=$userId, c.User2ID, c.User1ID)
+                    (SELECT Content   FROM Messages WHERE ConversationID=c.ConversationID ORDER BY CreatedAt DESC LIMIT 1) AS LastMessage,
+                    (SELECT ImagePath FROM Messages WHERE ConversationID=c.ConversationID ORDER BY CreatedAt DESC LIMIT 1) AS LastImage,
+                    (SELECT CreatedAt FROM Messages WHERE ConversationID=c.ConversationID ORDER BY CreatedAt DESC LIMIT 1) AS LastMessageAt,
+                    (SELECT COUNT(*)  FROM Messages WHERE ConversationID=c.ConversationID AND SenderID!=$userId AND IsRead=0) AS UnreadCount
+                FROM Conversations c
+                JOIN Users u ON u.UserID = IF(c.User1ID=$userId, c.User2ID, c.User1ID)
                 WHERE c.User1ID=$userId OR c.User2ID=$userId
                 ORDER BY LastMessageAt DESC";
 

@@ -14,6 +14,8 @@ include_once "MVC/Service/Supabase/SupabaseService.php";
 include_once "MVC/Service/Cloudinary/CloudinaryService.php";
 
 class UserController {
+    private const LOGIN_CAPTCHA_TTL = 30;
+
     private $postModel;
     private $reactionModel;
     private $categoryModel;
@@ -56,11 +58,26 @@ class UserController {
         exit();
     }
 
+    private function generateLoginCaptcha() {
+        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        $captcha = '';
+
+        for ($i = 0; $i < 5; $i++) {
+            $captcha .= $alphabet[random_int(0, strlen($alphabet) - 1)];
+        }
+
+        $_SESSION['login_captcha_question'] = implode(' ', str_split($captcha));
+        $_SESSION['login_captcha_answer'] = $captcha;
+        $_SESSION['login_captcha_generated_at'] = time();
+        $_SESSION['login_captcha_ttl'] = self::LOGIN_CAPTCHA_TTL;
+    }
+
     public function register() {
         include_once "MVC/View/User/register.php";
     }
 
     public function login() {
+        $this->generateLoginCaptcha();
         include_once "MVC/View/User/login.php";
     }
 
@@ -72,16 +89,37 @@ class UserController {
     // ================= XỬ LÝ ĐĂNG NHẬP =================
     public function authenticate() {
         if (isset($_POST['username']) && isset($_POST['password'])) {
+            $captchaInput = strtoupper(trim($_POST['captcha_answer'] ?? ''));
+            $expectedCaptcha = strtoupper((string)($_SESSION['login_captcha_answer'] ?? ''));
+            $captchaGeneratedAt = (int)($_SESSION['login_captcha_generated_at'] ?? 0);
+
+            if (
+                $expectedCaptcha === '' ||
+                $captchaGeneratedAt <= 0 ||
+                (time() - $captchaGeneratedAt) > self::LOGIN_CAPTCHA_TTL ||
+                $captchaInput === '' ||
+                $captchaInput !== $expectedCaptcha
+            ) {
+                unset($_SESSION['login_captcha_answer'], $_SESSION['login_captcha_question'], $_SESSION['login_captcha_generated_at'], $_SESSION['login_captcha_ttl']);
+                $this->back('CAPTCHA không đúng hoặc đã hết hạn. Vui lòng thử lại!');
+            }
+
+            unset($_SESSION['login_captcha_answer'], $_SESSION['login_captcha_question'], $_SESSION['login_captcha_generated_at'], $_SESSION['login_captcha_ttl']);
+
             $username = $_POST['username'];
             $password = $_POST['password'];
 
             $user = $this->userModel->checkLogin($username, $password);
 
             if ($user) {
+                session_regenerate_id(true);
+
                 // 1. Lưu thông tin vào Session
                 $_SESSION['user_id'] = $user['UserID'];
                 $_SESSION['username'] = $user['Username'];
                 $_SESSION['role'] = $user['UserRole']; 
+                $_SESSION['avatar'] = $user['AvatarFP'] ?? null;
+                $_SESSION['last_activity'] = time();
 
                 // 2. PHÂN LUỒNG ĐIỀU HƯỚNG (ĐIỂM SỬA CHÍNH Ở ĐÂY)
                 if ($user['UserRole'] === 'admin') {
@@ -124,9 +162,13 @@ class UserController {
                 $newUser = $this->userModel->checkLogin($username, $password);
                 
                 if ($newUser) {
+                    session_regenerate_id(true);
+
                     $_SESSION['user_id'] = $newUser['UserID'];
                     $_SESSION['username'] = $newUser['Username'];
                     $_SESSION['role'] = $newUser['UserRole'];
+                    $_SESSION['avatar'] = $newUser['AvatarFP'] ?? null;
+                    $_SESSION['last_activity'] = time();
                 }
 
                 $this->redirect('index.php', 'Đăng ký thành công! Chào mừng bạn gia nhập Passo.');

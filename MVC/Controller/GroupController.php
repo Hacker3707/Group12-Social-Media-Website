@@ -133,14 +133,13 @@ class GroupController {
             $posts = []; // Không được xem thì gán mảng rỗng để các hàm dưới khỏi tốn công chạy
         }
 
-        foreach ($posts as $post) {
-            if ($post -> getGroupName() !== null) {
-                $post -> setGroupName('No Group');
-            }
-        
-        }   
-
         $userid = $_SESSION['user_id'] ?? null;
+        $canDel_EditPost = [];
+
+        foreach ($posts as $post) {
+            $postId = $post->getPostId();
+            $canDel_EditPost[$postId] = ($userid && (int)$post->getUserId() === (int)$userid) || $isSystemAdmin;
+        }
 
         
         // =======================

@@ -11,6 +11,9 @@ if(empty($posts)){
 <?php 
     $isProduct = $post->getPrice() !== null || $post->getCondition() || $post->getStatus();
     $postId = $post->getPostId();
+    $canManagePost = (bool)($canDel_EditPost[$postId] ?? false);
+    $groupName = trim((string)($post->getGroupName() ?? ''));
+    $hasGroupName = ($groupName !== '' && strcasecmp($groupName, 'No Group') !== 0);
     
     // 🔥 XÁC ĐỊNH QUYỀN TƯƠNG TÁC CHO TỪNG BÀI VIẾT
     $allowInteraction = true;
@@ -32,30 +35,30 @@ $isProduct = $post->getPrice() !== null
     <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-2">
 
-    <div class="d-flex align-items-center">
+    <div class="d-flex align-items-center flex-grow-1" style="min-width: 0;">
         
         <?php $avatarUrl = $post->getAvatar() ? htmlspecialchars($post->getAvatar()) : 'https://via.placeholder.com/40'; ?>
         <img src="<?= $avatarUrl ?>" alt="avatar" class="rounded-circle mr-2 shadow-sm" style="width: 40px; height: 40px; object-fit: cover; border: 1px solid #eee;">
 
-            <a href="index.php?controller=user&action=profile&user_id=<?= $post->getUserId() ?>">
+            <a href="index.php?controller=user&action=profile&id=<?= $post->getUserId() ?>" style="max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle;">
                 <strong><?= htmlspecialchars($post->getUsername()) ?></strong>
             </a>
 
-            <div>
+            <div class="d-flex align-items-center flex-nowrap ml-2" style="min-width: 0; overflow: hidden;">
                 <?php if ($post -> getCategoryName() !== 'No Category'): ?>
-                <span style="margin: 0 5px;">›</span>
+                <span style="margin: 0 5px; flex-shrink: 0;">›</span>
                 <a href="index.php?controller=post&action=getPostsByCategoryId&category_id=<?= $post->getCategoryId() ?>">
-                        <button class="btn btn-outline-secondary btn-sm" style="color: cornflowerblue;" data-toggle="tooltip" data-html="true" title="Click to view related post!">
+                        <button class="btn btn-outline-secondary btn-sm" style="color: cornflowerblue; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block;" title="<?= htmlspecialchars($post->getCategoryName() ?? '') ?>">
                             <?= htmlspecialchars($post->getCategoryName() ?? '') ?>
                         </button>
                 </a>
                 <?php endif; ?>
 
-                <?php if ($post -> getGroupName() !== 'No Group'):?>
-                <span style="margin: 0 5px;">››</span>
+                <?php if ($hasGroupName):?>
+                <span style="margin: 0 5px; flex-shrink: 0;">››</span>
                     <a href="index.php?controller=group&action=detail&id=<?= $post->getGroupId() ?>">
-                        <button class="btn btn-outline-secondary btn-sm" style="color: cornflowerblue;" data-toggle="tooltip" data-html="true" title="Click to view group detail!">
-                            <?= htmlspecialchars($post->getGroupName() ?? '')?>
+                        <button class="btn btn-outline-secondary btn-sm" style="color: cornflowerblue; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block;" title="<?= htmlspecialchars($groupName) ?>">
+                            <?= htmlspecialchars($groupName) ?>
                         </button>
                     </a>
                 <?php endif; ?>
@@ -67,6 +70,7 @@ $isProduct = $post->getPrice() !== null
 
     <small class="text-muted align-items-end mt-2 mr-1"><?= $post->getCreatedAt() ?></small>
 
+    <?php if ($canManagePost): ?>
     <!-- DROPDOWN -->
     <div class="btn-group dropleft ml-2">
         <button type="button"
@@ -77,24 +81,20 @@ $isProduct = $post->getPrice() !== null
         </button>
 
         <div class="dropdown-menu">
-            <?php if ($canDel_EditPost[$postId] ?? false)
-            echo '<button class="dropdown-item edit-btn"  data-toggle="modal"
-                    data-target="#editpost-Modal<?= $postId ?>"
-                    type="button">
-                    Edit
-                </button></a>';
-            ?>
+            <button class="dropdown-item edit-btn"
+                    type="button"
+                    data-postid="<?= $postId ?>">
+                Edit
+            </button>
 
-            <button class="dropdown-item" type="button">Report</button>
-
-            <?php if ($canDel_EditPost[$postId] ?? false)
-            echo '<button class="dropdown-item delete-btn"
+            <button class="dropdown-item delete-btn"
                 type="button"
-                data-postid="'.$postId.'">
+                data-postid="<?= $postId ?>">
                 Delete
-            </button>'; ?>
+            </button>
         </div>
     </div>
+    <?php endif; ?>
 
     </div>
 </div>
@@ -105,23 +105,63 @@ $isProduct = $post->getPrice() !== null
 
     <!-- MEDIA (giữ từ code trên) -->
     <?php if (!empty($mediaForPost[$postId])): ?>
-        <div class="mb-3 text-center" style="background-color: #f8f9fa; border-radius: 8px; border: 1px solid #eee; overflow: hidden;">
-            
-            <?php foreach ($mediaForPost[$postId] as $media): ?>
-                
+        <?php
+            $postMediaItems = $mediaForPost[$postId];
+            $postMediaCount = count($postMediaItems);
+            $postPhotoCount = 0;
+            foreach ($postMediaItems as $mediaItem) {
+                if ($mediaItem->getMediaType() === 'photo') {
+                    $postPhotoCount++;
+                }
+            }
+            $useCarousel = ($postPhotoCount > 1 && $postPhotoCount === $postMediaCount);
+            $carouselId = 'postMediaCarousel' . $postId;
+        ?>
+        <div class="mb-3 text-center" style="background-color: #f8f9fa; border-radius: 14px; border: 1px solid #e9ecef; overflow: hidden; max-height: 460px;">
+            <?php if ($postMediaCount === 1): ?>
+                <?php $media = $postMediaItems[0]; ?>
                 <?php if ($media->getMediaType() === 'photo'): ?>
                     <img src="/<?= htmlspecialchars($media->getFilePath()) ?>"
-                         class="img-fluid rounded"
-                         style="max-height: 500px; max-width: 100%; object-fit: contain; margin: 0 auto; display: block;">
-                
+                         class="img-fluid"
+                         style="height: 460px; width: 100%; object-fit: contain; margin: 0 auto; display: block; background-color: #f8f9fa;">
                 <?php elseif ($media->getMediaType() === 'video'): ?>
-                    <video controls class="w-100 rounded" style="max-height: 500px; background-color: #000; outline: none;">
+                    <video controls class="w-100" style="height: 460px; width: 100%; object-fit: contain; background-color: #000; outline: none;">
                         <source src="/<?= htmlspecialchars($media->getFilePath()) ?>">
                     </video>
                 <?php endif; ?>
-                
-            <?php endforeach; ?>
-            
+            <?php elseif ($useCarousel): ?>
+                <div id="<?= $carouselId ?>" class="carousel slide" data-interval="false">
+                    <div class="carousel-inner">
+                        <?php foreach ($postMediaItems as $index => $media): ?>
+                            <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                                <img src="/<?= htmlspecialchars($media->getFilePath()) ?>"
+                                     class="d-block w-100"
+                                     style="height: 460px; width: 100%; object-fit: contain; background-color: #f8f9fa;">
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <a class="carousel-control-prev" href="#<?= $carouselId ?>" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#<?= $carouselId ?>" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
+            <?php else: ?>
+                <?php foreach ($postMediaItems as $media): ?>
+                    <?php if ($media->getMediaType() === 'photo'): ?>
+                        <img src="/<?= htmlspecialchars($media->getFilePath()) ?>"
+                             class="d-block w-100"
+                             style="height: 460px; width: 100%; object-fit: contain; background-color: #f8f9fa;">
+                    <?php elseif ($media->getMediaType() === 'video'): ?>
+                        <video controls class="d-block w-100" style="height: 460px; width: 100%; object-fit: contain; background-color: #000; outline: none;">
+                            <source src="/<?= htmlspecialchars($media->getFilePath()) ?>">
+                        </video>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
 
@@ -208,6 +248,21 @@ $isProduct = $post->getPrice() !== null
 
 <?php endforeach; ?>
 
+
+
+            <!-- Edit Post Script -->
+
+<script>
+document.addEventListener("click", function(e){
+    let editBtn = e.target.closest(".edit-btn");
+    if(!editBtn) return;
+
+    let postId = editBtn.getAttribute("data-postid");
+    if(!postId) return;
+
+    window.location.href = "index.php?controller=post&action=showEditForm&id=" + encodeURIComponent(postId);
+});
+</script>
 
 
             <!-- Delete Post Script -->

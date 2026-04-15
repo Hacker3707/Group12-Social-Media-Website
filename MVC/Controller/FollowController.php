@@ -112,6 +112,24 @@ class FollowController extends AppController {
 
         include __DIR__ . "/../View/following.php";
     }
+
+    public function getFollowersJson() {
+        $userId = (int)($_GET['user_id'] ?? 0);
+
+        if (!$userId) {
+            $this->jsonResponse([
+                "status" => "error",
+                "message" => "invalid_user"
+            ]);
+        }
+
+        $followers = $this->followModel->getFollowerUsers($userId);
+
+        $this->jsonResponse([
+            "status" => "success",
+            "followers" => $followers
+        ]);
+    }
     
 
     
