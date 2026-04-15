@@ -3,15 +3,31 @@
 function renderComments($postId, $parentId, $commentTree, $level = 0,
     $allowInteraction = true,
     $reactions_forComment = [],
-    $isSameUser_reactCmt = []
+    $isSameUser_reactCmt = [],
+    $postOwnerId = null,
+    $commentLookup = []
 ){
 
-    
+    if (empty($commentLookup) && !empty($commentTree[$postId])) {
+        foreach ($commentTree[$postId] as $commentGroup) {
+            foreach ($commentGroup as $commentNode) {
+                $commentLookup[$commentNode->getCommentId()] = $commentNode;
+            }
+        }
+    }
+
     if(empty($commentTree[$postId][$parentId])) return;
 
     foreach($commentTree[$postId][$parentId] as $c){
 
         $commentId = $c->getCommentId();
+        $isReplyToDeletedMessage = false;
+        $parentCommentId = $c->getParentCommentId();
+
+        if ($parentCommentId !== null && isset($commentLookup[$parentCommentId])) {
+            $parentContent = trim((string)$commentLookup[$parentCommentId]->getContent());
+            $isReplyToDeletedMessage = ($parentContent === 'Tin nhắn đã bị xóa');
+        }
 
         // 1. COMMENT ITEM (LUÔN HIỂN THỊ)
         include 'comment_item.php';
@@ -37,7 +53,9 @@ function renderComments($postId, $parentId, $commentTree, $level = 0,
                     $level + 1,
                     $allowInteraction,
                     $reactions_forComment,
-                    $isSameUser_reactCmt
+                    $isSameUser_reactCmt,
+                    $postOwnerId,
+                    $commentLookup
                 );
             }
 

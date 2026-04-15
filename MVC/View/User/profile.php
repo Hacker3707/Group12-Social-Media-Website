@@ -11,8 +11,6 @@
 
     <style>
         body { background-color: #f0f2f5; }
-        .cover-photo { height: 350px; background-color: #ced4da; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; overflow: hidden; position: relative; }
-        .cover-photo img { width: 100%; height: 100%; object-fit: cover; }
         .profile-header { background: #fff; padding-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .profile-name { font-size: 2rem; font-weight: 700; margin-bottom: 0; }
         .profile-bio { color: #65676b; font-size: 1.1rem; }
@@ -33,7 +31,7 @@
         .chat-btn:hover { background: #006edb; }
         .avatar-container {
             width: 168px; height: 168px; border-radius: 50%; overflow: hidden;
-            position: relative; margin-top: -100px; margin-bottom: 15px;
+            position: relative; margin-top: 24px; margin-bottom: 15px;
             margin-left: auto; margin-right: auto; background-color: #fff;
         }
         .avatar-container img {
@@ -51,10 +49,6 @@
 
     <div class="profile-header" style="background: linear-gradient(225deg, #feffe9, rgb(238, 246, 255));">
         <div class="container">
-            <div class="cover-photo">
-                <img src="https://via.placeholder.com/1200x350/cccccc/ffffff?text=Cover+Photo" alt="Cover">
-            </div>
-            
             <div class="avatar-container">
                 <img class="img-fluid" src="<?= !empty($user['AvatarFP']) ? $user['AvatarFP'] : 'https://via.placeholder.com/168/007bff/ffffff?text='.strtoupper(substr($user['Username'], 0, 1)) ?>" alt="Avatar">
             </div>
@@ -128,14 +122,21 @@
                 <div class="card card-custom p-3 mb-3">
                     <div class="d-flex align-items-center">
                         <img src="<?= !empty($user['AvatarFP']) ? $user['AvatarFP'] : 'https://via.placeholder.com/40' ?>" class="rounded-circle mr-2" width="40" height="40">
-                        <input type="text" class="form-control rounded-pill bg-light" placeholder="<?= htmlspecialchars($user['Username']) ?> ơi, bạn đang nghĩ gì thế?" style="border:none;cursor:pointer;">
+                        <a href="index.php?controller=post&action=showCreateForm" class="form-control rounded-pill bg-light text-muted text-left" style="border:none; text-decoration:none; line-height: 1.6;">
+                            <?= htmlspecialchars($user['Username']) ?> oi, ban dang nghi gi the?
+                        </a>
+                        <a href="index.php?controller=post&action=showCreateForm" class="btn btn-primary ml-2">Create Post</a>
                     </div>
                 </div>
                 <?php endif; ?>
 
-                <div class="card card-custom p-3 text-center">
-                    <h5 class="text-muted mt-3 mb-3">Chưa có bài viết nào để hiển thị.</h5>
-                </div>
+                <?php if (!empty($posts)): ?>
+                    <?php include_once __DIR__ . "/../postview.php"; ?>
+                <?php else: ?>
+                    <div class="card card-custom p-3 text-center">
+                        <h5 class="text-muted mt-3 mb-3">Chua co bai viet nao de hien thi.</h5>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>

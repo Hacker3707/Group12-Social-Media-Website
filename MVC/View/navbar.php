@@ -9,6 +9,10 @@ if (isset($_SESSION['flash_message'])): ?>
 <?php endif; 
 // KẾT THÚC: KHU VỰC HIỂN THỊ THÔNG BÁO
 
+include_once "MVC/Model/CategoryModel.php";
+$navbarCategoryModel = new CategoryModel();
+$navbarCategories = $navbarCategoryModel->getAll() ?? [];
+
 // 1. Lấy thông tin controller và action hiện tại từ URL
 $currentController = $_GET['controller'] ?? '';
 $currentAction     = $_GET['action'] ?? '';
@@ -33,18 +37,7 @@ if (!($currentController === 'user' && ($currentAction === 'register' || $curren
         <a class="nav-link" href="index.php?controller=post&action=showHome">Home <span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Categories</a>
-      </li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
-          Dropdown
-        </a>
-        <div class="dropdown-menu">
-          <a class="dropdown-item" href="#">Action</a>
-          <a class="dropdown-item" href="#">Another action</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="#">Something else here</a>
-        </div>
+        <a class="nav-link" href="#" id="toggleCategories">Categories</a>
       </li>
      <li class="nav-item dropdown">
   <button id="notiBtn" class="btn btn-primary font-weight-bold position-relative">
@@ -109,6 +102,22 @@ if (!($currentController === 'user' && ($currentAction === 'register' || $curren
   </div>
 </nav>
 
+<div id="categoriesBar" class="bg-white border-bottom" style="display:none;">
+  <div class="container-fluid py-2" style="overflow-x:auto; white-space:nowrap;">
+    <?php if (!empty($navbarCategories)): ?>
+      <?php foreach ($navbarCategories as $cat): ?>
+        <a class="btn btn-sm btn-outline-primary mr-2 mb-1"
+           href="index.php?controller=search&action=find&searchResults=<?= urlencode($cat->getCategoryName()) ?>"
+           title="Xem bai viet va nhom theo category <?= htmlspecialchars($cat->getCategoryName()) ?>">
+          <?= htmlspecialchars($cat->getCategoryName()) ?>
+        </a>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <span class="text-muted small">Chua co category nao.</span>
+    <?php endif; ?>
+  </div>
+</div>
+
 <?php 
 // 3. Đóng khối IF lại
 endif; 
@@ -145,6 +154,12 @@ $(document).ready(function(){
 $(document).click(function(){
     $("#notiDropdown").removeClass("show");
 });
+
+  $("#toggleCategories").click(function(e){
+    e.preventDefault();
+    $("#categoriesBar").stop(true, true).slideToggle(180);
+  });
+
     // mark read
     $(document).on("click", ".noti-item", function(){
 
