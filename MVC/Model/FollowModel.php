@@ -96,5 +96,26 @@ public function countFollowers($userId) {
 
     return $row['total'] ?? 0;
 }
+
+public function getFollowerUsers($userId) {
+    $userId = (int)$userId;
+
+    $sql = "SELECT u.UserID, u.Username, u.AvatarFP
+            FROM follow f
+            JOIN users u ON u.UserID = f.FollowerID
+            WHERE f.FollowingID = $userId
+            ORDER BY f.FollowerID DESC";
+
+    $result = $this->query($sql);
+    $list = [];
+
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $list[] = $row;
+        }
+    }
+
+    return $list;
+}
 }
 ?>

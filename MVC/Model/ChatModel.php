@@ -42,7 +42,7 @@ class ChatModel extends AppModel {
     public function getMessages($convId, $limit = 60) {
         $convId = (int)$convId;
         $limit  = (int)$limit;
-        $sql = "SELECT m.*, u.Username, u.Avatar
+        $sql = "SELECT m.*, u.Username, u.AvatarFP AS AvatarFP
                 FROM Messages m
                 JOIN Users u ON m.SenderID = u.UserID
                 WHERE m.ConversationID = $convId
@@ -58,7 +58,7 @@ class ChatModel extends AppModel {
     public function getNewMessages($convId, $lastId) {
         $convId = (int)$convId;
         $lastId = (int)$lastId;
-        $sql = "SELECT m.*, u.Username, u.Avatar
+        $sql = "SELECT m.*, u.Username, u.AvatarFP AS AvatarFP
                 FROM Messages m
                 JOIN Users u ON m.SenderID = u.UserID
                 WHERE m.ConversationID = $convId AND m.MessageID > $lastId
@@ -85,7 +85,7 @@ class ChatModel extends AppModel {
         $sql = "SELECT c.*,
                     IF(c.User1ID=$userId, c.User2ID, c.User1ID) AS OtherUserID,
                     u.Username AS OtherUsername,
-                    u.Avatar   AS OtherAvatar,
+                    u.AvatarFP AS OtherAvatar,
                     (SELECT Content   FROM Messages WHERE ConversationID=c.ConversationID ORDER BY CreatedAt DESC LIMIT 1) AS LastMessage,
                     (SELECT ImagePath FROM Messages WHERE ConversationID=c.ConversationID ORDER BY CreatedAt DESC LIMIT 1) AS LastImage,
                     (SELECT CreatedAt FROM Messages WHERE ConversationID=c.ConversationID ORDER BY CreatedAt DESC LIMIT 1) AS LastMessageAt,

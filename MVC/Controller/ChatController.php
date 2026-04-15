@@ -47,7 +47,7 @@ class ChatController extends AppController {
             'other_user'      => [
                 'id'       => $otherId,
                 'username' => $other['Username'] ?? 'User',
-                'avatar'   => $other['Avatar']   ?? null,
+                'avatar'   => $other['AvatarFP'] ?? null,
             ],
             'messages' => $messages,
         ]);

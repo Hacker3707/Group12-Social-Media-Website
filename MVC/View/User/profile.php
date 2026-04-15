@@ -38,6 +38,24 @@
             width: 100%; height: 100%; object-fit: cover;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2); border: 4px solid #fff;
         }
+        .profile-tab-link { cursor: pointer; }
+        .followers-list .follower-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            text-decoration: none;
+            color: #222;
+        }
+        .followers-list .follower-item:hover { background-color: #f8f9fa; }
+        .followers-list .follower-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ddd;
+        }
     </style>
 </head>
 <body>
@@ -86,10 +104,8 @@
             
             <hr class="mt-4 mb-0">
             <ul class="nav nav-pills justify-content-center mt-2 font-weight-bold text-muted">
-                <li class="nav-item"><a class="nav-link active" href="#">Bài viết</a></li>
-                <li class="nav-item"><a class="nav-link text-dark" href="#">Giới thiệu</a></li>
-                <li class="nav-item"><a class="nav-link text-dark" href="#">Bạn bè</a></li>
-                <li class="nav-item"><a class="nav-link text-dark" href="#">Ảnh</a></li>
+                <li class="nav-item"><a class="nav-link active profile-tab-link" id="tab-posts" data-target="posts-section">Bài viết</a></li>
+                <li class="nav-item"><a class="nav-link text-dark profile-tab-link" id="tab-followers" data-target="followers-section">Người theo dõi</a></li>
             </ul>
         </div>
     </div>
@@ -97,27 +113,17 @@
     <div class="container content-section" style="background-color: #e6efff; /* test màu */
     padding: 20px;
     border-radius: 10px;">
-        <div class="row">
-            <div class="col-md-5">
-                <div class="card card-custom p-3">
-                    <h5 class="card-title">Giới thiệu</h5>
-                    <ul class="list-unstyled mb-0">
-                        <li class="mb-2"><strong>Điện thoại:</strong> <?= !empty($user['Phone']) ? htmlspecialchars($user['Phone']) : 'Đang cập nhật' ?></li>
-                        <li class="mb-2"><strong>Trạng thái:</strong> <?= ucfirst($user['AccountStatus']) ?></li>
-                    </ul>
-                </div>
-                
-                <div class="card card-custom p-3">
-                    <h5 class="card-title">Ảnh</h5>
-                    <div class="row no-gutters">
-                        <div class="col-4 p-1"><div style="height:100px;background:#ddd;border-radius:8px;"></div></div>
-                        <div class="col-4 p-1"><div style="height:100px;background:#ddd;border-radius:8px;"></div></div>
-                        <div class="col-4 p-1"><div style="height:100px;background:#ddd;border-radius:8px;"></div></div>
-                    </div>
-                </div>
-            </div>
+        <div class="card card-custom p-3 mb-3">
+            <h5 class="card-title">Giới thiệu tổng</h5>
+            <ul class="list-unstyled mb-0">
+                <li class="mb-2"><strong>Điện thoại:</strong> <?= !empty($user['Phone']) ? htmlspecialchars($user['Phone']) : 'Đang cập nhật' ?></li>
+                <li class="mb-2"><strong>Tiểu sử:</strong> <?= !empty($user['Bio']) ? htmlspecialchars($user['Bio']) : 'Chưa có tiểu sử.' ?></li>
+                <li class="mb-0"><strong>Trạng thái:</strong> <?= ucfirst($user['AccountStatus']) ?></li>
+            </ul>
+        </div>
 
-            <div class="col-md-7" >
+        <div id="posts-section">
+            <div class="col-md-12 px-0">
                 <?php if(isset($_SESSION['user_id']) && $_SESSION['user_id'] == $user['UserID']): ?>
                 <div class="card card-custom p-3 mb-3">
                     <div class="d-flex align-items-center">
@@ -137,6 +143,13 @@
                         <h5 class="text-muted mt-3 mb-3">Chua co bai viet nao de hien thi.</h5>
                     </div>
                 <?php endif; ?>
+            </div>
+        </div>
+
+        <div id="followers-section" style="display:none;">
+            <div class="card card-custom p-3 followers-list" id="followersListWrap">
+                <h5 class="card-title mb-2">Danh sách người theo dõi</h5>
+                <div id="followersList" class="text-muted">Bam vao tab Nguoi theo doi de tai du lieu...</div>
             </div>
         </div>
     </div>
@@ -183,6 +196,66 @@
                     button.prop("disabled", false);
                 }
             });
+        });
+    });
+
+    $(document).ready(function(){
+        function switchTab(target){
+            $(".profile-tab-link").removeClass("active text-dark");
+            $("#tab-" + target).addClass("active");
+
+            if(target === "posts"){
+                $("#posts-section").show();
+                $("#followers-section").hide();
+            } else {
+                $("#posts-section").hide();
+                $("#followers-section").show();
+            }
+        }
+
+        function loadFollowers(){
+            const userId = <?= (int)$user['UserID'] ?>;
+            const list = $("#followersList");
+            list.text("Dang tai...");
+
+            $.get("index.php?controller=follow&action=getFollowersJson&user_id=" + userId, function(response){
+                if(!response || response.status !== "success"){
+                    list.text("Khong the tai danh sach nguoi theo doi.");
+                    return;
+                }
+
+                if(!response.followers || response.followers.length === 0){
+                    list.text("Chua co nguoi theo doi nao.");
+                    return;
+                }
+
+                let html = "";
+                response.followers.forEach(function(follower){
+                    const avatar = follower.AvatarFP && follower.AvatarFP !== ""
+                        ? follower.AvatarFP
+                        : "https://via.placeholder.com/40";
+
+                    html += `
+                        <a class="follower-item" href="index.php?controller=user&action=profile&id=${follower.UserID}">
+                            <img class="follower-avatar" src="${avatar}" alt="${follower.Username}">
+                            <span>${follower.Username}</span>
+                        </a>
+                    `;
+                });
+
+                list.html(html);
+            }, "json").fail(function(){
+                list.text("Loi ket noi khi tai nguoi theo doi.");
+            });
+        }
+
+        $("#tab-posts").on("click", function(){
+            switchTab("posts");
+        });
+
+        $("#tab-followers").on("click", function(){
+            switchTab("followers");
+            loadFollowers();
         });
     });
     </script>
