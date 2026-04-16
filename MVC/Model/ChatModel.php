@@ -3,43 +3,63 @@ include_once __DIR__ . "/AppModel.php";
 
 class ChatModel extends AppModel {
 
-    // Lấy hoặc tạo conversation giữa 2 user
+    private $lastError = '';
+
+    public function getLastError() {
+        return $this->lastError;
+    }
+
     public function getOrCreateConversation($user1, $user2) {
         $a = min((int)$user1, (int)$user2);
         $b = max((int)$user1, (int)$user2);
 
-        $res = $this->query("SELECT ConversationID FROM Conversations WHERE User1ID=$a AND User2ID=$b");
-        $row = mysqli_fetch_assoc($res);
-        if ($row) return (int)$row['ConversationID'];
+        $sql = "SELECT ConversationID FROM conversations WHERE User1ID=$a AND User2ID=$b";
+        $res = mysqli_query($this->link, $sql);
 
-        $this->execute("INSERT INTO Conversations (User1ID, User2ID) VALUES ($a, $b)");
-        return (int)$this->getLastInsertId();
+        if (!$res) {
+            $this->lastError = mysqli_error($this->link);
+            return false;
+        }
+
+        $row = mysqli_fetch_assoc($res);
+        if ($row) {
+            return (int)$row['ConversationID'];
+        }
+
+        $sql = "INSERT INTO conversations (User1ID, User2ID) VALUES ($a, $b)";
+        $ok = mysqli_query($this->link, $sql);
+
+        if (!$ok) {
+            $this->lastError = mysqli_error($this->link);
+            return false;
+        }
+
+        return (int)mysqli_insert_id($this->link);
     }
 
-    // Gửi tin nhắn
     public function sendMessage($convId, $senderId, $content, $imagePath = null) {
         $convId   = (int)$convId;
         $senderId = (int)$senderId;
         $content  = mysqli_real_escape_string($this->link, $content);
-        $imgVal   = $imagePath
+
+        $imgVal = $imagePath
             ? "'" . mysqli_real_escape_string($this->link, $imagePath) . "'"
             : "NULL";
-        $this->execute(
-            "INSERT INTO Messages (ConversationID, SenderID, Content, ImagePath)
-             VALUES ($convId, $senderId, '$content', $imgVal)"
-        );
-        return (int)$this->getLastInsertId();
+
+        $sql = "INSERT INTO messages (ConversationID, SenderID, Content, ImagePath)
+                VALUES ($convId, $senderId, '$content', $imgVal)";
+
+        $ok = mysqli_query($this->link, $sql);
+
+        if (!$ok) {
+            $this->lastError = mysqli_error($this->link);
+            return false;
+        }
+
+        return (int)mysqli_insert_id($this->link);
     }
 
-    // React vào tin nhắn
-    public function reactMessage($msgId, $userId, $emoji) {
-        $msgId = (int)$msgId;
-        $emoji = mysqli_real_escape_string($this->link, $emoji);
-        $this->execute("UPDATE Messages SET Reaction='$emoji' WHERE MessageID=$msgId");
-    }
-
-    // Lấy toàn bộ tin nhắn trong conversation
-    public function getMessages($convId, $limit = 60) {
+    public function getMessages($convId, $limit = 200) {
         $convId = (int)$convId;
         $limit  = (int)$limit;
         $sql = "SELECT m.*, u.Username, u.AvatarFP AS AvatarFP
@@ -48,13 +68,21 @@ class ChatModel extends AppModel {
                 WHERE m.ConversationID = $convId
                 ORDER BY m.CreatedAt ASC
                 LIMIT $limit";
-        $res  = $this->query($sql);
+
+        $res = mysqli_query($this->link, $sql);
+
+        if (!$res) {
+            $this->lastError = mysqli_error($this->link);
+            return [];
+        }
+
         $rows = [];
-        while ($r = mysqli_fetch_assoc($res)) $rows[] = $r;
+        while ($r = mysqli_fetch_assoc($res)) {
+            $rows[] = $r;
+        }
         return $rows;
     }
 
-    // Polling — chỉ lấy tin mới hơn lastId
     public function getNewMessages($convId, $lastId) {
         $convId = (int)$convId;
         $lastId = (int)$lastId;
@@ -63,25 +91,45 @@ class ChatModel extends AppModel {
                 JOIN Users u ON m.SenderID = u.UserID
                 WHERE m.ConversationID = $convId AND m.MessageID > $lastId
                 ORDER BY m.CreatedAt ASC";
-        $res  = $this->query($sql);
+
+        $res = mysqli_query($this->link, $sql);
+
+        if (!$res) {
+            $this->lastError = mysqli_error($this->link);
+            return [];
+        }
+
         $rows = [];
-        while ($r = mysqli_fetch_assoc($res)) $rows[] = $r;
+        while ($r = mysqli_fetch_assoc($res)) {
+            $rows[] = $r;
+        }
         return $rows;
     }
 
-    // Đánh dấu đã đọc
     public function markAsRead($convId, $userId) {
         $convId = (int)$convId;
         $userId = (int)$userId;
-        $this->execute(
-            "UPDATE Messages SET IsRead=1
-             WHERE ConversationID=$convId AND SenderID!=$userId AND IsRead=0"
-        );
+
+        $sql = "UPDATE messages
+                SET IsRead = 1
+                WHERE ConversationID = $convId
+                  AND SenderID != $userId
+                  AND IsRead = 0";
+
+        mysqli_query($this->link, $sql);
     }
 
-    // Danh sách hội thoại của 1 user
+    public function reactMessage($msgId, $userId, $emoji) {
+        $msgId = (int)$msgId;
+        $emoji = mysqli_real_escape_string($this->link, $emoji);
+
+        $sql = "UPDATE messages SET Reaction = '$emoji' WHERE MessageID = $msgId";
+        mysqli_query($this->link, $sql);
+    }
+
     public function getConversations($userId) {
         $userId = (int)$userId;
+
         $sql = "SELECT c.*,
                     IF(c.User1ID=$userId, c.User2ID, c.User1ID) AS OtherUserID,
                     u.Username AS OtherUsername,
@@ -94,23 +142,84 @@ class ChatModel extends AppModel {
                 JOIN Users u ON u.UserID = IF(c.User1ID=$userId, c.User2ID, c.User1ID)
                 WHERE c.User1ID=$userId OR c.User2ID=$userId
                 ORDER BY LastMessageAt DESC";
-        $res  = $this->query($sql);
+
+        $res = mysqli_query($this->link, $sql);
+
+        if (!$res) {
+            $this->lastError = mysqli_error($this->link);
+            return [];
+        }
+
         $rows = [];
-        while ($r = mysqli_fetch_assoc($res)) $rows[] = $r;
+        while ($r = mysqli_fetch_assoc($res)) {
+            $rows[] = $r;
+        }
         return $rows;
     }
 
-    // Đếm tổng tin chưa đọc
     public function countUnread($userId) {
         $userId = (int)$userId;
+
         $sql = "SELECT COUNT(*) AS cnt
-                FROM Messages m
-                JOIN Conversations c ON m.ConversationID = c.ConversationID
+                FROM messages m
+                JOIN conversations c ON m.ConversationID = c.ConversationID
                 WHERE (c.User1ID=$userId OR c.User2ID=$userId)
-                  AND m.SenderID!=$userId AND m.IsRead=0";
-        $res = $this->query($sql);
+                  AND m.SenderID != $userId
+                  AND m.IsRead = 0";
+
+        $res = mysqli_query($this->link, $sql);
+
+        if (!$res) {
+            $this->lastError = mysqli_error($this->link);
+            return 0;
+        }
+
         $row = mysqli_fetch_assoc($res);
         return (int)($row['cnt'] ?? 0);
+    }
+
+    public function getFriendList($userId) {
+        $userId = (int)$userId;
+
+        $sql = "
+            SELECT DISTINCT u.UserID, u.Username, u.Email, u.AvatarFP, u.Bio
+            FROM users u
+            WHERE u.AccountStatus = 'active'
+            AND u.UserID != $userId
+            AND (
+                -- Người mình follow
+                u.UserID IN (
+                    SELECT f.FollowingID
+                    FROM follow f
+                    WHERE f.FollowerID = $userId
+                )
+
+                OR
+
+                -- Người đã từng chat
+                u.UserID IN (
+                    SELECT 
+                        CASE 
+                            WHEN c.User1ID = $userId THEN c.User2ID
+                            ELSE c.User1ID
+                        END
+                    FROM conversations c
+                    WHERE c.User1ID = $userId OR c.User2ID = $userId
+                )
+            )
+            ORDER BY u.Username ASC
+        ";
+
+        $res = $this->query($sql);
+
+        $rows = [];
+        if ($res) {
+            while ($r = mysqli_fetch_assoc($res)) {
+                $rows[] = $r;
+            }
+        }
+
+        return $rows;
     }
 }
 ?>

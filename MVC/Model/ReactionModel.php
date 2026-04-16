@@ -1,7 +1,6 @@
 <?php 
 include_once __DIR__ . "/AppModel.php";
 include_once __DIR__ . "/../../Entity/Reaction.php";
-include_once __DIR__ . "/../../Module/db_module.php";
 
 class ReactionModel extends AppModel {
 
@@ -9,24 +8,24 @@ class ReactionModel extends AppModel {
 
         $postId = $reaction->getPostId();
 
-if ($postId === null || $postId === '') {
-    $postId = "NULL";
-} else {
-    $postId = intval($postId);
-}
-        $commentId = $reaction->getCommentId();
+        if ($postId === null || $postId === '') {
+            $postId = "NULL";
+        } else {
+            $postId = intval($postId);
+        }
+                $commentId = $reaction->getCommentId();
 
-if ($commentId === null || $commentId === '') {
-    $commentId = "NULL";
-} else {
-    $commentId = intval($commentId);
-}
+        if ($commentId === null || $commentId === '') {
+            $commentId = "NULL";
+        } else {
+            $commentId = intval($commentId);
+        }
 
        
         $userId = intval($reaction->getUserId());
         $type = mysqli_real_escape_string($this->link, $reaction->getType());
 
-        $sql = "CALL createReaction($postId,$userId,$commentId,'$type')";
+        $sql = "CALL createReaction($postId, $userId, $commentId, '$type')";
 
         $result = $this->query($sql);
         $row = mysqli_fetch_assoc($result);

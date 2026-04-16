@@ -5,6 +5,7 @@ include_once "MVC/Model/CategoryModel.php";
 include_once "MVC/Model/PostModel.php";
 include_once "MVC/Model/ReactionModel.php";
 include_once "MVC/Model/CommentModel.php";
+include_once "MVC/Model/FollowModel.php";
 include_once "Entity/Group.php";
 
 class GroupController {
@@ -12,6 +13,7 @@ class GroupController {
     private $groupModel;
     private $memberModel;
     private $categoryModel;
+    private $followModel;
 
     private $commentModel;
 
@@ -26,6 +28,7 @@ class GroupController {
         $this->postModel = new PostModel();
         $this->reactionModel = new ReactionModel();
         $this->commentModel = new CommentModel();
+        $this->followModel = new FollowModel();
     }
 
     public function handleRequest() {
@@ -58,6 +61,10 @@ class GroupController {
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             $this->redirect('index.php', 'Bạn không có quyền truy cập!');
         }
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = true;
+
         $groups = $this->groupModel->getAll();
         include_once "MVC/View/Group/list.php"; 
     }
@@ -90,6 +97,9 @@ class GroupController {
 
     // ================= ACTION: HIỂN THỊ TRANG CHI TIẾT NHÓM =================
     public function detail() {
+        
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
         $groupId = $_GET['id'] ?? 0;
         $userId = $_SESSION['user_id'] ?? 0;
         
@@ -372,12 +382,16 @@ class GroupController {
     }
 
     public function discover() {
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
         $keyword = $_GET['q'] ?? '';
         $groups = $this->groupModel->searchGroups($keyword);
         include_once "MVC/View/Group/discover.php";
     }
 
     public function myGroups() {
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+        
         if (!isset($_SESSION['user_id'])) {
             $this->redirect('index.php?controller=user&action=login', 'Vui lòng đăng nhập để xem nhóm!');
         }
@@ -388,7 +402,12 @@ class GroupController {
     }
 
     public function showCreateForm(){
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
         $categories = $this->categoryModel->getAll(); // 👈 lấy từ DB
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
 
         $groupId = $_GET['id'];
 
@@ -397,6 +416,58 @@ class GroupController {
         include __DIR__ . "/../View/createpost_view.php";
         
         die();
+    }
+
+    public function viewMembersinDetailGroup(){
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
+        $groupId = $_GET['id'] ?? 0;
+        $userId = $_SESSION['user_id'] ?? 0;
+        
+        $group = $this->groupModel->getById($groupId);
+
+        
+        
+        if (!$group) {
+            $this->redirect('index.php', 'Nhóm này không tồn tại hoặc đã bị xóa!');
+        }
+
+        $memberCount = $this->groupModel->getMemberCount($groupId);
+        $joinStatus = $this->groupModel->getJoinStatus($userId, $groupId);
+        $userRole = $this->groupModel->getUserRole($userId, $groupId);
+        $membersInGroup = $this->groupModel->getGroupMembers($groupId);
+        $userFollowStatus = [];
+
+        if ($userId && !empty($membersInGroup)) {
+            foreach ($membersInGroup as $member) {
+                if (isset($member['UserID']) && (int)$member['UserID'] !== (int)$userId) {
+                    $userFollowStatus[$member['UserID']] = $this->followModel->exists($userId, $member['UserID']);
+                }
+            }
+        }
+
+        // ==========================================================
+        // 🔥 BỘ LỌC QUYỀN TRUY CẬP VÀ TƯƠNG TÁC (NEW)
+        // ==========================================================
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $canViewPosts = true;
+        $canInteract = true;
+
+        if (!$isSystemAdmin) {
+            // Luật 1: Nhóm Private + Chưa tham gia -> Cấm xem bài
+            if (strtolower($group['Privacy']) === 'private' && !$userRole) {
+                $canViewPosts = false; 
+            }
+            // Luật 2: Chưa tham gia -> Cấm tương tác (Comment/React)
+            if (!$userRole) {
+                $canInteract = false; 
+            }
+        }
+
+        
+
+        include __DIR__ ."/../View/Group/memberlist_view.php";
+    
     }
 
 }

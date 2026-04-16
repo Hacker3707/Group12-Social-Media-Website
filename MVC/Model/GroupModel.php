@@ -46,6 +46,14 @@ class GroupModel extends AppModel {
         return $list;
     }
 
+    public function countAll() {
+        $sql = "SELECT COUNT(*) AS total FROM groups";
+        $result = $this->query($sql);
+        $row = mysqli_fetch_assoc($result);
+
+        return (int)($row['total'] ?? 0);
+    }
+
     // ================= GET BY ID =================
     public function getById($id) {
         $id = (int)$id;
@@ -253,7 +261,7 @@ class GroupModel extends AppModel {
     // ================= SỬA: LẤY DANH SÁCH THÀNH VIÊN ĐÃ DUYỆT =================
     public function getGroupMembers($groupId) {
         $groupId = (int)$groupId;
-        $sql = "SELECT gm.*, u.Username, u.Email 
+        $sql = "SELECT gm.*, u.Username, u.Email, u.AvatarFP, u.Bio 
                 FROM group_member gm
                 JOIN users u ON gm.UserID = u.UserID
                 WHERE gm.GroupID = $groupId AND gm.Status = 'approved'

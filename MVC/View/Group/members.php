@@ -4,6 +4,7 @@
     <title>Quản lý Thành viên | Passo</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <style>body { background-color: #f0f2f5; } .member-row { border-bottom: 1px solid #eee; }</style>
+    <link rel="stylesheet" type="text/css" href="MVC/View/css/home.css">
 </head>
 <body>
     <?php include 'MVC/View/navbar.php'; ?>
@@ -55,7 +56,7 @@
                         </div>
                     </div>
                     
-                    <?php if ($mem['UserID'] != $_SESSION['user_id']): ?>
+                    <?php if ($mem['UserID'] != $userId): ?>
                         <form action="index.php?controller=group&action=processMember" method="POST" class="m-0 d-flex">
                             <input type="hidden" name="group_id" value="<?= $group['GroupID'] ?>">
                             <input type="hidden" name="target_user_id" value="<?= $mem['UserID'] ?>">

@@ -20,6 +20,7 @@
     </style>
 </head>
 <body>
+
     <?php include 'MVC/View/navbar.php'; ?>
 
     <div class="group-header">
@@ -76,11 +77,10 @@
 
                 <hr class="mt-3">
                 <ul class="nav nav-tabs">
-                    <li class="nav-item"><a class="nav-link active" href="#">Thảo luận</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Đáng chú ý</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Thành viên</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">File phương tiện</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="index.php?controller=group&action=detail&id=<?= htmlspecialchars($group['GroupID']) ?>">Thảo luận</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.php?controller=group&action=viewMembersinDetailGroup&id=<?= htmlspecialchars($group['GroupID']) ?>">Thành viên</a></li>
                 </ul>
+
             </div>
         </div>
     </div>
@@ -138,7 +138,9 @@
                 <?php endif; ?>
 
             </div>
+
         </div>
     </div>
+
 </body>
 </html>

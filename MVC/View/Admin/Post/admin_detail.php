@@ -8,18 +8,18 @@
 </head>
 <body style="background-color: #f0f2f5;">
     <div class="container-fluid" id="home-container">
-        <div class="row" id="upper-bar">
+        <div class="row" id="navbar">
             <div class="col-md-12 col-12 px-0">
                 <?php include 'MVC/View/navbar.php'; ?>
             </div>
         </div>
 
-        <div class="row mt-4 px-md-3" id="middle-content">
-            <div class="col-md-3 col-lg-2 col-12 mb-3" id="left-sidebar">
+        <div class="row" id="middle-content">
+            <div class="col-md-3 col-lg-2 col-12 " id="left-sidebar" style="font-size: 11px;">
                 <?php include 'MVC/View/leftsidebar.php'; ?>
             </div>
             
-            <div class="col-md-9 col-lg-10 col-12" id="main-content">
+            <div class="col-md-9 col-lg-10 col-12" id="main-content"  style="padding-left: 0px;">
                 
                 <a href="index.php?controller=post&action=list" class="btn btn-secondary mb-3"><i class="fas fa-arrow-left"></i> Quay lại Danh sách</a>
 
@@ -77,6 +77,11 @@
                     </div>
                 </div>
 
+            </div>
+        </div>
+        <div class="row" id = "footer">
+            <div class= "col-md-12 col-12">
+                <p class="text-center">© 2026 Passo Social Media. All rights reserved.</p>
             </div>
         </div>
     </div>

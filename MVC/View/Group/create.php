@@ -8,6 +8,7 @@
         .create-card { border-radius: 8px; border: none; box-shadow: 0 12px 28px rgba(0,0,0,0.1); }
         .form-control-f { background-color: #f0f2f5; border: 1px solid #ddd; border-radius: 6px; padding: 12px; }
     </style>
+    <link rel="stylesheet" type="text/css" href="MVC/View/css/home.css">
 </head>
 <body>
     <?php include 'MVC/View/navbar.php'; ?>

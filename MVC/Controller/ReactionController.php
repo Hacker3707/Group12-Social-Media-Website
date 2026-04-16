@@ -5,11 +5,11 @@ include_once __DIR__ . "/../Model/PostModel.php";
 include_once __DIR__ . "/../Model/CommentModel.php";
 
 class ReactionController {
-
     private $reactionModel;
-
+    private $notiModel;
     public function __construct() {
         $this->reactionModel = new ReactionModel();
+        $this -> notiModel = new NotificationModel();
     }
 
     public function action_forReaction() {

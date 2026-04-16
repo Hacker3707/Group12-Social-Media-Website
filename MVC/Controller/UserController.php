@@ -10,6 +10,7 @@ include_once __DIR__ . "/../Model/CategoryModel.php";
 include_once __DIR__ . "/../Model/CommentModel.php";
 include_once __DIR__ . "/../Model/GroupModel.php";
 include_once __DIR__ . "/../Model/MediaModel.php";
+include_once "MVC/Model/FollowModel.php";
 include_once "MVC/Service/Supabase/SupabaseService.php";
 include_once "MVC/Service/Cloudinary/CloudinaryService.php";
 
@@ -24,6 +25,8 @@ class UserController {
     private $groupModel;
     private $mediaModel;
 
+    private $followModel;
+
     public function __construct() {
        $this->postModel     = new PostModel();
         $this->reactionModel = new ReactionModel();
@@ -32,6 +35,7 @@ class UserController {
         $this->userModel = new UserModel();
         $this->groupModel = new GroupModel();
         $this->mediaModel    = new MediaModel();
+        $this -> followModel = new FollowModel();
     }
 
     public function handleRequest() {
@@ -185,6 +189,9 @@ class UserController {
             $this->redirect('index.php', 'Bạn không có quyền truy cập trang quản trị!');
         }
 
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = ($_GET['controller'] === 'user' && $_GET['action'] === 'list');
+
         $keyword = trim($_GET['keyword'] ?? '');
         
         if ($keyword !== '') {
@@ -194,6 +201,85 @@ class UserController {
         }
 
         include_once "MVC/View/User/list.php";
+    }
+
+    public function adminCategories() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->redirect('index.php', 'Bạn không có quyền truy cập trang quản trị!');
+        }
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = true;
+        $categories = $this->categoryModel->getAll();
+        $totalCategories = is_array($categories) ? count($categories) : 0;
+        $totalUsers = $this->userModel->countAll();
+        $totalGroups = $this->groupModel->countAll();
+        $totalPosts = $this->postModel->countAll();
+
+        include_once "MVC/View/Admin/Category/list.php";
+    }
+
+    public function adminStatistics() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->redirect('index.php', 'Bạn không có quyền truy cập trang quản trị!');
+        }
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = true;
+
+        $totalUsers = $this->userModel->countAll();
+        $totalGroups = $this->groupModel->countAll();
+        $totalPosts = $this->postModel->countAll();
+        $totalCategories = $this->categoryModel->getAll();
+        $totalCategories = is_array($totalCategories) ? count($totalCategories) : 0;
+
+        include_once "MVC/View/Admin/Statistics/list.php";
+    }
+
+    public function adminCreateCategory() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->back('Lỗi quyền truy cập!');
+        }
+
+        if (!isset($_POST['categoryName'])) {
+            $this->back('Thiếu tên danh mục!');
+        }
+
+        $categoryName = trim($_POST['categoryName']);
+
+        if ($categoryName === '') {
+            $this->back('Tên danh mục không được để trống!');
+        }
+
+        if ($this->categoryModel->existsByName($categoryName)) {
+            $this->back('Danh mục đã tồn tại!');
+        }
+
+        $this->categoryModel->insert($categoryName);
+        $this->redirect('index.php?controller=user&action=adminCategories', 'Đã thêm danh mục thành công!');
+    }
+
+    public function adminDeleteCategory() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->back('Lỗi quyền truy cập!');
+        }
+
+        if (!isset($_GET['id'])) {
+            $this->back('Không tìm thấy danh mục cần xóa!');
+        }
+
+        $categoryId = (int)$_GET['id'];
+        if ($categoryId <= 0) {
+            $this->back('ID danh mục không hợp lệ!');
+        }
+
+        $postCount = $this->categoryModel->countPostsByCategory($categoryId);
+        if ($postCount > 0) {
+            $this->back('Không thể xóa danh mục vì đang được dùng bởi ' . $postCount . ' bài viết.');
+        }
+
+        $this->categoryModel->delete($categoryId);
+        $this->redirect('index.php?controller=user&action=adminCategories', 'Đã xóa danh mục!');
     }
 
     public function delete() {
@@ -325,8 +411,15 @@ class UserController {
     public function profile() {
         $id = $_GET['id'] ?? ($_SESSION['user_id'] ?? null);
 
+        $sameUser = false;
+        if ($_SESSION['user_id'] == $_GET['id']) {
+            $sameUser = true;
+        }
+
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
         if (!$id) {
-            $this->redirect('/index.php?controller=user&action=login', 'Vui lòng đăng nhập!');
+            $this->redirect('./index.php?controller=user&action=login', 'Vui lòng đăng nhập!');
         }
 
         $user = $this->userModel->getById((int)$id);
@@ -335,28 +428,25 @@ class UserController {
             $this->back('Người dùng không tồn tại hoặc đã bị xóa.');
         }
          // 🔥 THÊM ĐOẠN NÀY
-    include_once "MVC/Model/FollowModel.php";
 
-    $followModel = new FollowModel();
+        $currentUserId = $_SESSION['user_id'] ?? 0;
+        $profileUserId = $user['UserID'];
 
-    $currentUserId = $_SESSION['user_id'] ?? 0;
-    $profileUserId = $user['UserID'];
+        $isFollowing = false;
 
-    $isFollowing = false;
+        if ($currentUserId && $currentUserId != $profileUserId) {
+            $isFollowing = $this -> followModel->exists($currentUserId, $profileUserId);
+        }
 
-    if ($currentUserId && $currentUserId != $profileUserId) {
-        $isFollowing = $followModel->exists($currentUserId, $profileUserId);
-    }
+        // (optional) lấy số follower luôn
+        $followerCount = $this -> followModel->countFollowers($profileUserId);
 
-    // (optional) lấy số follower luôn
-    $followerCount = $followModel->countFollowers($profileUserId);
+            // 🔥 truyền userId vào
+            $data = $this -> getPostforUserId($id);
 
-        // 🔥 truyền userId vào
-        $data = $this -> getPostforUserId($id);
+            extract($data); // tạo biến $posts, $comments,...
 
-        extract($data); // tạo biến $posts, $comments,...
-
-        include_once "MVC/View/User/profile.php";
+            include_once "MVC/View/User/profile.php";
     }
 
     public function getPostforUserId($userId) {
@@ -528,7 +618,7 @@ class UserController {
                 
                 $result = $this->userModel->updatePassword($user['UserID'], $newPassword);
                 if ($result) {
-                    $this->redirect('/index.php?controller=user&action=login', 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.');
+                    $this->redirect('./index.php?controller=user&action=login', 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.');
                 } else {
                     $this->back('Lỗi hệ thống khi cập nhật mật khẩu.');
                 }

@@ -11,15 +11,25 @@ class PostModel extends AppModel {
         $title = mysqli_real_escape_string($this->link,$post->getTitle());
         $content = mysqli_real_escape_string($this->link,$post->getContent());
         $price = $post->getPrice() === null ? "NULL" : intval($post->getPrice());
-        $condition = mysqli_real_escape_string($this->link, $post->getCondition());
-        $location = mysqli_real_escape_string($this->link, $post->getLocation());
+        
+        $condition = $post->getCondition() 
+        ? "'" . mysqli_real_escape_string($this->link, $post->getCondition()) . "'" 
+        : "NULL";
+
+        $location = $post->getLocation() 
+        ? "'" . mysqli_real_escape_string($this->link, $post->getLocation()) . "'" 
+        : "NULL";
+
         $brand = $post->getBrand() ? "'" . mysqli_real_escape_string($this->link, $post->getBrand()) . "'" : "NULL";
-        $status = mysqli_real_escape_string($this->link, $post->getStatus());
+
+        $status = $post->getStatus() 
+        ? "'" . mysqli_real_escape_string($this->link, $post->getStatus()) . "'" 
+        : "NULL";
 
         $sql = "INSERT INTO post 
                 (UserID, GroupID, CategoryID, Title, Content, Price, ProductCondition, Location, Brand, PostStatus)
                 VALUES 
-                ($userId, $groupId, $categoryId, '$title', '$content', $price, '$condition', '$location', $brand, '$status')";
+                ($userId, $groupId, $categoryId, '$title', '$content', $price, $condition, $location, $brand, $status)";
 
         return $this->execute($sql);
     }
@@ -53,6 +63,14 @@ class PostModel extends AppModel {
         return $posts;
     }
 
+    public function countAll() {
+        $sql = "SELECT COUNT(*) AS total FROM post";
+        $result = $this->query($sql);
+        $row = mysqli_fetch_assoc($result);
+
+        return (int)($row['total'] ?? 0);
+    }
+
     public function fetchByField($field, $value) {
         $allowed = ['UserID','GroupID','CategoryID'];
         if (!in_array($field, $allowed)) return false;
@@ -78,7 +96,7 @@ class PostModel extends AppModel {
                 $row['Location'], $row['Brand'], $row['PostStatus']
             );
             $post->setUsername($row['Username']);
-            $post->setCreatedAt($row['CreatedAt']);
+            $post->setCreatedAt($row['CreatedAt'] );
             $post->setCategoryName($row['CategoryName'] ?? 'No Category');
             $post->setAvatar($row['AvatarFP']); // Gán Avatar
             $post->setGroupName($row['GroupName'] ?? 'No Group');

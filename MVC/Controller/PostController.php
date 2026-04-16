@@ -107,12 +107,16 @@ class PostController extends AppController
     {
         $posts  = $this->postModel->getAll() ?? [];
         $userid = $_SESSION['user_id'] ?? null;
+
         $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
 
         $reactions_forPost = [];
         $isSameUser_reactPost = [];
         $reactions_forComment = [];
         $isSameUser_reactCmt = [];
+
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
 
         // Lay thong tin user
         if ($userid) {
@@ -190,30 +194,32 @@ class PostController extends AppController
         include_once __DIR__ . "/../View/home.php";
     }
 
-       
+public function PostAction()
+{
+    $action = $_GET['action'] ?? "home";
 
-    public function PostAction(){
-        $action = $_GET['action'] ?? "home";
+    switch ($action) {
+        case "createPost":
+            $this->createPost();
+            break;
 
-        switch($action){
+        case "home":
+            unset($_SESSION['category_filter']);
+            $this->showHome();
+            break;
 
-            case "createPost":
-                $this->createPost();
-                break;
-
-            case "home":
-                 unset($_SESSION['category_filter']); // 🔥 tránh bị kẹt filter
-                $this->showHome();
-                break;
-            case "create":
+        case "create":
             $this->showCreateForm();
              break;
-            case "showEditForm":
+        case "showEditForm":
             $this->showEditForm();
              break;
 
+        foreach ($posts as $post) {
+            include "MVC/View/post_item.php";
         }
     }
+}
 
     public function getAllPosts() {
         $posts = $this->postModel->getAll() ?? [];
@@ -237,6 +243,8 @@ class PostController extends AppController
     }
 
     public function getPostsByUserId($userId) {
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
         if (isset($_GET['user_id'])) {
             $userId = $_GET['user_id'];
             $posts  = $this->postModel->fetchByField('UserID', $userId);
@@ -246,6 +254,8 @@ class PostController extends AppController
     }
 
     public function getPostsByGroupId($groupId) {
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
         if (isset($_GET['group_id'])) {
             $groupId = $_GET['group_id'];
             $posts   = $this->postModel->fetchByField('GroupID', $groupId);
@@ -255,6 +265,11 @@ class PostController extends AppController
     }
 
     public function getPostsByCategoryId() {
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
+
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
         if (isset($_GET['category_id'])) {
             $categoryId = $_GET['category_id'];
             $posts      = $this->postModel->fetchByField('CategoryID', $categoryId);
@@ -299,6 +314,8 @@ class PostController extends AppController
 
     public function showCreateForm()
     {
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
         $categories = $this->categoryModel->getAll();
         $group = null;
         include __DIR__ . "/../View/createpost_view.php";
@@ -311,6 +328,11 @@ class PostController extends AppController
             header("Location: index.php?controller=user&action=login");
             exit;
         }
+
+        
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
 
         $postId = (int)($_GET['id'] ?? 0);
         if ($postId <= 0) {
@@ -431,6 +453,19 @@ class PostController extends AppController
         include_once __DIR__ . "/../View/home.php";
     }
 
+    public function editPost() {
+        $postId = $_GET["id"] ?? null;
+        $post = $this->postModel->getById($postId);
+
+        if (!$post) {
+            echo "Post not found";
+            exit;
+        }
+        
+        
+        include "MVC/View/Post/edit_view.php";
+    }
+    
     // ====================================================================
     // ================= KHU VUC DANH RIENG CHO ADMIN =====================
     // ====================================================================
@@ -441,6 +476,9 @@ class PostController extends AppController
             header("Location: index.php");
             exit();
         }
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = ($_GET['controller'] === 'post' && $_GET['action'] === 'list');
 
         $posts = $this->postModel->getAll();
         include_once __DIR__ . "/../View/Admin/Post/list.php";
@@ -468,6 +506,9 @@ class PostController extends AppController
             header("Location: index.php");
             exit();
         }
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = ($_GET['control'] === 'user' && $_GET['action'] === 'list');
 
         $postId = (int)($_GET['id'] ?? 0);
         $post = $this->postModel->getById($postId);

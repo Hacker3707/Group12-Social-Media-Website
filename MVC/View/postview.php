@@ -200,13 +200,6 @@ $isProduct = $post->getPrice() !== null
 
 <div class="mt-3 d-flex align-items-center">
 
-    <!-- VIEW -->
-    <!--<button class="btn btn-sm btn-outline-primary col-md-2 col-12"
-        data-toggle="modal"
-        data-target="#postModal<?= $postId ?>">
-        View Post
-    </button>-->
-
     <!-- LIKE -->
     <button class="btn btn-sm btn-outline-primary like-btn ml-auto"
             type="button"
@@ -224,10 +217,11 @@ $isProduct = $post->getPrice() !== null
     </button>
 
      <!-- COMMENT -->
+
     <button class="btn btn-sm btn-outline-secondary ml-2" data-toggle="modal"
         data-target="#postModal<?= $postId ?>">
         Comment 
-        <span class="badge badge-light">
+        <span class="badge badge-light badge-cmt">
             <?= count($comments[$postId] ?? []) ?>
         </span>
     </button>
@@ -311,7 +305,7 @@ document.addEventListener("click", function(e){
 </script>
 
 
-            <!-- Like Post Script -->
+            <!-- Reaction Like Post Script -->
 
 <script>
 document.addEventListener("click", function(e){
@@ -584,7 +578,9 @@ document.addEventListener("submit", function(e){
                 `);
                 // reset form
                 form.commentContent.value = "";
+
                 let noCmt = form.closest(".post-modal").querySelector(".no-cmt");
+
                 if(noCmt){
                     noCmt.remove();
                 }
@@ -606,6 +602,19 @@ document.addEventListener("submit", function(e){
 
                 modal.find(".reply-btn-disabled")
                     .removeClass("reply-btn-disabled");
+
+                let badgeCmt = form.closest(".post-modal").querySelector(".badge-cmt");
+
+                let current = parseInt(badgeCmt.textContent) || 0;
+                badgeCmt.textContent = current + 1;
+
+                // Cập nhật badge comment ở postview cũng
+                let postViewBadge = document.querySelector(`button[data-target="#postModal${postId}"] .badge-cmt`);
+                if (postViewBadge) {
+                    let currentPostView = parseInt(postViewBadge.textContent) || 0;
+                    postViewBadge.textContent = currentPostView + 1;
+                }
+
                 
             }else{
                 console.log("Error:", data.message);
@@ -653,22 +662,22 @@ document.addEventListener("click", function(e){
                 try{
                     response = JSON.parse(xhr.responseText);
                 }catch(e){
-                    alert("Server error");
+                    showAlert("Error", "Oops!", "Server Error")
                     return;
                 }
 
                 if(response.status === "success"){
 
-                    alert("Comment deleted");
+                    showAlert("Success", "Success","Comment deleted !");
 
                     let commentItem = e.target.closest(".comment-item");
                     if(commentItem){
                         commentItem.remove();
                     }
-                    location.reload();
+                    
 
                 }else{
-                    alert(response.message || "Delete failed");
+                    showAlert("Error", "Something went wrong...", response.message || "Delete failed");
                 }
 
             }

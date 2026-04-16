@@ -71,6 +71,18 @@ class CategoryModel extends AppModel {
         return $this->execute($sql);
     }
 
+    public function countPostsByCategory($categoryId) {
+
+        $categoryId = (int)$categoryId;
+
+        $sql = "SELECT COUNT(*) AS TotalPosts FROM post WHERE CategoryID = $categoryId";
+
+        $result = $this->query($sql);
+        $row = mysqli_fetch_assoc($result);
+
+        return (int)($row['TotalPosts'] ?? 0);
+    }
+
     // Check trùng tên
     public function existsByName($categoryName, $excludeId = null) {
 
@@ -102,7 +114,6 @@ class CategoryModel extends AppModel {
             $list[] = new Category(
                 $row['CategoryID'],
                 $row['CategoryName'],
-                $row['PostCount']
             );
         }
         return $list;
