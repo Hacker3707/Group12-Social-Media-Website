@@ -5,7 +5,7 @@
      ================================================================ -->
 <style>
 /* ── FAB button ─────────────────────────────── */
-#chat-fab{position:fixed;bottom:80px;right:24px;width:52px;height:52px;border-radius:50%;background:#0084ff;color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 14px rgba(0,132,255,.4);z-index:9000;display:flex;align-items:center;justify-content:center;transition:transform .2s;}
+#chat-fab{position:fixed;bottom:40px;right:24px;width:52px;height:52px;border-radius:50%;background:#0084ff;color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 14px rgba(0,132,255,.4);z-index:9000;display:flex;align-items:center;justify-content:center;transition:transform .2s;}
 #chat-fab:hover{transform:scale(1.1);}
 #chat-fab .cbadge{position:absolute;top:-4px;right:-4px;background:#e41e3f;color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:1px 5px;display:none;}
 

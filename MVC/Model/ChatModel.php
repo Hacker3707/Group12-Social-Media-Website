@@ -1,5 +1,6 @@
 <?php
 include_once __DIR__ . "/AppModel.php";
+include_once __DIR__ . "/../../Entity/Chat.php";
 
 class ChatModel extends AppModel {
 
@@ -7,6 +8,48 @@ class ChatModel extends AppModel {
 
     public function getLastError() {
         return $this->lastError;
+    }
+
+    private function mapMessageRowToChat(array $row) {
+        return new Chat(
+            (int)($row['ConversationID'] ?? 0),
+            (int)($row['MessageID'] ?? 0),
+            null,
+            null,
+            (int)($row['SenderID'] ?? 0),
+            $row['Content'] ?? null,
+            $row['ImagePath'] ?? null,
+            $row['Reaction'] ?? null,
+            isset($row['IsRead']) ? (int)$row['IsRead'] : null,
+            $row['CreatedAt'] ?? null,
+            null,
+            $row['Username'] ?? null,
+            $row['AvatarFP'] ?? null
+        );
+    }
+
+    private function mapConversationRowToChat(array $row) {
+        return new Chat(
+            (int)($row['ConversationID'] ?? 0),
+            null,
+            isset($row['User1ID']) ? (int)$row['User1ID'] : null,
+            isset($row['User2ID']) ? (int)$row['User2ID'] : null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            isset($row['OtherUserID']) ? (int)$row['OtherUserID'] : null,
+            null,
+            null,
+            $row['OtherUsername'] ?? null,
+            $row['OtherAvatar'] ?? null,
+            $row['LastMessage'] ?? null,
+            $row['LastImage'] ?? null,
+            $row['LastMessageAt'] ?? null,
+            isset($row['UnreadCount']) ? (int)$row['UnreadCount'] : 0
+        );
     }
 
     public function getOrCreateConversation($user1, $user2) {
@@ -62,10 +105,9 @@ class ChatModel extends AppModel {
     public function getMessages($convId, $limit = 200) {
         $convId = (int)$convId;
         $limit  = (int)$limit;
-
-        $sql = "SELECT m.*, u.Username, u.AvatarFP AS Avatar
-                FROM messages m
-                JOIN users u ON m.SenderID = u.UserID
+        $sql = "SELECT m.*, u.Username, u.AvatarFP AS AvatarFP
+                FROM Messages m
+                JOIN Users u ON m.SenderID = u.UserID
                 WHERE m.ConversationID = $convId
                 ORDER BY m.CreatedAt ASC
                 LIMIT $limit";
@@ -79,7 +121,7 @@ class ChatModel extends AppModel {
 
         $rows = [];
         while ($r = mysqli_fetch_assoc($res)) {
-            $rows[] = $r;
+            $rows[] = $this->mapMessageRowToChat($r);
         }
         return $rows;
     }
@@ -87,12 +129,10 @@ class ChatModel extends AppModel {
     public function getNewMessages($convId, $lastId) {
         $convId = (int)$convId;
         $lastId = (int)$lastId;
-
-        $sql = "SELECT m.*, u.Username, u.AvatarFP AS Avatar
-                FROM messages m
-                JOIN users u ON m.SenderID = u.UserID
-                WHERE m.ConversationID = $convId
-                  AND m.MessageID > $lastId
+        $sql = "SELECT m.*, u.Username, u.AvatarFP AS AvatarFP
+                FROM Messages m
+                JOIN Users u ON m.SenderID = u.UserID
+                WHERE m.ConversationID = $convId AND m.MessageID > $lastId
                 ORDER BY m.CreatedAt ASC";
 
         $res = mysqli_query($this->link, $sql);
@@ -104,7 +144,7 @@ class ChatModel extends AppModel {
 
         $rows = [];
         while ($r = mysqli_fetch_assoc($res)) {
-            $rows[] = $r;
+            $rows[] = $this->mapMessageRowToChat($r);
         }
         return $rows;
     }
@@ -137,15 +177,12 @@ class ChatModel extends AppModel {
                     IF(c.User1ID=$userId, c.User2ID, c.User1ID) AS OtherUserID,
                     u.Username AS OtherUsername,
                     u.AvatarFP AS OtherAvatar,
-                    (SELECT Content FROM messages WHERE ConversationID=c.ConversationID ORDER BY CreatedAt DESC LIMIT 1) AS LastMessage,
-                    (SELECT ImagePath FROM messages WHERE ConversationID=c.ConversationID ORDER BY CreatedAt DESC LIMIT 1) AS LastImage,
-                    (SELECT CreatedAt FROM messages WHERE ConversationID=c.ConversationID ORDER BY CreatedAt DESC LIMIT 1) AS LastMessageAt,
-                    (SELECT COUNT(*) FROM messages
-                        WHERE ConversationID=c.ConversationID
-                          AND SenderID != $userId
-                          AND IsRead = 0) AS UnreadCount
-                FROM conversations c
-                JOIN users u ON u.UserID = IF(c.User1ID=$userId, c.User2ID, c.User1ID)
+                    (SELECT Content   FROM Messages WHERE ConversationID=c.ConversationID ORDER BY CreatedAt DESC LIMIT 1) AS LastMessage,
+                    (SELECT ImagePath FROM Messages WHERE ConversationID=c.ConversationID ORDER BY CreatedAt DESC LIMIT 1) AS LastImage,
+                    (SELECT CreatedAt FROM Messages WHERE ConversationID=c.ConversationID ORDER BY CreatedAt DESC LIMIT 1) AS LastMessageAt,
+                    (SELECT COUNT(*)  FROM Messages WHERE ConversationID=c.ConversationID AND SenderID!=$userId AND IsRead=0) AS UnreadCount
+                FROM Conversations c
+                JOIN Users u ON u.UserID = IF(c.User1ID=$userId, c.User2ID, c.User1ID)
                 WHERE c.User1ID=$userId OR c.User2ID=$userId
                 ORDER BY LastMessageAt DESC";
 
@@ -158,7 +195,7 @@ class ChatModel extends AppModel {
 
         $rows = [];
         while ($r = mysqli_fetch_assoc($res)) {
-            $rows[] = $r;
+            $rows[] = $this->mapConversationRowToChat($r);
         }
         return $rows;
     }
@@ -187,23 +224,44 @@ class ChatModel extends AppModel {
     public function getFriendList($userId) {
         $userId = (int)$userId;
 
-        $sql = "SELECT UserID, Username, Email, AvatarFP, Bio
-                FROM users
-                WHERE AccountStatus = 'active'
-                  AND UserID != $userId
-                ORDER BY Username ASC";
+        $sql = "
+            SELECT DISTINCT u.UserID, u.Username, u.Email, u.AvatarFP, u.Bio
+            FROM users u
+            WHERE u.AccountStatus = 'active'
+            AND u.UserID != $userId
+            AND (
+                -- Người mình follow
+                u.UserID IN (
+                    SELECT f.FollowingID
+                    FROM follow f
+                    WHERE f.FollowerID = $userId
+                )
 
-        $res = mysqli_query($this->link, $sql);
+                OR
 
-        if (!$res) {
-            $this->lastError = mysqli_error($this->link);
-            return [];
-        }
+                -- Người đã từng chat
+                u.UserID IN (
+                    SELECT 
+                        CASE 
+                            WHEN c.User1ID = $userId THEN c.User2ID
+                            ELSE c.User1ID
+                        END
+                    FROM conversations c
+                    WHERE c.User1ID = $userId OR c.User2ID = $userId
+                )
+            )
+            ORDER BY u.Username ASC
+        ";
+
+        $res = $this->query($sql);
 
         $rows = [];
-        while ($r = mysqli_fetch_assoc($res)) {
-            $rows[] = $r;
+        if ($res) {
+            while ($r = mysqli_fetch_assoc($res)) {
+                $rows[] = $r;
+            }
         }
+
         return $rows;
     }
 }

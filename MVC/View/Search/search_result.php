@@ -31,7 +31,21 @@ $displayUsers = array_slice($users, 0, $maxItems);
                             <div class="card-body d-flex flex-column">
                                 <h6 class="font-weight-bold text-truncate"><?= htmlspecialchars($user->getUsername()) ?></h6>
                                 <p class="small text-muted mb-3 flex-grow-1"><?= htmlspecialchars($user->getBio() ?? 'Chưa có mô tả') ?></p>
-                                <a href="index.php?controller=user&action=profile&id=<?= $user->getUserID() ?>" class="btn btn-light btn-block btn-sm font-weight-bold text-primary" style="background-color: #e7f3ff;">Xem hồ sơ</a>
+                                
+                                <div class="d-flex gap-2 flex-column">
+                                    <a href="index.php?controller=user&action=profile&id=<?= $user->getUserID() ?>" class="btn btn-light btn-block btn-sm font-weight-bold text-primary" style="background-color: #e7f3ff;">Xem hồ sơ</a>
+                                    
+                                    <?php 
+                                    // 🔥 Check per-user follow status (MVC: từ Controller)
+                                    $isUserFollowed = $userFollowStatus[$user->getUserId()] ?? false;
+                                    ?>
+                                    
+                                    <?php if (!$isUserFollowed): ?>
+                                        <a href="index.php?controller=follow&action=follow&id=<?= $user->getUserId() ?>" class="btn btn-primary btn-block btn-sm font-weight-bold">Follow</a>
+                                    <?php else: ?>
+                                        <a href="index.php?controller=follow&action=follow&id=<?= $user->getUserId() ?>" class="btn btn-success btn-block btn-sm font-weight-bold">✓ Followed</a>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -21,20 +21,31 @@
             </button>
 
             <div class="dropdown-menu dropdown-menu-right">
-                <button class="dropdown-item" type="button">Report</button>
+                <?php
+                    $currentUserId = (int)($_SESSION['user_id'] ?? 0);
+                    $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+                    $isCommentOwner = ((int)$c->getUserId() === $currentUserId);
+                    $isPostOwner = (isset($postOwnerId) && (int)$postOwnerId === $currentUserId);
+                    $canDeleteComment = $isSystemAdmin || $isCommentOwner || $isPostOwner;
+                ?>
 
-
-                <button class="dropdown-item delete-btn-cmt"
-                        type="button"
-                        data-comment-id="<?= $c->getCommentId() ?>">
-                    Delete
-                </button>
+                <?php if ($canDeleteComment): ?>
+                    <button class="dropdown-item delete-btn-cmt"
+                            type="button"
+                            data-comment-id="<?= $c->getCommentId() ?>">
+                        Delete
+                    </button>
+                <?php endif; ?>
             </div>
         </div>
 
     </div>
 
     <p class="mb-1"><?= htmlspecialchars($c->getContent()) ?></p>
+
+    <?php if (!empty($isReplyToDeletedMessage)): ?>
+        <small class="text-muted d-block mb-1">Đã trả lời tin nhắn đã bị xóa</small>
+    <?php endif; ?>
 
     <div class="d-flex mt-1 align-items-center">
 

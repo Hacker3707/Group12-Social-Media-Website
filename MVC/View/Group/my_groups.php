@@ -9,6 +9,9 @@
         .group-card:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
         .group-cover-sm { height: 120px; border-top-left-radius: 8px; border-top-right-radius: 8px; object-fit: cover; width: 100%; }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="MVC/View/css/home.css">
+
 </head>
 <body>
     <?php include 'MVC/View/navbar.php'; ?>

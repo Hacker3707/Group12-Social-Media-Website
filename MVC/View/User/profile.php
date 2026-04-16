@@ -7,257 +7,11 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="MVC/View/css/home.css">
+    <link rel="stylesheet" type="text/css" href="MVC/View/css/profile_user.css">
 
     <style>
         /* ── Page ── */
-        body { background-color: #f0f2f5; }
-        .cover-photo { height: 350px; background-color: #ced4da; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; overflow: hidden; position: relative; }
-        .cover-photo img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-header { background: #fff; padding-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .profile-name { font-size: 2rem; font-weight: 700; margin-bottom: 0; }
-        .profile-bio { color: #65676b; font-size: 1.1rem; }
-        .content-section { margin-top: 20px; }
-        .card-custom { border: none; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .card-title { font-weight: 700; font-size: 1.25rem; }
-        .follow-btn { background: #1877f2; color: white; border-radius: 20px; padding: 6px 16px; font-weight: 600; border: none; transition: 0.2s; }
-        .follow-btn:hover { background: #166fe5; }
-        .follow-btn.following { background: #e4e6eb; color: black; }
-        .follow-btn.following:hover { background: #d8dadf; }
-        .chat-btn { background: #0084ff; color: white; border-radius: 20px; padding: 6px 16px; font-weight: 600; border: none; transition: 0.2s; cursor: pointer; }
-        .chat-btn:hover { background: #006edb; }
-        .avatar-container { width: 168px; height: 168px; border-radius: 50%; overflow: hidden; position: relative; margin-top: -100px; margin-bottom: 15px; margin-left: auto; margin-right: auto; background-color: #fff; }
-        .avatar-container img { width: 100%; height: 100%; object-fit: cover; box-shadow: 0 1px 3px rgba(0,0,0,0.2); border: 4px solid #fff; }
-
-        /* ══════════════════════════════════════════
-           MESSENGER MODAL
-        ══════════════════════════════════════════ */
-        #mess-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.45);
-            z-index: 10000;
-            align-items: center;
-            justify-content: center;
-        }
-        #mess-overlay.open { display: flex; }
-
-        #mess-box {
-            width: 860px;
-            max-width: 96vw;
-            height: 560px;
-            max-height: 92vh;
-            background: #fff;
-            border-radius: 16px;
-            overflow: hidden;
-            display: flex;
-            box-shadow: 0 12px 48px rgba(0,0,0,.28);
-            animation: messIn .22s ease;
-        }
-        @keyframes messIn {
-            from { transform: scale(.92); opacity: 0; }
-            to   { transform: scale(1);  opacity: 1; }
-        }
-
-        /* ── Sidebar ── */
-        #mess-sidebar {
-            width: 280px;
-            min-width: 280px;
-            border-right: 1px solid #e4e6eb;
-            display: flex;
-            flex-direction: column;
-            background: #fff;
-        }
-        #mess-sidebar-hdr {
-            padding: 16px 16px 10px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        #mess-sidebar-hdr h5 { font-weight: 700; font-size: 1.15rem; margin: 0 0 10px; }
-        #mess-search {
-            width: 100%;
-            border: none;
-            background: #f0f2f5;
-            border-radius: 20px;
-            padding: 7px 14px;
-            font-size: 13.5px;
-            outline: none;
-        }
-        #mess-conv-list { overflow-y: auto; flex: 1; }
-        .mconv-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 14px;
-            cursor: pointer;
-            border-radius: 10px;
-            margin: 2px 6px;
-            transition: background .13s;
-        }
-        .mconv-item:hover { background: #f0f2f5; }
-        .mconv-item.active { background: #e7f3ff; }
-        .mconv-av {
-            width: 44px; height: 44px; border-radius: 50%;
-            background: #dde3ec; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; color: #555; font-size: 18px; overflow: hidden;
-        }
-        .mconv-av img { width: 100%; height: 100%; object-fit: cover; }
-        .mconv-info { flex: 1; overflow: hidden; }
-        .mconv-name { font-weight: 600; font-size: 14px; }
-        .mconv-last { font-size: 12px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .mconv-unread { background: #0084ff; color: #fff; border-radius: 10px; padding: 2px 7px; font-size: 11px; font-weight: 700; flex-shrink: 0; }
-        #mess-conv-empty { padding: 30px; text-align: center; color: #aaa; font-size: 13px; }
-
-        /* ── Main chat area ── */
-        #mess-main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #fff;
-        }
-
-        /* ── Chat header ── */
-        #mess-chat-hdr {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 16px;
-            border-bottom: 1px solid #e4e6eb;
-            background: #fff;
-        }
-        #mess-chat-hdr .hdr-av {
-            width: 38px; height: 38px; border-radius: 50%;
-            background: #dde3ec; display: flex; align-items: center;
-            justify-content: center; font-weight: 700; overflow: hidden;
-        }
-        #mess-chat-hdr .hdr-av img { width: 100%; height: 100%; object-fit: cover; }
-        #mess-chat-hdr .hdr-name { font-weight: 700; font-size: 15px; flex: 1; }
-        #mess-close-btn {
-            background: none; border: none; font-size: 22px;
-            color: #888; cursor: pointer; line-height: 1; padding: 0 4px;
-        }
-        #mess-close-btn:hover { color: #333; }
-
-        /* ── Empty state ── */
-        #mess-empty-state {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #aaa;
-        }
-        #mess-empty-state .big-icon { font-size: 56px; margin-bottom: 12px; }
-        #mess-empty-state p { font-size: 15px; }
-
-        /* ── Msg list ── */
-        #mess-msg-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 14px 14px 6px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            background: #f0f4f8;
-        }
-
-        /* ── Bubble ── */
-        .mmsg-row { display: flex; flex-direction: column; }
-        .mmsg-row.me  { align-items: flex-end; }
-        .mmsg-row.them { align-items: flex-start; }
-        .mbubble {
-            max-width: 68%;
-            padding: 9px 14px;
-            border-radius: 20px;
-            font-size: 14px;
-            line-height: 1.45;
-            word-break: break-word;
-            position: relative;
-            cursor: pointer;
-        }
-        .mbubble.me   { background: #0084ff; color: #fff; border-bottom-right-radius: 5px; }
-        .mbubble.them { background: #fff; color: #222; border-bottom-left-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,.09); }
-        .mbubble img.mchat-img { max-width: 200px; max-height: 200px; border-radius: 12px; display: block; cursor: zoom-in; }
-        .mbubble .mbmeta { font-size: 10px; margin-top: 3px; opacity: .6; display: block; }
-        .mbubble .mbreact { position: absolute; bottom: -10px; right: 8px; font-size: 14px; background: #fff; border-radius: 10px; padding: 0 3px; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
-        .mbubble.me .mbreact { right: auto; left: 8px; }
-
-        /* ── Emoji picker ── */
-        .memoji-picker {
-            display: none;
-            position: fixed;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,.2);
-            padding: 8px 10px;
-            gap: 4px;
-            flex-wrap: wrap;
-            width: 172px;
-            z-index: 10010;
-        }
-        .memoji-picker.show { display: flex; }
-        .memoji-picker span { font-size: 22px; cursor: pointer; padding: 2px; transition: transform .1s; }
-        .memoji-picker span:hover { transform: scale(1.3); }
-
-        /* ── Input ── */
-        #mess-input-area {
-            display: flex;
-            align-items: center;
-            padding: 10px 12px;
-            border-top: 1px solid #eee;
-            gap: 8px;
-            background: #fff;
-        }
-        #mess-text-input {
-            flex: 1;
-            border: 1px solid #ddd;
-            border-radius: 22px;
-            padding: 9px 16px;
-            font-size: 14px;
-            outline: none;
-            background: #f0f2f5;
-            transition: border-color .15s;
-        }
-        #mess-text-input:focus { border-color: #0084ff; background: #fff; }
-        .mess-img-label { cursor: pointer; font-size: 22px; color: #0084ff; padding: 4px; }
-        #mess-img-file { display: none; }
-        #mess-send-btn {
-            background: #0084ff;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 38px; height: 38px;
-            font-size: 18px;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-            transition: background .15s;
-        }
-        #mess-send-btn:hover { background: #006edb; }
-
-        /* ── Lightbox ── */
-        #mess-lightbox {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.85);
-            z-index: 99999;
-            align-items: center;
-            justify-content: center;
-        }
-        #mess-lightbox.show { display: flex; }
-        #mess-lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 10px; }
-        #mess-lightbox .lb-x { position: absolute; top: 18px; right: 24px; color: #fff; font-size: 34px; cursor: pointer; }
-
-        /* ── Responsive ── */
-        @media(max-width:640px) {
-            #mess-sidebar { width: 200px; min-width: 200px; }
-        }
-        @media(max-width:480px) {
-            #mess-sidebar { display: none; }
-            #mess-box { width: 100vw; height: 100vh; border-radius: 0; }
-        }
+        
     </style>
 </head>
 <body>
@@ -269,10 +23,6 @@
 
     <div class="profile-header" style="background: linear-gradient(225deg, #feffe9, rgb(238, 246, 255));">
         <div class="container">
-            <div class="cover-photo">
-                <img src="https://via.placeholder.com/1200x350/cccccc/ffffff?text=Cover+Photo" alt="Cover">
-            </div>
-            
             <div class="avatar-container">
                 <img class="img-fluid"
                      src="<?= !empty($user['AvatarFP']) ? $user['AvatarFP'] : 'https://via.placeholder.com/168/007bff/ffffff?text='.strtoupper(substr($user['Username'], 0, 1)) ?>"
@@ -291,10 +41,13 @@
                        class="btn btn-light font-weight-bold mt-2">
                         <i class="fas fa-pen"></i> Chỉnh sửa trang cá nhân
                     </a>
+                    
+                    <?php if (!$sameUser): ?>
                     <!-- Chủ trang cũng có thể mở Messenger của mình -->
                     <button class="chat-btn mt-2 ml-2" onclick="openMessenger()">
                         💬 Tin nhắn
                     </button>
+                    <?php endif; ?>
 
                 <?php elseif(isset($_SESSION['user_id'])): ?>
                     <?php $isFollowing = $isFollowing ?? false; ?>
@@ -303,63 +56,72 @@
                             data-user-id="<?= $user['UserID'] ?>">
                         <?= $isFollowing ? 'Đang theo dõi' : 'Theo dõi' ?>
                     </button>
+
                     <!-- Mở Messenger và focus thẳng vào cuộc trò chuyện với user này -->
+
+                    <?php if (!$sameUser): ?>
                     <button class="chat-btn mt-2 ml-2"
                             onclick="openMessengerWith(<?= (int)$user['UserID'] ?>, '<?= htmlspecialchars($user['Username'], ENT_QUOTES) ?>')">
                         💬 Nhắn tin
                     </button>
+                    
+                    <?php endif; ?>
+
                 <?php endif; ?>
             </div>
             
             <hr class="mt-4 mb-0">
             <ul class="nav nav-pills justify-content-center mt-2 font-weight-bold text-muted">
-                <li class="nav-item"><a class="nav-link active" href="#">Bài viết</a></li>
-                <li class="nav-item"><a class="nav-link text-dark" href="#">Giới thiệu</a></li>
-                <li class="nav-item"><a class="nav-link text-dark" href="#">Bạn bè</a></li>
-                <li class="nav-item"><a class="nav-link text-dark" href="#">Ảnh</a></li>
+                <li class="nav-item"><a class="nav-link active profile-tab-link" id="tab-posts" data-target="posts-section">Bài viết</a></li>
+                <li class="nav-item"><a class="nav-link text-dark profile-tab-link" id="tab-followers" data-target="followers-section">Người theo dõi</a></li>
             </ul>
         </div>
     </div>
 
-    <div class="container content-section" style="background-color:#e6efff; padding:20px; border-radius:10px;">
-        <div class="row">
-            <div class="col-md-5">
-                <div class="card card-custom p-3">
-                    <h5 class="card-title">Giới thiệu</h5>
-                    <ul class="list-unstyled mb-0">
-                        <li class="mb-2"><strong>Điện thoại:</strong> <?= !empty($user['Phone']) ? htmlspecialchars($user['Phone']) : 'Đang cập nhật' ?></li>
-                        <li class="mb-2"><strong>Trạng thái:</strong> <?= ucfirst($user['AccountStatus']) ?></li>
-                    </ul>
-                </div>
-                
-                <div class="card card-custom p-3">
-                    <h5 class="card-title">Ảnh</h5>
-                    <div class="row no-gutters">
-                        <div class="col-4 p-1"><div style="height:100px;background:#ddd;border-radius:8px;"></div></div>
-                        <div class="col-4 p-1"><div style="height:100px;background:#ddd;border-radius:8px;"></div></div>
-                        <div class="col-4 p-1"><div style="height:100px;background:#ddd;border-radius:8px;"></div></div>
-                    </div>
-                </div>
-            </div>
+    <div class="container content-section" style="background-color: #e6efff; /* test màu */
+    padding: 20px;
+    border-radius: 10px;">
+        <div class="card card-custom p-3 mb-3">
+            <h5 class="card-title">Giới thiệu tổng</h5>
+            <ul class="list-unstyled mb-0">
+                <li class="mb-2"><strong>Điện thoại:</strong> <?= !empty($user['Phone']) ? htmlspecialchars($user['Phone']) : 'Đang cập nhật' ?></li>
+                <li class="mb-2"><strong>Tiểu sử:</strong> <?= !empty($user['Bio']) ? htmlspecialchars($user['Bio']) : 'Chưa có tiểu sử.' ?></li>
+                <li class="mb-0"><strong>Trạng thái:</strong> <?= ucfirst($user['AccountStatus']) ?></li>
+            </ul>
+        </div>
 
-            <div class="col-md-7">
+        <div id="posts-section">
+            <div class="col-md-12 px-0">
                 <?php if(isset($_SESSION['user_id']) && $_SESSION['user_id'] == $user['UserID']): ?>
                 <div class="card card-custom p-3 mb-3">
                     <div class="d-flex align-items-center">
-                        <img src="<?= !empty($user['AvatarFP']) ? $user['AvatarFP'] : 'https://via.placeholder.com/40' ?>"
-                             class="rounded-circle mr-2" width="40" height="40">
-                        <input type="text" class="form-control rounded-pill bg-light"
-                               placeholder="<?= htmlspecialchars($user['Username']) ?> ơi, bạn đang nghĩ gì thế?"
-                               style="border:none;cursor:pointer;">
+                        <img src="<?= !empty($user['AvatarFP']) ? $user['AvatarFP'] : 'https://via.placeholder.com/40' ?>" class="rounded-circle mr-2" width="40" height="40">
+                        <a href="index.php?controller=post&action=showCreateForm" class="form-control rounded-pill bg-light text-muted text-left" style="border:none; text-decoration:none; line-height: 1.6;">
+                            <?= htmlspecialchars($user['Username']) ?> oi, ban dang nghi gi the?
+                        </a>
+                        <a href="index.php?controller=post&action=showCreateForm" class="btn btn-primary ml-2">Create Post</a>
                     </div>
                 </div>
                 <?php endif; ?>
 
-                <div class="card card-custom p-3 text-center">
-                    <h5 class="text-muted mt-3 mb-3">Chưa có bài viết nào để hiển thị.</h5>
-                </div>
+                <?php if (!empty($posts)): ?>
+                    <?php include_once __DIR__ . "/../postview.php"; ?>
+                <?php else: ?>
+                    <div class="card card-custom p-3 text-center">
+                        <h5 class="text-muted mt-3 mb-3">Chua co bai viet nao de hien thi.</h5>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
+
+        <div id="followers-section" style="display:none;">
+            <div class="card card-custom p-3 followers-list" id="followersListWrap">
+                <h5 class="card-title mb-2">Danh sách người theo dõi</h5>
+                <div id="followersList" class="text-muted">Bam vao tab Nguoi theo doi de tai du lieu...</div>
+            </div>
+        </div>
+
+        <?php include_once "MVC/View/chat_widget.php"; ?>
     </div>
 
     <!-- ═══════════════════════════════════════════════
@@ -746,6 +508,66 @@
                     button.prop("disabled", false);
                 }
             });
+        });
+    });
+
+    $(document).ready(function(){
+        function switchTab(target){
+            $(".profile-tab-link").removeClass("active text-dark");
+            $("#tab-" + target).addClass("active");
+
+            if(target === "posts"){
+                $("#posts-section").show();
+                $("#followers-section").hide();
+            } else {
+                $("#posts-section").hide();
+                $("#followers-section").show();
+            }
+        }
+
+        function loadFollowers(){
+            const userId = <?= (int)$user['UserID'] ?>;
+            const list = $("#followersList");
+            list.text("Dang tai...");
+
+            $.get("index.php?controller=follow&action=getFollowersJson&user_id=" + userId, function(response){
+                if(!response || response.status !== "success"){
+                    list.text("Khong the tai danh sach nguoi theo doi.");
+                    return;
+                }
+
+                if(!response.followers || response.followers.length === 0){
+                    list.text("Chua co nguoi theo doi nao.");
+                    return;
+                }
+
+                let html = "";
+                response.followers.forEach(function(follower){
+                    const avatar = follower.AvatarFP && follower.AvatarFP !== ""
+                        ? follower.AvatarFP
+                        : "https://via.placeholder.com/40";
+
+                    html += `
+                        <a class="follower-item" href="index.php?controller=user&action=profile&id=${follower.UserID}">
+                            <img class="follower-avatar" src="${avatar}" alt="${follower.Username}">
+                            <span>${follower.Username}</span>
+                        </a>
+                    `;
+                });
+
+                list.html(html);
+            }, "json").fail(function(){
+                list.text("Loi ket noi khi tai nguoi theo doi.");
+            });
+        }
+
+        $("#tab-posts").on("click", function(){
+            switchTab("posts");
+        });
+
+        $("#tab-followers").on("click", function(){
+            switchTab("followers");
+            loadFollowers();
         });
     });
     </script>

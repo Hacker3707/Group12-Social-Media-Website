@@ -5,9 +5,14 @@ include_once __DIR__ . "/../Model/PostModel.php";
 
 class CommentController {
     private $commentModel;
+    private $notiModel;
+    private $postModel;
+    
    
     public function __construct() {
         $this->commentModel = new CommentModel();
+        $this -> notiModel = new NotificationModel();
+        $this -> postModel = new PostModel();
     }
 
    public function addComment() {
@@ -60,10 +65,8 @@ class CommentController {
     }
 
     // ================= 🔔 NOTIFICATION =================
-    $notiModel = new NotificationModel();
-    $postModel = new PostModel();
 
-    $post = $postModel->getById($postId);
+    $post = $this -> postModel->getById($postId);
 
     if ($post) {
 
@@ -74,7 +77,7 @@ class CommentController {
 
             if ($postOwnerId != $userId) {
 
-                $notiModel->insert(
+                $this -> notiModel->insert(
                     $postOwnerId,
                     $userId,
                     "<b>$username</b> đã bình luận bài viết của bạn",
@@ -91,7 +94,7 @@ class CommentController {
 
                 // Không gửi cho chính mình và không gửi trùng
                 if ($commentOwnerId !== (int)$userId && !isset($notifiedUsers[$commentOwnerId])) {
-                    $notiModel->insert(
+                    $this -> notiModel->insert(
                         $commentOwnerId,
                         $userId,
                         "<b>$username</b> đã trả lời bình luận của bạn",
@@ -103,7 +106,7 @@ class CommentController {
 
             // Chủ bài viết cũng nhận thông báo khi có reply
             if ((int)$postOwnerId !== (int)$userId && !isset($notifiedUsers[(int)$postOwnerId])) {
-                $notiModel->insert(
+                $this -> notiModel->insert(
                     $postOwnerId,
                     $userId,
                     "<b>$username</b> đã trả lời trong bài viết của bạn",
@@ -135,7 +138,15 @@ class CommentController {
 
         header('Content-Type: application/json');
 
-        $commentId = $_POST['commentId'] ?? null;
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Unauthorized"
+            ]);
+            exit;
+        }
+
+        $commentId = (int)($_POST['commentId'] ?? 0);
 
         if(!$commentId){
             echo json_encode([
@@ -145,12 +156,50 @@ class CommentController {
             exit;
         }
 
-        $result = $this->commentModel->deleteComment($commentId);
+        $comment = $this->commentModel->getById($commentId);
+        if (!$comment) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Comment not found"
+            ]);
+            exit;
+        }
+
+        $currentUserId = (int)$_SESSION['user_id'];
+        $isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isCommentOwner = ((int)$comment['user_id'] === $currentUserId);
+
+        $isPostOwner = false;
+        $postId = (int)($comment['post_id'] ?? 0);
+        if ($postId > 0) {
+            $postModel = new PostModel();
+            $post = $postModel->getById($postId);
+            if ($post) {
+                $isPostOwner = ((int)$post->getUserId() === $currentUserId);
+            }
+        }
+
+        if (!$isAdmin && !$isCommentOwner && !$isPostOwner) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Ban khong co quyen xoa comment nay"
+            ]);
+            exit;
+        }
+
+        $hasReplies = $this->commentModel->hasReplies($commentId);
+
+        if ($hasReplies) {
+            $result = $this->commentModel->softDeleteComment($commentId);
+        } else {
+            $result = $this->commentModel->deleteComment($commentId);
+        }
 
         if($result){
             echo json_encode([
                 "status" => "success",
-                "commentId" => $commentId
+                "commentId" => $commentId,
+                "deleteMode" => $hasReplies ? "soft" : "hard"
             ]);
         } else {
             echo json_encode([

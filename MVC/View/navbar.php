@@ -9,12 +9,6 @@ if (isset($_SESSION['flash_message'])): ?>
 <?php endif; 
 // KẾT THÚC: KHU VỰC HIỂN THỊ THÔNG BÁO
 
-// 1. Lấy thông tin controller và action hiện tại từ URL
-$currentController = $_GET['controller'] ?? '';
-$currentAction     = $_GET['action'] ?? '';
-
-// 2. NẾU KHÔNG PHẢI là trang Đăng ký hoặc Đăng nhập thì mới in thẻ <nav> ra màn hình
-if (!($currentController === 'user' && ($currentAction === 'register' || $currentAction === 'login'))): 
 ?>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
@@ -32,39 +26,26 @@ if (!($currentController === 'user' && ($currentAction === 'register' || $curren
       <li class="nav-item active">
         <a class="nav-link" href="index.php?controller=post&action=showHome">Home <span class="sr-only">(current)</span></a>
       </li>
-
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
-          Dropdown
-        </a>
-        <div class="dropdown-menu">
-          <a class="dropdown-item" href="#">Action</a>
-          <a class="dropdown-item" href="#">Another action</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="#">Something else here</a>
-        </div>
+      <?php if (!empty($navbarCategories)): ?>
+      <li class="nav-item">
+        <a class="nav-link" id="toggleCategories">Categories</a>
       </li>
-     <li class="nav-item dropdown">
-  <button id="notiBtn" class="btn btn-primary font-weight-bold position-relative">
-    🔔 Notifications
-    <span id="notiCount" class="badge badge-light ml-1">0</span>
-  </button>
-
- <div id="notiDropdown" class="dropdown-menu dropdown-menu-right p-2"
-     style="width:320px; max-height:400px; overflow:auto;">
-       
-    <div id="notiList" class="text-center text-muted">
-      Đang tải...
-    </div>
-  </div>
-</li>
-      <li class="nav-item ml-2">
-        <a class="nav-link p-0" href="index.php?controller=group&action=create">
-          <button type="button" class="btn btn-outline-secondary rounded-pill font-italic" title="Tạo nhóm mới">
-            Create Group
+      <?php endif; ?>
+    <li class="nav-item dropdown">
+          <button id="notiBtn" class="btn btn-primary font-weight-bold position-relative ml-2" style="background-color: dodgerblue">
+            🔔 Notifications
+            <span id="notiCount" class="badge badge-light ml-1">0</span>
           </button>
-        </a>
-      </li>
+
+        <div id="notiDropdown" class="dropdown-menu dropdown-menu-right p-2"
+        style="width:320px; max-height:400px; overflow:auto;">
+          
+        <div id="notiList" class="text-center text-muted">
+          Đang tải...
+        </div>
+      </div>
+    </li>
+      
     </ul>
     
     <form class="form-inline my-2 my-lg-0" action="index.php" method="GET">
@@ -87,39 +68,51 @@ if (!($currentController === 'user' && ($currentAction === 'register' || $curren
                     Chào, <strong><?= htmlspecialchars($_SESSION['username']) ?></strong>
                 </button>
                 <div class="dropdown-menu dropdown-menu-right">
-                    <a class="dropdown-item" href="/index.php?controller=user&action=profile&id=<?= $_SESSION['user_id'] ?>">Hồ sơ cá nhân</a>
+                    <a class="dropdown-item" href="./index.php?controller=user&action=profile&id=<?= $_SESSION['user_id'] ?>">Hồ sơ cá nhân</a>
                     
                     <?php if($_SESSION['role'] === 'admin'): ?>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item text-info" href="/index.php?controller=user&action=list">Quản lý hệ thống</a>
+                        <a class="dropdown-item text-info" href="./index.php?controller=user&action=list">Quản lý hệ thống</a>
                     <?php endif; ?>
                     
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item text-danger" href="/index.php?controller=user&action=logout">Đăng xuất</a>
+                    <a class="dropdown-item text-danger" href="./index.php?controller=user&action=logout">Đăng xuất</a>
                 </div>
             </div>
         <?php else: ?>
-            <a href="/index.php?controller=user&action=login" class="btn btn-outline-primary mr-2">Login</a>
-            <a href="/index.php?controller=user&action=register" class="btn btn-primary">Register</a>
+            <a href="./index.php?controller=user&action=login" class="btn btn-outline-primary mr-2">Login</a>
+            <a href="./index.php?controller=user&action=register" class="btn btn-primary">Register</a>
         <?php endif; ?>
     </div>
 
   </div>
 </nav>
 
-<?php 
-// 3. Đóng khối IF lại
-endif; 
-?>
+<div id="categoriesBar" class="bg-white border-bottom" style="display:none;">
+  <div class="container-fluid py-2" style="overflow-x:auto; white-space:nowrap;">
+    <?php if (!empty($navbarCategories)): ?>
+      <?php foreach ($navbarCategories as $cat): ?>
+        <a class="btn btn-sm btn-outline-primary ml-3 mr-1 mb-1" style="padding: 0 10px;"
+           href="index.php?controller=search&action=find&searchResults=<?= urlencode($cat->getCategoryName()) ?>"
+           title="Xem bai viet va nhom theo category <?= htmlspecialchars($cat->getCategoryName()) ?>">
+          <?= htmlspecialchars($cat->getCategoryName()) ?>
+        </a>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <span class="text-muted small">Oops! There's no category here~.</span>
+    <?php endif; ?>
+  </div>
+</div>
+
 <script>
 $(document).ready(function(){
 
     function loadNotifications(){
-        $("#notiList").load("/index.php?controller=notification&action=get");
+        $("#notiList").load("index.php?controller=notification&action=get");
     }
 
     function loadCount(){
-        $.get("/index.php?controller=notification&action=count", function(res){
+        $.get("index.php?controller=notification&action=count", function(res){
             $("#notiCount").text(res.count);
         });
     }
@@ -143,12 +136,18 @@ $(document).ready(function(){
 $(document).click(function(){
     $("#notiDropdown").removeClass("show");
 });
+
+  $("#toggleCategories").click(function(e){
+    e.preventDefault();
+    $("#categoriesBar").stop(true, true).slideToggle(180);
+  });
+
     // mark read
     $(document).on("click", ".noti-item", function(){
 
         let id = $(this).data("id");
 
-        $.post("/index.php?controller=notification&action=markRead", {
+        $.post("index.php?controller=notification&action=markRead", {
             notification_id: id
         });
 

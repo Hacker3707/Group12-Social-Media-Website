@@ -108,10 +108,15 @@ class PostController extends AppController
         $posts  = $this->postModel->getAll() ?? [];
         $userid = $_SESSION['user_id'] ?? null;
 
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
+
         $reactions_forPost = [];
         $isSameUser_reactPost = [];
         $reactions_forComment = [];
         $isSameUser_reactCmt = [];
+
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
 
         // Lay thong tin user
         if ($userid) {
@@ -127,9 +132,11 @@ class PostController extends AppController
         // =========================
         $comments = [];
         $commentTree = [];
+        $canDel_EditPost = [];
 
         foreach ($posts as $post) {
             $postId = $post->getPostId();
+            $canDel_EditPost[$postId] = ($userid && (int)$post->getUserId() === (int)$userid) || $isSystemAdmin;
 
             $reactions_forPost[$postId] = $this->reactionModel->selectReactionsForPost($postId);
             $isSameUser_reactPost[$postId] = false;
@@ -205,21 +212,15 @@ public function PostAction()
             $this->showCreateForm();
             break;
 
+        case "showEditForm":
+            $this->showEditForm();
+            break;
+
         default:
             $this->showHome();
             break;
     }
-
-    public function loadMore() {
-        $offset = $_GET['offset'] ?? 0;
-        $limit  = $_GET['limit'] ?? 5;
-
-        $posts = $this->postModel->getPostsLimit($offset, $limit);
-
-        foreach ($posts as $post) {
-            include "MVC/View/post_item.php";
-        }
-    }
+}
 
     public function getAllPosts() {
         $posts = $this->postModel->getAll() ?? [];
@@ -243,6 +244,8 @@ public function PostAction()
     }
 
     public function getPostsByUserId($userId) {
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
         if (isset($_GET['user_id'])) {
             $userId = $_GET['user_id'];
             $posts  = $this->postModel->fetchByField('UserID', $userId);
@@ -252,6 +255,8 @@ public function PostAction()
     }
 
     public function getPostsByGroupId($groupId) {
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
         if (isset($_GET['group_id'])) {
             $groupId = $_GET['group_id'];
             $posts   = $this->postModel->fetchByField('GroupID', $groupId);
@@ -261,6 +266,11 @@ public function PostAction()
     }
 
     public function getPostsByCategoryId() {
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
+
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
         if (isset($_GET['category_id'])) {
             $categoryId = $_GET['category_id'];
             $posts      = $this->postModel->fetchByField('CategoryID', $categoryId);
@@ -271,9 +281,29 @@ public function PostAction()
 
     public function deletePost()
     {
-        $postId = $_POST['postId'] ?? null;
+        if (!isset($_SESSION['user_id'])) {
+            echo "fail";
+            exit;
+        }
+
+        $postId = (int)($_POST['postId'] ?? 0);
 
         if (!$postId) {
+            echo "fail";
+            exit;
+        }
+
+        $post = $this->postModel->getById($postId);
+        if (!$post) {
+            echo "fail";
+            exit;
+        }
+
+        $currentUserId = (int)$_SESSION['user_id'];
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPostOwner = ((int)$post->getUserId() === $currentUserId);
+
+        if (!$isSystemAdmin && !$isPostOwner) {
             echo "fail";
             exit;
         }
@@ -285,34 +315,128 @@ public function PostAction()
 
     public function showCreateForm()
     {
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
         $categories = $this->categoryModel->getAll();
         $group = null;
         include __DIR__ . "/../View/createpost_view.php";
         die();
     }
 
-    public function updatePost()
+    public function showEditForm()
     {
-        $postId = $_POST['postId'] ?? null;
-        if (!$postId) {
-            echo "fail";
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: index.php?controller=user&action=login");
             exit;
         }
 
+        
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
+
+        $postId = (int)($_GET['id'] ?? 0);
+        if ($postId <= 0) {
+            header("Location: index.php?controller=post&action=showHome");
+            exit;
+        }
+
+        $post = $this->postModel->getById($postId);
+        if (!$post) {
+            header("Location: index.php?controller=post&action=showHome");
+            exit;
+        }
+
+        $currentUserId = (int)$_SESSION['user_id'];
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPostOwner = ((int)$post->getUserId() === $currentUserId);
+
+        if (!$isSystemAdmin && !$isPostOwner) {
+            header("Location: index.php?controller=post&action=showHome");
+            exit;
+        }
+
+        $errorMessage = $_GET['error'] ?? '';
+
+        include __DIR__ . "/../View/editpost_view.php";
+        die();
+    }
+
+    public function updatePost()
+    {
+        $postId = (int)($_POST['postId'] ?? 0);
+        $isFormSubmit = isset($_POST['edit_form_submit']);
+
+        $fail = function($message = 'Update failed') use ($isFormSubmit, $postId) {
+            if ($isFormSubmit) {
+                $targetPostId = max(0, (int)$postId);
+                header("Location: index.php?controller=post&action=showEditForm&id=$targetPostId&error=" . urlencode($message));
+                exit;
+            }
+
+            echo "fail";
+            exit;
+        };
+
+        if (!isset($_SESSION['user_id'])) {
+            $fail('Please login first');
+        }
+
+        if (!$postId) {
+            $fail('Invalid post ID');
+        }
+
+        $existingPost = $this->postModel->getById($postId);
+        if (!$existingPost) {
+            $fail('Post not found');
+        }
+
+        $currentUserId = (int)$_SESSION['user_id'];
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPostOwner = ((int)$existingPost->getUserId() === $currentUserId);
+
+        if (!$isSystemAdmin && !$isPostOwner) {
+            $fail('You do not have permission to edit this post');
+        }
+
+        $title = trim($_POST['title'] ?? $existingPost->getTitle());
+        $content = trim($_POST['content'] ?? $existingPost->getContent());
+
+        if ($title === '' || $content === '') {
+            $fail('Title and content are required');
+        }
+
+        $price = array_key_exists('price', $_POST) ? $_POST['price'] : $existingPost->getPrice();
+        $condition = $_POST['condition'] ?? $existingPost->getCondition();
+        $location = $_POST['location'] ?? $existingPost->getLocation();
+        $brand = array_key_exists('brand', $_POST) ? $_POST['brand'] : $existingPost->getBrand();
+        $status = $_POST['status'] ?? $existingPost->getStatus();
+
         $post = new Post(
             $postId,
-            null,
-            null,
-            null,
-            $_POST['title'] ?? null,
-            $_POST['content'] ?? null,
-            $_POST['price'] ?? null,$_POST['condition'] ?? 'good',
-            $_POST['location'] ?? 'other',
-            $_POST['brand'] ?? null,
-            $_POST['status'] ?? 'selling'
+            $existingPost->getUserID(),
+            $existingPost->getGroupID(),
+            $existingPost->getCategoryID(),
+            $title,
+            $content,
+            $price,
+            $condition,
+            $location,
+            $brand,
+            $status
         );
 
         $result = $this->postModel->update($post);
+
+        if ($isFormSubmit) {
+            if ($result) {
+                header("Location: index.php?controller=post&action=showHome");
+                exit;
+            }
+
+            $fail('Cannot update post');
+        }
+
         echo $result ? "success" : "fail";
         exit;
     }
@@ -354,6 +478,9 @@ public function PostAction()
             exit();
         }
 
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = ($_GET['controller'] === 'post' && $_GET['action'] === 'list');
+
         $posts = $this->postModel->getAll();
         include_once __DIR__ . "/../View/Admin/Post/list.php";
     }
@@ -380,6 +507,9 @@ public function PostAction()
             header("Location: index.php");
             exit();
         }
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = ($_GET['control'] === 'user' && $_GET['action'] === 'list');
 
         $postId = (int)($_GET['id'] ?? 0);
         $post = $this->postModel->getById($postId);

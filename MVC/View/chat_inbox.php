@@ -6,53 +6,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="MVC/View/css/home.css">
+    <link rel="stylesheet" type="text/css" href="MVC/View/css/chat.css">
 
     <style>
         body { background:#f0f2f5; }
-        .chat-page-card { border:none; border-radius:16px; overflow:hidden; box-shadow:0 8px 28px rgba(0,0,0,.08); min-height:78vh; }
-        .friend-pane { border-right:1px solid #e9ecef; background:#fff; min-height:78vh; }
-        .friend-pane-header { padding:16px; border-bottom:1px solid #eee; }
-        .friend-search { border-radius:22px; background:#f0f2f5; border:none; padding:10px 14px; width:100%; outline:none; }
-        .friend-list { max-height:calc(78vh - 78px); overflow-y:auto; }
-        .friend-item { display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; transition:.15s; border-bottom:1px solid #f5f5f5; }
-        .friend-item:hover, .friend-item.active { background:#e7f3ff; }
-        .friend-avatar { width:46px; height:46px; border-radius:50%; overflow:hidden; background:#dde3ec; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-weight:700; color:#555; }
-        .friend-avatar img { width:100%; height:100%; object-fit:cover; }
-        .friend-name { font-weight:700; color:#222; }
-        .friend-bio { font-size:12px; color:#888; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
-        .chat-pane { display:flex; flex-direction:column; min-height:78vh; background:#fff; }
-        .chat-header { display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid #e9ecef; background:#fff; }
-        .chat-header-avatar { width:40px; height:40px; border-radius:50%; overflow:hidden; background:#dde3ec; display:flex; align-items:center; justify-content:center; font-weight:700; }
-        .chat-header-avatar img { width:100%; height:100%; object-fit:cover; }
-        .chat-header-name { font-weight:700; font-size:15px; flex:1; }
-        .chat-empty { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#9aa0a6; }
-        .chat-empty i { font-size:58px; margin-bottom:12px; }
-        .msg-list { flex:1; overflow-y:auto; padding:16px; background:#f0f4f8; display:flex; flex-direction:column; gap:6px; min-height:380px; }
-        .msg-row { display:flex; flex-direction:column; }
-        .msg-row.me { align-items:flex-end; }
-        .msg-row.them { align-items:flex-start; }
-        .bubble { max-width:72%; padding:10px 14px; border-radius:20px; position:relative; font-size:14px; line-height:1.45; word-break:break-word; }
-        .bubble.me { background:#0084ff; color:#fff; border-bottom-right-radius:5px; }
-        .bubble.them { background:#fff; color:#222; border-bottom-left-radius:5px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
-        .bubble img.chat-img { max-width:220px; max-height:220px; border-radius:12px; display:block; cursor:zoom-in; margin-top:6px; }
-        .bubble .meta { display:block; margin-top:4px; font-size:10px; opacity:.65; }
-        .bubble .react { position:absolute; bottom:-10px; right:8px; font-size:14px; background:#fff; border-radius:10px; padding:0 3px; box-shadow:0 1px 4px rgba(0,0,0,.15); }
-        .bubble.me .react { left:8px; right:auto; }
-        .sticker-bar { display:flex; gap:8px; flex-wrap:wrap; padding:10px 14px 0; background:#fff; border-top:1px solid #f2f2f2; }
-        .sticker-btn { border:none; background:#f0f2f5; border-radius:14px; padding:6px 10px; cursor:pointer; font-size:20px; }
-        .chat-input { display:flex; align-items:center; gap:8px; padding:12px 14px; border-top:1px solid #eee; background:#fff; }
-        .chat-input input[type="text"] { flex:1; border:1px solid #ddd; border-radius:22px; padding:10px 14px; outline:none; font-size:14px; }
-        .chat-send { width:40px; height:40px; border:none; border-radius:50%; background:#0084ff; color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; }
-        .chat-file-label { font-size:20px; color:#0084ff; cursor:pointer; margin:0; }
-        .chat-file-label input { display:none; }
-        .emoji-picker { display:none; position:fixed; background:#fff; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,.2); padding:8px 10px; gap:4px; flex-wrap:wrap; width:172px; z-index:10010; }
-        .emoji-picker.show { display:flex; }
-        .emoji-picker span { font-size:22px; cursor:pointer; padding:2px; }
-        .lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:99999; align-items:center; justify-content:center; }
-        .lightbox.show { display:flex; }
-        .lightbox img { max-width:90vw; max-height:90vh; border-radius:12px; }
-        .lightbox .close-x { position:absolute; top:18px; right:24px; color:#fff; font-size:34px; cursor:pointer; }
     </style>
 </head>
 <body>

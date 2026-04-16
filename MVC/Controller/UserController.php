@@ -10,10 +10,13 @@ include_once __DIR__ . "/../Model/CategoryModel.php";
 include_once __DIR__ . "/../Model/CommentModel.php";
 include_once __DIR__ . "/../Model/GroupModel.php";
 include_once __DIR__ . "/../Model/MediaModel.php";
+include_once "MVC/Model/FollowModel.php";
 include_once "MVC/Service/Supabase/SupabaseService.php";
 include_once "MVC/Service/Cloudinary/CloudinaryService.php";
 
 class UserController {
+    private const LOGIN_CAPTCHA_TTL = 30;
+
     private $postModel;
     private $reactionModel;
     private $categoryModel;
@@ -21,6 +24,8 @@ class UserController {
     private $userModel;
     private $groupModel;
     private $mediaModel;
+
+    private $followModel;
 
     public function __construct() {
        $this->postModel     = new PostModel();
@@ -30,6 +35,7 @@ class UserController {
         $this->userModel = new UserModel();
         $this->groupModel = new GroupModel();
         $this->mediaModel    = new MediaModel();
+        $this -> followModel = new FollowModel();
     }
 
     public function handleRequest() {
@@ -56,11 +62,26 @@ class UserController {
         exit();
     }
 
+    private function generateLoginCaptcha() {
+        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        $captcha = '';
+
+        for ($i = 0; $i < 5; $i++) {
+            $captcha .= $alphabet[random_int(0, strlen($alphabet) - 1)];
+        }
+
+        $_SESSION['login_captcha_question'] = implode(' ', str_split($captcha));
+        $_SESSION['login_captcha_answer'] = $captcha;
+        $_SESSION['login_captcha_generated_at'] = time();
+        $_SESSION['login_captcha_ttl'] = self::LOGIN_CAPTCHA_TTL;
+    }
+
     public function register() {
         include_once "MVC/View/User/register.php";
     }
 
     public function login() {
+        $this->generateLoginCaptcha();
         include_once "MVC/View/User/login.php";
     }
 
@@ -72,16 +93,37 @@ class UserController {
     // ================= XỬ LÝ ĐĂNG NHẬP =================
     public function authenticate() {
         if (isset($_POST['username']) && isset($_POST['password'])) {
+            $captchaInput = strtoupper(trim($_POST['captcha_answer'] ?? ''));
+            $expectedCaptcha = strtoupper((string)($_SESSION['login_captcha_answer'] ?? ''));
+            $captchaGeneratedAt = (int)($_SESSION['login_captcha_generated_at'] ?? 0);
+
+            if (
+                $expectedCaptcha === '' ||
+                $captchaGeneratedAt <= 0 ||
+                (time() - $captchaGeneratedAt) > self::LOGIN_CAPTCHA_TTL ||
+                $captchaInput === '' ||
+                $captchaInput !== $expectedCaptcha
+            ) {
+                unset($_SESSION['login_captcha_answer'], $_SESSION['login_captcha_question'], $_SESSION['login_captcha_generated_at'], $_SESSION['login_captcha_ttl']);
+                $this->back('CAPTCHA không đúng hoặc đã hết hạn. Vui lòng thử lại!');
+            }
+
+            unset($_SESSION['login_captcha_answer'], $_SESSION['login_captcha_question'], $_SESSION['login_captcha_generated_at'], $_SESSION['login_captcha_ttl']);
+
             $username = $_POST['username'];
             $password = $_POST['password'];
 
             $user = $this->userModel->checkLogin($username, $password);
 
             if ($user) {
+                session_regenerate_id(true);
+
                 // 1. Lưu thông tin vào Session
                 $_SESSION['user_id'] = $user['UserID'];
                 $_SESSION['username'] = $user['Username'];
                 $_SESSION['role'] = $user['UserRole']; 
+                $_SESSION['avatar'] = $user['AvatarFP'] ?? null;
+                $_SESSION['last_activity'] = time();
 
                 // 2. PHÂN LUỒNG ĐIỀU HƯỚNG (ĐIỂM SỬA CHÍNH Ở ĐÂY)
                 if ($user['UserRole'] === 'admin') {
@@ -124,9 +166,13 @@ class UserController {
                 $newUser = $this->userModel->checkLogin($username, $password);
                 
                 if ($newUser) {
+                    session_regenerate_id(true);
+
                     $_SESSION['user_id'] = $newUser['UserID'];
                     $_SESSION['username'] = $newUser['Username'];
                     $_SESSION['role'] = $newUser['UserRole'];
+                    $_SESSION['avatar'] = $newUser['AvatarFP'] ?? null;
+                    $_SESSION['last_activity'] = time();
                 }
 
                 $this->redirect('index.php', 'Đăng ký thành công! Chào mừng bạn gia nhập Passo.');
@@ -143,6 +189,9 @@ class UserController {
             $this->redirect('index.php', 'Bạn không có quyền truy cập trang quản trị!');
         }
 
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = ($_GET['controller'] === 'user' && $_GET['action'] === 'list');
+
         $keyword = trim($_GET['keyword'] ?? '');
         
         if ($keyword !== '') {
@@ -152,6 +201,85 @@ class UserController {
         }
 
         include_once "MVC/View/User/list.php";
+    }
+
+    public function adminCategories() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->redirect('index.php', 'Bạn không có quyền truy cập trang quản trị!');
+        }
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = true;
+        $categories = $this->categoryModel->getAll();
+        $totalCategories = is_array($categories) ? count($categories) : 0;
+        $totalUsers = $this->userModel->countAll();
+        $totalGroups = $this->groupModel->countAll();
+        $totalPosts = $this->postModel->countAll();
+
+        include_once "MVC/View/Admin/Category/list.php";
+    }
+
+    public function adminStatistics() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->redirect('index.php', 'Bạn không có quyền truy cập trang quản trị!');
+        }
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = true;
+
+        $totalUsers = $this->userModel->countAll();
+        $totalGroups = $this->groupModel->countAll();
+        $totalPosts = $this->postModel->countAll();
+        $totalCategories = $this->categoryModel->getAll();
+        $totalCategories = is_array($totalCategories) ? count($totalCategories) : 0;
+
+        include_once "MVC/View/Admin/Statistics/list.php";
+    }
+
+    public function adminCreateCategory() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->back('Lỗi quyền truy cập!');
+        }
+
+        if (!isset($_POST['categoryName'])) {
+            $this->back('Thiếu tên danh mục!');
+        }
+
+        $categoryName = trim($_POST['categoryName']);
+
+        if ($categoryName === '') {
+            $this->back('Tên danh mục không được để trống!');
+        }
+
+        if ($this->categoryModel->existsByName($categoryName)) {
+            $this->back('Danh mục đã tồn tại!');
+        }
+
+        $this->categoryModel->insert($categoryName);
+        $this->redirect('index.php?controller=user&action=adminCategories', 'Đã thêm danh mục thành công!');
+    }
+
+    public function adminDeleteCategory() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->back('Lỗi quyền truy cập!');
+        }
+
+        if (!isset($_GET['id'])) {
+            $this->back('Không tìm thấy danh mục cần xóa!');
+        }
+
+        $categoryId = (int)$_GET['id'];
+        if ($categoryId <= 0) {
+            $this->back('ID danh mục không hợp lệ!');
+        }
+
+        $postCount = $this->categoryModel->countPostsByCategory($categoryId);
+        if ($postCount > 0) {
+            $this->back('Không thể xóa danh mục vì đang được dùng bởi ' . $postCount . ' bài viết.');
+        }
+
+        $this->categoryModel->delete($categoryId);
+        $this->redirect('index.php?controller=user&action=adminCategories', 'Đã xóa danh mục!');
     }
 
     public function delete() {
@@ -283,8 +411,15 @@ class UserController {
     public function profile() {
         $id = $_GET['id'] ?? ($_SESSION['user_id'] ?? null);
 
+        $sameUser = false;
+        if (isset($_SESSION['user_id'], $_GET['id']) && $_SESSION['user_id'] == $id) {
+            $sameUser = true;
+        }
+
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
         if (!$id) {
-            $this->redirect('/index.php?controller=user&action=login', 'Vui lòng đăng nhập!');
+            $this->redirect('./index.php?controller=user&action=login', 'Vui lòng đăng nhập!');
         }
 
         $user = $this->userModel->getById((int)$id);
@@ -293,28 +428,25 @@ class UserController {
             $this->back('Người dùng không tồn tại hoặc đã bị xóa.');
         }
          // 🔥 THÊM ĐOẠN NÀY
-    include_once "MVC/Model/FollowModel.php";
 
-    $followModel = new FollowModel();
+        $currentUserId = $_SESSION['user_id'] ?? 0;
+        $profileUserId = $user['UserID'];
 
-    $currentUserId = $_SESSION['user_id'] ?? 0;
-    $profileUserId = $user['UserID'];
+        $isFollowing = false;
 
-    $isFollowing = false;
+        if ($currentUserId && $currentUserId != $profileUserId) {
+            $isFollowing = $this -> followModel->exists($currentUserId, $profileUserId);
+        }
 
-    if ($currentUserId && $currentUserId != $profileUserId) {
-        $isFollowing = $followModel->exists($currentUserId, $profileUserId);
-    }
+        // (optional) lấy số follower luôn
+        $followerCount = $this -> followModel->countFollowers($profileUserId);
 
-    // (optional) lấy số follower luôn
-    $followerCount = $followModel->countFollowers($profileUserId);
+            // 🔥 truyền userId vào
+            $data = $this -> getPostforUserId($id);
 
-        // 🔥 truyền userId vào
-        $data = $this -> getPostforUserId($id);
+            extract($data); // tạo biến $posts, $comments,...
 
-        extract($data); // tạo biến $posts, $comments,...
-
-        include_once "MVC/View/User/profile.php";
+            include_once "MVC/View/User/profile.php";
     }
 
     public function getPostforUserId($userId) {
@@ -486,7 +618,7 @@ class UserController {
                 
                 $result = $this->userModel->updatePassword($user['UserID'], $newPassword);
                 if ($result) {
-                    $this->redirect('/index.php?controller=user&action=login', 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.');
+                    $this->redirect('./index.php?controller=user&action=login', 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.');
                 } else {
                     $this->back('Lỗi hệ thống khi cập nhật mật khẩu.');
                 }

@@ -11,6 +11,7 @@ class PostModel extends AppModel {
         $title = mysqli_real_escape_string($this->link,$post->getTitle());
         $content = mysqli_real_escape_string($this->link,$post->getContent());
         $price = $post->getPrice() === null ? "NULL" : intval($post->getPrice());
+        
         $condition = $post->getCondition() 
         ? "'" . mysqli_real_escape_string($this->link, $post->getCondition()) . "'" 
         : "NULL";
@@ -35,10 +36,11 @@ class PostModel extends AppModel {
  
     public function getAll() {
         // Đã thêm: u.AvatarFP
-        $sql = "SELECT p.*, u.Username, u.AvatarFP, c.CategoryName
+        $sql = "SELECT p.*, u.Username, u.AvatarFP, c.CategoryName, g.GroupName
                 FROM post p
                 JOIN users u ON p.UserID = u.UserID
                 LEFT JOIN category c ON p.CategoryID = c.CategoryID
+            LEFT JOIN groups g ON g.GroupID = p.GroupID
                 ORDER BY p.CreatedAt DESC";
 
         $result = $this->query($sql);
@@ -54,10 +56,19 @@ class PostModel extends AppModel {
             $post->setCreatedAt($row['CreatedAt']);
             $post->setCategoryName($row['CategoryName'] ?? 'No Category');
             $post->setAvatar($row['AvatarFP']); // Gán Avatar
+            $post->setGroupName($row['GroupName'] ?? 'No Group');
 
             $posts[] = $post;
         }
         return $posts;
+    }
+
+    public function countAll() {
+        $sql = "SELECT COUNT(*) AS total FROM post";
+        $result = $this->query($sql);
+        $row = mysqli_fetch_assoc($result);
+
+        return (int)($row['total'] ?? 0);
     }
 
     public function fetchByField($field, $value) {
@@ -85,7 +96,7 @@ class PostModel extends AppModel {
                 $row['Location'], $row['Brand'], $row['PostStatus']
             );
             $post->setUsername($row['Username']);
-            $post->setCreatedAt($row['CreatedAt']);
+            $post->setCreatedAt($row['CreatedAt'] );
             $post->setCategoryName($row['CategoryName'] ?? 'No Category');
             $post->setAvatar($row['AvatarFP']); // Gán Avatar
             $post->setGroupName($row['GroupName'] ?? 'No Group');
@@ -145,10 +156,11 @@ class PostModel extends AppModel {
     public function searchPosts($keyword) {
         $keyword = mysqli_real_escape_string($this->link, $keyword);
         // Đã thêm: u.AvatarFP
-        $sql = "SELECT p.*, u.Username, u.AvatarFP, c.CategoryName
+        $sql = "SELECT p.*, u.Username, u.AvatarFP, c.CategoryName, g.GroupName
                 FROM post p
                 JOIN users u ON p.UserID = u.UserID
                 LEFT JOIN category c ON p.CategoryID = c.CategoryID
+            LEFT JOIN groups g ON g.GroupID = p.GroupID
                 WHERE p.Title LIKE '%$keyword%' OR p.Content LIKE '%$keyword%'
                 ORDER BY p.CreatedAt DESC";
 
@@ -165,6 +177,7 @@ class PostModel extends AppModel {
             $post->setCreatedAt($row['CreatedAt']);
             $post->setCategoryName($row['CategoryName'] ?? 'No Category');
             $post->setAvatar($row['AvatarFP']); // Gán Avatar
+            $post->setGroupName($row['GroupName'] ?? 'No Group');
 
             $posts[] = $post;
         }

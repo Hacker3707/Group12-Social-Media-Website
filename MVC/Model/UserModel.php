@@ -66,6 +66,14 @@ class UserModel extends AppModel {
         return $list;
     }
 
+    public function countAll() {
+        $sql = "SELECT COUNT(*) AS total FROM users WHERE AccountStatus != 'deleted'";
+        $result = $this->query($sql);
+        $row = mysqli_fetch_assoc($result);
+
+        return (int)($row['total'] ?? 0);
+    }
+
     // ================= SEARCH =================
     public function searchUsers($keyword, $includeEmail = false) {
         $keyword = mysqli_real_escape_string($this->link, $keyword);

@@ -42,37 +42,68 @@ tabindex="-1">
 
             <!-- ✅ HIỂN THỊ ẢNH / VIDEO CỦA POST -->
             <?php if (!empty($mediaForPost[$postId])): ?>
-                <div class="post-media mb-3">
-                    <?php foreach ($mediaForPost[$postId] as $media): ?>
-
+                <?php
+                    $modalMediaItems = $mediaForPost[$postId];
+                    $modalMediaCount = count($modalMediaItems);
+                    $modalPhotoCount = 0;
+                    foreach ($modalMediaItems as $mediaItem) {
+                        if ($mediaItem->getMediaType() === 'photo') {
+                            $modalPhotoCount++;
+                        }
+                    }
+                    $useModalCarousel = ($modalPhotoCount > 1 && $modalPhotoCount === $modalMediaCount);
+                    $modalCarouselId = 'postMediaCarouselModal' . $postId;
+                ?>
+                <div class="post-media mb-3" style="border-radius: 14px; overflow: hidden; border: 1px solid #e9ecef; background-color: #f8f9fa; max-height: 420px;">
+                    <?php if ($modalMediaCount === 1): ?>
+                        <?php $media = $modalMediaItems[0]; ?>
                         <?php if ($media->getMediaType() === 'photo'): ?>
                             <img src="/<?= htmlspecialchars($media->getFilePath()) ?>"
-                                 class="img-fluid rounded mb-2"
-                                 style="max-height: 400px; object-fit: cover; width: 100%;"
+                                 class="img-fluid"
+                                 style="height: 420px; width: 100%; object-fit: contain; background-color: #f8f9fa;"
                                  alt="Post image">
-
                         <?php elseif ($media->getMediaType() === 'video'): ?>
-                            <video controls class="w-100 rounded mb-2" style="max-height: 400px;">
+                            <video controls class="w-100" style="height: 420px; width: 100%; object-fit: contain; background: #000;">
                                 <source src="/<?= htmlspecialchars($media->getFilePath()) ?>">
                             </video>
                         <?php endif; ?>
-
-                    <?php endforeach; ?>
+                    <?php elseif ($useModalCarousel): ?>
+                        <div id="<?= $modalCarouselId ?>" class="carousel slide" data-interval="false">
+                            <div class="carousel-inner">
+                                <?php foreach ($modalMediaItems as $index => $media): ?>
+                                    <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                                        <img src="/<?= htmlspecialchars($media->getFilePath()) ?>"
+                                             class="d-block w-100"
+                                             style="height: 420px; width: 100%; object-fit: contain; background-color: #f8f9fa;"
+                                             alt="Post image <?= $index + 1 ?>">
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <a class="carousel-control-prev" href="#<?= $modalCarouselId ?>" role="button" data-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="sr-only">Previous</span>
+                            </a>
+                            <a class="carousel-control-next" href="#<?= $modalCarouselId ?>" role="button" data-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="sr-only">Next</span>
+                            </a>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($modalMediaItems as $media): ?>
+                            <?php if ($media->getMediaType() === 'photo'): ?>
+                                <img src="/<?= htmlspecialchars($media->getFilePath()) ?>"
+                                     class="d-block w-100"
+                                     style="height: 420px; width: 100%; object-fit: contain; background-color: #f8f9fa;"
+                                     alt="Post image">
+                            <?php elseif ($media->getMediaType() === 'video'): ?>
+                                <video controls class="d-block w-100" style="height: 420px; width: 100%; object-fit: contain; background: #000;">
+                                    <source src="/<?= htmlspecialchars($media->getFilePath()) ?>">
+                                </video>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
-
-            <!-- ✅ THÔNG TIN PHỤ CỦA POST -->
-            <div class="text-muted small mb-3">
-                <?php if($post->getPrice() !== null): ?>
-                    💰 Price: <?= number_format($post->getPrice()) ?> VND <br>
-                <?php endif; ?>
-                📦 Condition: <?= htmlspecialchars($post->getCondition()) ?> <br>
-                📍 Location: <?= htmlspecialchars($post->getLocation()) ?> <br>
-                <?php if($post->getBrand()): ?>
-                    🏷️ Brand: <?= htmlspecialchars($post->getBrand()) ?> <br>
-                <?php endif; ?>
-                📌 Status: <?= htmlspecialchars($post->getStatus()) ?>
-            </div>
 
             <div class="d-flex align-items-center mt-4">
                 <small class="text-muted ">
@@ -91,10 +122,26 @@ tabindex="-1">
                             <span class="badge badge-light like-count"><?= count($reactions_forPost[$postId] ?? []) ?></span>
                         </button>
                     <?php endif; ?>
+
+                    <!-- COMMENT BUTTON WITH BADGE -->
+                    <button class="btn btn-sm btn-outline-secondary ml-2 comment-btn-modal" type="button">
+                        <i class="bi bi-chat"></i> Comment
+                        <span class="badge badge-light badge-cmt">
+                            <?= count($comments[$postId] ?? []) ?>
+                        </span>
+                    </button>
                 <?php else: ?>
                     <button class="btn-forModal btn-sm btn-outline-secondary ml-auto" style="cursor: not-allowed; opacity: 0.6;" title="Vui lòng tham gia nhóm để thả tim">
                         <i class="bi bi-heart"></i>
                         <span class="badge badge-light"><?= count($reactions_forPost[$postId] ?? []) ?></span>
+                    </button>
+
+                    <!-- COMMENT BUTTON WITH BADGE (DISABLED) -->
+                    <button class="btn btn-sm btn-outline-secondary ml-2" style="cursor: not-allowed; opacity: 0.6;" title="Vui lòng tham gia nhóm để bình luận">
+                        <i class="bi bi-chat"></i> Comment
+                        <span class="badge badge-light">
+                            <?= count($comments[$postId] ?? []) ?>
+                        </span>
                     </button>
                 <?php endif; ?>
                 </div>
@@ -115,7 +162,8 @@ tabindex="-1">
                         0,
                         $allowInteraction,
                         $reactions_forComment ?? [],
-                        $isSameUser_reactCmt ?? []
+                        $isSameUser_reactCmt ?? [],
+                        $post->getUserId()
                     );
                 ?>
                 
