@@ -1,5 +1,6 @@
 <?php
 include_once __DIR__ . "/AppModel.php";
+include_once __DIR__ . "/../../Entity/Chat.php";
 
 class ChatModel extends AppModel {
 
@@ -7,6 +8,48 @@ class ChatModel extends AppModel {
 
     public function getLastError() {
         return $this->lastError;
+    }
+
+    private function mapMessageRowToChat(array $row) {
+        return new Chat(
+            (int)($row['ConversationID'] ?? 0),
+            (int)($row['MessageID'] ?? 0),
+            null,
+            null,
+            (int)($row['SenderID'] ?? 0),
+            $row['Content'] ?? null,
+            $row['ImagePath'] ?? null,
+            $row['Reaction'] ?? null,
+            isset($row['IsRead']) ? (int)$row['IsRead'] : null,
+            $row['CreatedAt'] ?? null,
+            null,
+            $row['Username'] ?? null,
+            $row['AvatarFP'] ?? null
+        );
+    }
+
+    private function mapConversationRowToChat(array $row) {
+        return new Chat(
+            (int)($row['ConversationID'] ?? 0),
+            null,
+            isset($row['User1ID']) ? (int)$row['User1ID'] : null,
+            isset($row['User2ID']) ? (int)$row['User2ID'] : null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            isset($row['OtherUserID']) ? (int)$row['OtherUserID'] : null,
+            null,
+            null,
+            $row['OtherUsername'] ?? null,
+            $row['OtherAvatar'] ?? null,
+            $row['LastMessage'] ?? null,
+            $row['LastImage'] ?? null,
+            $row['LastMessageAt'] ?? null,
+            isset($row['UnreadCount']) ? (int)$row['UnreadCount'] : 0
+        );
     }
 
     public function getOrCreateConversation($user1, $user2) {
@@ -78,7 +121,7 @@ class ChatModel extends AppModel {
 
         $rows = [];
         while ($r = mysqli_fetch_assoc($res)) {
-            $rows[] = $r;
+            $rows[] = $this->mapMessageRowToChat($r);
         }
         return $rows;
     }
@@ -101,7 +144,7 @@ class ChatModel extends AppModel {
 
         $rows = [];
         while ($r = mysqli_fetch_assoc($res)) {
-            $rows[] = $r;
+            $rows[] = $this->mapMessageRowToChat($r);
         }
         return $rows;
     }
@@ -152,7 +195,7 @@ class ChatModel extends AppModel {
 
         $rows = [];
         while ($r = mysqli_fetch_assoc($res)) {
-            $rows[] = $r;
+            $rows[] = $this->mapConversationRowToChat($r);
         }
         return $rows;
     }

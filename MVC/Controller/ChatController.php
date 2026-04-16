@@ -2,6 +2,7 @@
 include_once __DIR__ . "/AppController.php";
 include_once __DIR__ . "/../Model/ChatModel.php";
 include_once __DIR__ . "/../Model/UserModel.php";
+include_once __DIR__ . "/../../Entity/Chat.php";
 
 class ChatController extends AppController {
 
@@ -26,6 +27,56 @@ class ChatController extends AppController {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($data, JSON_UNESCAPED_UNICODE);
         exit;
+    }
+
+    private function serializeMessageList(array $messages): array {
+        $payload = [];
+
+        foreach ($messages as $m) {
+            if ($m instanceof Chat) {
+                $payload[] = [
+                    'MessageID' => $m->getMessageId(),
+                    'ConversationID' => $m->getConversationId(),
+                    'SenderID' => $m->getSenderId(),
+                    'Username' => $m->getUsername(),
+                    'AvatarFP' => $m->getAvatarFp(),
+                    'Content' => $m->getContent(),
+                    'ImagePath' => $m->getImagePath(),
+                    'Reaction' => $m->getReaction(),
+                    'IsRead' => $m->getIsRead(),
+                    'CreatedAt' => $m->getCreatedAt(),
+                ];
+            } else {
+                $payload[] = $m;
+            }
+        }
+
+        return $payload;
+    }
+
+    private function serializeConversationList(array $conversations): array {
+        $payload = [];
+
+        foreach ($conversations as $c) {
+            if ($c instanceof Chat) {
+                $payload[] = [
+                    'ConversationID' => $c->getConversationId(),
+                    'User1ID' => $c->getUser1Id(),
+                    'User2ID' => $c->getUser2Id(),
+                    'OtherUserID' => $c->getOtherUserId(),
+                    'OtherUsername' => $c->getOtherUsername(),
+                    'OtherAvatar' => $c->getOtherAvatar(),
+                    'LastMessage' => $c->getLastMessage(),
+                    'LastImage' => $c->getLastImage(),
+                    'LastMessageAt' => $c->getLastMessageAt(),
+                    'UnreadCount' => $c->getUnreadCount(),
+                ];
+            } else {
+                $payload[] = $c;
+            }
+        }
+
+        return $payload;
     }
 
     public function inbox() {
@@ -81,7 +132,7 @@ class ChatController extends AppController {
                 'username' => $other['Username'] ?? 'User',
                 'avatar'   => $other['AvatarFP'] ?? null,
             ],
-            'messages' => $messages,
+            'messages' => $this->serializeMessageList($messages),
         ]);
     }
 
@@ -164,7 +215,7 @@ class ChatController extends AppController {
 
         $this->json([
             'status'   => 'ok',
-            'messages' => $messages
+            'messages' => $this->serializeMessageList($messages)
         ]);
     }
 
@@ -198,7 +249,7 @@ class ChatController extends AppController {
 
         $this->json([
             'status' => 'ok',
-            'conversations' => $list
+            'conversations' => $this->serializeConversationList($list)
         ]);
     }
 
