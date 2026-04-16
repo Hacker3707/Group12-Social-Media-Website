@@ -28,9 +28,9 @@ class PostModel extends AppModel {
         // Đã thêm: u.AvatarFP
         $sql = "SELECT p.*, u.Username, u.AvatarFP, c.CategoryName, g.GroupName
                 FROM post p
-                JOIN users u ON p.UserID = u.UserID
+                JOIN `users` u ON p.UserID = u.UserID
                 LEFT JOIN category c ON p.CategoryID = c.CategoryID
-            LEFT JOIN groups g ON g.GroupID = p.GroupID
+            LEFT JOIN `groups` g ON g.GroupID = p.GroupID
                 ORDER BY p.CreatedAt DESC";
 
         $result = $this->query($sql);
@@ -63,9 +63,9 @@ class PostModel extends AppModel {
         // Đã thêm: u.AvatarFP
         $sql = "SELECT p.*, u.Username, u.AvatarFP, c.CategoryName, g.GroupName
                 FROM post p
-                JOIN users u ON p.UserID = u.UserID
+                JOIN `users` u ON p.UserID = u.UserID
                 LEFT JOIN category c ON p.CategoryID = c.CategoryID
-                LEFT JOIN groups g ON g.GroupID = p.GroupID
+                LEFT JOIN `groups` g ON g.GroupID = p.GroupID
                 WHERE p.$field = $value
                 ORDER BY p.CreatedAt DESC";
 
@@ -116,7 +116,7 @@ class PostModel extends AppModel {
         // Đã thêm: u.AvatarFP
         $sql = "SELECT p.*, u.Username, u.AvatarFP 
                 FROM post p
-                JOIN users u ON p.UserID = u.UserID
+                JOIN `users` u ON p.UserID = u.UserID
                 WHERE p.PostID = $postId";
         $result = $this->query($sql);
 
@@ -140,9 +140,9 @@ class PostModel extends AppModel {
         // Đã thêm: u.AvatarFP
         $sql = "SELECT p.*, u.Username, u.AvatarFP, c.CategoryName, g.GroupName
                 FROM post p
-                JOIN users u ON p.UserID = u.UserID
+                JOIN `users` u ON p.UserID = u.UserID
                 LEFT JOIN category c ON p.CategoryID = c.CategoryID
-            LEFT JOIN groups g ON g.GroupID = p.GroupID
+            LEFT JOIN `groups` g ON g.GroupID = p.GroupID
                 WHERE p.Title LIKE '%$keyword%' OR p.Content LIKE '%$keyword%'
                 ORDER BY p.CreatedAt DESC";
 
