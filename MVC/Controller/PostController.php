@@ -107,12 +107,16 @@ class PostController extends AppController
     {
         $posts  = $this->postModel->getAll() ?? [];
         $userid = $_SESSION['user_id'] ?? null;
+
         $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
 
         $reactions_forPost = [];
         $isSameUser_reactPost = [];
         $reactions_forComment = [];
         $isSameUser_reactCmt = [];
+
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
 
         // Lay thong tin user
         if ($userid) {
@@ -239,6 +243,8 @@ public function PostAction()
     }
 
     public function getPostsByUserId($userId) {
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
         if (isset($_GET['user_id'])) {
             $userId = $_GET['user_id'];
             $posts  = $this->postModel->fetchByField('UserID', $userId);
@@ -248,6 +254,8 @@ public function PostAction()
     }
 
     public function getPostsByGroupId($groupId) {
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
         if (isset($_GET['group_id'])) {
             $groupId = $_GET['group_id'];
             $posts   = $this->postModel->fetchByField('GroupID', $groupId);
@@ -257,6 +265,11 @@ public function PostAction()
     }
 
     public function getPostsByCategoryId() {
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
+
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
         if (isset($_GET['category_id'])) {
             $categoryId = $_GET['category_id'];
             $posts      = $this->postModel->fetchByField('CategoryID', $categoryId);
@@ -301,6 +314,8 @@ public function PostAction()
 
     public function showCreateForm()
     {
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
         $categories = $this->categoryModel->getAll();
         $group = null;
         include __DIR__ . "/../View/createpost_view.php";
@@ -313,6 +328,11 @@ public function PostAction()
             header("Location: index.php?controller=user&action=login");
             exit;
         }
+
+        
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
 
         $postId = (int)($_GET['id'] ?? 0);
         if ($postId <= 0) {
@@ -457,6 +477,9 @@ public function PostAction()
             exit();
         }
 
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = ($_GET['controller'] === 'post' && $_GET['action'] === 'list');
+
         $posts = $this->postModel->getAll();
         include_once __DIR__ . "/../View/Admin/Post/list.php";
     }
@@ -483,6 +506,9 @@ public function PostAction()
             header("Location: index.php");
             exit();
         }
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = ($_GET['control'] === 'user' && $_GET['action'] === 'list');
 
         $postId = (int)($_GET['id'] ?? 0);
         $post = $this->postModel->getById($postId);

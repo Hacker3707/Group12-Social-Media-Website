@@ -11,6 +11,7 @@ class PostModel extends AppModel {
         $title = mysqli_real_escape_string($this->link,$post->getTitle());
         $content = mysqli_real_escape_string($this->link,$post->getContent());
         $price = $post->getPrice() === null ? "NULL" : intval($post->getPrice());
+        
         $condition = $post->getCondition() 
         ? "'" . mysqli_real_escape_string($this->link, $post->getCondition()) . "'" 
         : "NULL";
@@ -87,7 +88,7 @@ class PostModel extends AppModel {
                 $row['Location'], $row['Brand'], $row['PostStatus']
             );
             $post->setUsername($row['Username']);
-            $post->setCreatedAt($row['CreatedAt']);
+            $post->setCreatedAt($row['CreatedAt'] );
             $post->setCategoryName($row['CategoryName'] ?? 'No Category');
             $post->setAvatar($row['AvatarFP']); // Gán Avatar
             $post->setGroupName($row['GroupName'] ?? 'No Group');

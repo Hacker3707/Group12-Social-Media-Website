@@ -105,19 +105,6 @@ tabindex="-1">
                 </div>
             <?php endif; ?>
 
-            <!-- ✅ THÔNG TIN PHỤ CỦA POST -->
-            <div class="text-muted small mb-3">
-                <?php if($post->getPrice() !== null): ?>
-                    💰 Price: <?= number_format($post->getPrice()) ?> VND <br>
-                <?php endif; ?>
-                📦 Condition: <?= htmlspecialchars($post->getCondition()) ?> <br>
-                📍 Location: <?= htmlspecialchars($post->getLocation()) ?> <br>
-                <?php if($post->getBrand()): ?>
-                    🏷️ Brand: <?= htmlspecialchars($post->getBrand()) ?> <br>
-                <?php endif; ?>
-                📌 Status: <?= htmlspecialchars($post->getStatus()) ?>
-            </div>
-
             <div class="d-flex align-items-center mt-4">
                 <small class="text-muted ">
                 Posted at <?= $post->getCreatedAt() ?>
@@ -135,10 +122,26 @@ tabindex="-1">
                             <span class="badge badge-light like-count"><?= count($reactions_forPost[$postId] ?? []) ?></span>
                         </button>
                     <?php endif; ?>
+
+                    <!-- COMMENT BUTTON WITH BADGE -->
+                    <button class="btn btn-sm btn-outline-secondary ml-2 comment-btn-modal" type="button">
+                        <i class="bi bi-chat"></i> Comment
+                        <span class="badge badge-light badge-cmt">
+                            <?= count($comments[$postId] ?? []) ?>
+                        </span>
+                    </button>
                 <?php else: ?>
                     <button class="btn-forModal btn-sm btn-outline-secondary ml-auto" style="cursor: not-allowed; opacity: 0.6;" title="Vui lòng tham gia nhóm để thả tim">
                         <i class="bi bi-heart"></i>
                         <span class="badge badge-light"><?= count($reactions_forPost[$postId] ?? []) ?></span>
+                    </button>
+
+                    <!-- COMMENT BUTTON WITH BADGE (DISABLED) -->
+                    <button class="btn btn-sm btn-outline-secondary ml-2" style="cursor: not-allowed; opacity: 0.6;" title="Vui lòng tham gia nhóm để bình luận">
+                        <i class="bi bi-chat"></i> Comment
+                        <span class="badge badge-light">
+                            <?= count($comments[$postId] ?? []) ?>
+                        </span>
                     </button>
                 <?php endif; ?>
                 </div>

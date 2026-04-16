@@ -7,6 +7,8 @@ class GroupMember
     // Có thể chứa thêm đối tượng User hoặc Group nếu cần mapping sâu hơn
     private ?User $user = null; 
 
+    private string $status;
+
     public function __construct(int $userId = 0, int $groupId = 0, string $role = 'member')
     {
         $this->userId = $userId;
@@ -24,4 +26,7 @@ class GroupMember
     // Hỗ trợ lưu trữ thông tin User đi kèm khi truy vấn join
     public function setUser(User $user): void { $this->user = $user; }
     public function getUser(): ?User { return $this->user; }
+
+    public function getStatus(): string { return $this->status; }
+    public function setStatus(string $status): void { $this->status = $status; }
 }

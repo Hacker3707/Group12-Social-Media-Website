@@ -10,6 +10,7 @@ include_once __DIR__ . "/../Model/CategoryModel.php";
 include_once __DIR__ . "/../Model/CommentModel.php";
 include_once __DIR__ . "/../Model/GroupModel.php";
 include_once __DIR__ . "/../Model/MediaModel.php";
+include_once "MVC/Model/FollowModel.php";
 include_once "MVC/Service/Supabase/SupabaseService.php";
 include_once "MVC/Service/Cloudinary/CloudinaryService.php";
 
@@ -24,6 +25,8 @@ class UserController {
     private $groupModel;
     private $mediaModel;
 
+    private $followModel;
+
     public function __construct() {
        $this->postModel     = new PostModel();
         $this->reactionModel = new ReactionModel();
@@ -32,6 +35,7 @@ class UserController {
         $this->userModel = new UserModel();
         $this->groupModel = new GroupModel();
         $this->mediaModel    = new MediaModel();
+        $this -> followModel = new FollowModel();
     }
 
     public function handleRequest() {
@@ -185,6 +189,9 @@ class UserController {
             $this->redirect('index.php', 'Bạn không có quyền truy cập trang quản trị!');
         }
 
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = ($_GET['controller'] === 'user' && $_GET['action'] === 'list');
+
         $keyword = trim($_GET['keyword'] ?? '');
         
         if ($keyword !== '') {
@@ -325,8 +332,15 @@ class UserController {
     public function profile() {
         $id = $_GET['id'] ?? ($_SESSION['user_id'] ?? null);
 
+        $sameUser = false;
+        if ($_SESSION['user_id'] == $_GET['id']) {
+            $sameUser = true;
+        }
+
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
+
         if (!$id) {
-            $this->redirect('/index.php?controller=user&action=login', 'Vui lòng đăng nhập!');
+            $this->redirect('./index.php?controller=user&action=login', 'Vui lòng đăng nhập!');
         }
 
         $user = $this->userModel->getById((int)$id);
@@ -335,28 +349,25 @@ class UserController {
             $this->back('Người dùng không tồn tại hoặc đã bị xóa.');
         }
          // 🔥 THÊM ĐOẠN NÀY
-    include_once "MVC/Model/FollowModel.php";
 
-    $followModel = new FollowModel();
+        $currentUserId = $_SESSION['user_id'] ?? 0;
+        $profileUserId = $user['UserID'];
 
-    $currentUserId = $_SESSION['user_id'] ?? 0;
-    $profileUserId = $user['UserID'];
+        $isFollowing = false;
 
-    $isFollowing = false;
+        if ($currentUserId && $currentUserId != $profileUserId) {
+            $isFollowing = $this -> followModel->exists($currentUserId, $profileUserId);
+        }
 
-    if ($currentUserId && $currentUserId != $profileUserId) {
-        $isFollowing = $followModel->exists($currentUserId, $profileUserId);
-    }
+        // (optional) lấy số follower luôn
+        $followerCount = $this -> followModel->countFollowers($profileUserId);
 
-    // (optional) lấy số follower luôn
-    $followerCount = $followModel->countFollowers($profileUserId);
+            // 🔥 truyền userId vào
+            $data = $this -> getPostforUserId($id);
 
-        // 🔥 truyền userId vào
-        $data = $this -> getPostforUserId($id);
+            extract($data); // tạo biến $posts, $comments,...
 
-        extract($data); // tạo biến $posts, $comments,...
-
-        include_once "MVC/View/User/profile.php";
+            include_once "MVC/View/User/profile.php";
     }
 
     public function getPostforUserId($userId) {
@@ -528,7 +539,7 @@ class UserController {
                 
                 $result = $this->userModel->updatePassword($user['UserID'], $newPassword);
                 if ($result) {
-                    $this->redirect('/index.php?controller=user&action=login', 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.');
+                    $this->redirect('./index.php?controller=user&action=login', 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập với mật khẩu mới.');
                 } else {
                     $this->back('Lỗi hệ thống khi cập nhật mật khẩu.');
                 }

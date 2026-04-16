@@ -748,5 +748,40 @@ ALTER TABLE users MODIFY COLUMN AccountStatus ENUM('active', 'banned', 'deleted'
 
 ALTER TABLE users
 ADD COLUMN supabase_id char(36),
-ADD COLUMN o_provider enum('LOCAL', 'GOOGLE')
+ADD COLUMN o_provider enum('LOCAL', 'GOOGLE');
 
+
+
+--
+-- UPDATE 16/04/2026: Thêm 2 bảng mới để chat
+--
+
+DROP TABLE IF EXISTS messages;
+DROP TABLE IF EXISTS conversations;
+
+CREATE TABLE conversations (
+    ConversationID INT AUTO_INCREMENT PRIMARY KEY,
+    User1ID INT NOT NULL,
+    User2ID INT NOT NULL
+);
+
+CREATE TABLE messages (
+    MessageID INT AUTO_INCREMENT PRIMARY KEY,
+    ConversationID INT NOT NULL,
+    SenderID INT NOT NULL,
+    Content TEXT,
+    ImagePath VARCHAR(255),
+    Reaction VARCHAR(20),
+    IsRead TINYINT(1) DEFAULT 0,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO users
+(Username, Email, AccountPassword, Phone, Bio, UserRole, AccountStatus)
+VALUES
+('admin', 'group12socool@gmail.com', 'admin123', '0123456789', 'first comer in town!', 'admin', 'active');
+
+INSERT INTO users
+(Username, Email, AccountPassword, Phone, Bio, UserRole, AccountStatus)
+VALUES
+('myAlterEgo', 'imcominforu@gmail.com', 'hehehe', '0123456788', 'sec comer in town!', 'user', 'active');

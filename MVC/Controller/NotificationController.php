@@ -119,7 +119,9 @@ class NotificationController extends AppController {
         ]);
     }
     public function get() {
+        
     $this->getMyNotifications();
+
     }
      public function count() {
     $this->countUnread();

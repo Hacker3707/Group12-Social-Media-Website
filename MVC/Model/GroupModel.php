@@ -253,7 +253,7 @@ class GroupModel extends AppModel {
     // ================= SỬA: LẤY DANH SÁCH THÀNH VIÊN ĐÃ DUYỆT =================
     public function getGroupMembers($groupId) {
         $groupId = (int)$groupId;
-        $sql = "SELECT gm.*, u.Username, u.Email 
+        $sql = "SELECT gm.*, u.Username, u.Email, u.AvatarFP, u.Bio 
                 FROM group_member gm
                 JOIN users u ON gm.UserID = u.UserID
                 WHERE gm.GroupID = $groupId AND gm.Status = 'approved'

@@ -34,7 +34,12 @@ class ChatController extends AppController {
             exit;
         }
 
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
+
         $myId = (int)$_SESSION['user_id'];
+
+        
         $friends = $this->chatModel->getFriendList($myId);
 
         include_once __DIR__ . "/../View/chat_inbox.php";

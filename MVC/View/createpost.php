@@ -162,10 +162,12 @@
 
 </div>
 
-</div>
-</form>
-
+<!-- 📢 RESULT MESSAGE -->
 <div id="result"></div>
+
+</div>
+
+</form>
 
 <script>
 

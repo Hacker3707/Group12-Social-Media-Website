@@ -1,23 +1,23 @@
 <?php
 class Post {
-    private $PostID;
-    private $UserID;
-    private $GroupID;
-    private $CategoryID;
-    private $Username;
-    private $Title;
-    private $Content;
+    private ?int $PostID;
+    private int $UserID;
+    private ?int $GroupID;
+    private ?int $CategoryID;
+    private string $Username;
+    private string $Title;
+    private string $Content;
     private array $MediaList; // Array to hold media objects (images, videos, etc.)
-    private $CreatedAt;
-    private $Price;
-    private $ProductCondition;
-    private $Location;
-    private $Brand;
-    private $PostStatus;
-    private $CategoryName;
+    private ?string $CreatedAt;
+    private ?int $Price ;
+    private ?string $ProductCondition;
+    private ?string $Location;
+    private ?string $Brand;
+    private ?string $PostStatus;
+    private ?string $CategoryName;
     private $Avatar;
     
-    private $GroupName;
+    private string $GroupName;
 
     public function __construct(
         $post_id, 
