@@ -17,6 +17,14 @@
             <i class="fas fa-newspaper mr-2 text-info" style="width: 15px;"></i> Quản lý Bài đăng
         </a>
 
+        <a href="index.php?controller=user&action=adminCategories" class="list-group-item list-group-item-action border-0 font-weight-bold text-dark py-3">
+            <i class="fas fa-tags mr-2 text-success" style="width: 15px;"></i> Quản lý Danh mục
+        </a>
+
+        <a href="index.php?controller=user&action=adminStatistics" class="list-group-item list-group-item-action border-0 font-weight-bold text-dark py-3">
+            <i class="fas fa-chart-pie mr-2 text-danger" style="width: 15px;"></i> Thống kê
+        </a>
+
     <?php else: ?>
 
         <a href="index.php?controller=user&action=profile&id=<?= $_SESSION['user_id'] ?? 0 ?>" class="list-group-item list-group-item-action border-0 font-weight-bold py-3">

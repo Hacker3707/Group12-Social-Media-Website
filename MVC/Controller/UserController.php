@@ -203,6 +203,85 @@ class UserController {
         include_once "MVC/View/User/list.php";
     }
 
+    public function adminCategories() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->redirect('index.php', 'Bạn không có quyền truy cập trang quản trị!');
+        }
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = true;
+        $categories = $this->categoryModel->getAll();
+        $totalCategories = is_array($categories) ? count($categories) : 0;
+        $totalUsers = $this->userModel->countAll();
+        $totalGroups = $this->groupModel->countAll();
+        $totalPosts = $this->postModel->countAll();
+
+        include_once "MVC/View/Admin/Category/list.php";
+    }
+
+    public function adminStatistics() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->redirect('index.php', 'Bạn không có quyền truy cập trang quản trị!');
+        }
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = true;
+
+        $totalUsers = $this->userModel->countAll();
+        $totalGroups = $this->groupModel->countAll();
+        $totalPosts = $this->postModel->countAll();
+        $totalCategories = $this->categoryModel->getAll();
+        $totalCategories = is_array($totalCategories) ? count($totalCategories) : 0;
+
+        include_once "MVC/View/Admin/Statistics/list.php";
+    }
+
+    public function adminCreateCategory() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->back('Lỗi quyền truy cập!');
+        }
+
+        if (!isset($_POST['categoryName'])) {
+            $this->back('Thiếu tên danh mục!');
+        }
+
+        $categoryName = trim($_POST['categoryName']);
+
+        if ($categoryName === '') {
+            $this->back('Tên danh mục không được để trống!');
+        }
+
+        if ($this->categoryModel->existsByName($categoryName)) {
+            $this->back('Danh mục đã tồn tại!');
+        }
+
+        $this->categoryModel->insert($categoryName);
+        $this->redirect('index.php?controller=user&action=adminCategories', 'Đã thêm danh mục thành công!');
+    }
+
+    public function adminDeleteCategory() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            $this->back('Lỗi quyền truy cập!');
+        }
+
+        if (!isset($_GET['id'])) {
+            $this->back('Không tìm thấy danh mục cần xóa!');
+        }
+
+        $categoryId = (int)$_GET['id'];
+        if ($categoryId <= 0) {
+            $this->back('ID danh mục không hợp lệ!');
+        }
+
+        $postCount = $this->categoryModel->countPostsByCategory($categoryId);
+        if ($postCount > 0) {
+            $this->back('Không thể xóa danh mục vì đang được dùng bởi ' . $postCount . ' bài viết.');
+        }
+
+        $this->categoryModel->delete($categoryId);
+        $this->redirect('index.php?controller=user&action=adminCategories', 'Đã xóa danh mục!');
+    }
+
     public function delete() {
         if (isset($_GET['id'])) {
             if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {

@@ -46,6 +46,14 @@ class GroupModel extends AppModel {
         return $list;
     }
 
+    public function countAll() {
+        $sql = "SELECT COUNT(*) AS total FROM groups";
+        $result = $this->query($sql);
+        $row = mysqli_fetch_assoc($result);
+
+        return (int)($row['total'] ?? 0);
+    }
+
     // ================= GET BY ID =================
     public function getById($id) {
         $id = (int)$id;
