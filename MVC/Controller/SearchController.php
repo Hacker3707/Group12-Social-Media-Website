@@ -7,6 +7,7 @@ include_once __DIR__ . "/../Model/GroupModel.php";
 include_once __DIR__ . "/../Model/ReactionModel.php";
 include_once __DIR__ . "/../Model/CommentModel.php";
 include_once __DIR__ . "/../Model/MediaModel.php";
+include_once __DIR__ . "/../Model/FollowModel.php";
 
 class SearchController extends AppController {
 
@@ -17,6 +18,7 @@ class SearchController extends AppController {
     private $reactionModel;
     private $commentModel;
     private $mediaModel;
+    private $followModel;
 
     public function __construct() {
         $this->postModel = new PostModel();
@@ -26,6 +28,7 @@ class SearchController extends AppController {
         $this->reactionModel = new ReactionModel();
         $this->commentModel = new CommentModel();
         $this->mediaModel = new MediaModel();
+        $this->followModel = new FollowModel();
     }
 
     private function paginateItems(array $items, int $page, int $perPage): array {
@@ -43,9 +46,14 @@ class SearchController extends AppController {
         $userid = $_SESSION['user_id'] ?? null;
         $isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
 
-        
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
+
+        $navbarCategories = $this->categoryModel->getAll() ?? [];
 
         $keyword = $_GET['searchResults'] ?? '';
+        $userFollowStatus = []; // 🔥 Mảng lưu follow status cho mỗi user
+        
         if(empty($keyword)){
             $posts = [];
             $categories = [];
@@ -57,6 +65,14 @@ class SearchController extends AppController {
             $categories = $this->categoryModel->searchCategories($keyword);
             $groups = $this->groupModel->searchGroups($keyword);
             $users = $this-> userModel->searchUsers($keyword, $isAdmin);
+            
+            // 🔥 Check follow status cho mỗi user (MVC: Model -> Controller -> View)
+            if ($userid) {
+                foreach ($users as $user) {
+                    $userFollowStatus[$user->getUserId()] = $this->followModel->exists($userid, $user->getUserId());
+                }
+            }
+            
             foreach($posts as $post) {
             $reactions[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
             }
@@ -134,8 +150,14 @@ class SearchController extends AppController {
     }
 
     public function searchPosts() {
+
+
         $userid = $_SESSION['user_id'] ?? null;
         $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
+
         $keyword = $_GET['searchResults'] ?? '';
         $page = max(1, (int)($_GET['page'] ?? 1));
         $perPage = 5;
@@ -199,6 +221,9 @@ class SearchController extends AppController {
     }
 
     public function searchGroups() {
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
+
         $keyword = $_GET['searchResults'] ?? '';
         $page = max(1, (int)($_GET['page'] ?? 1));
         $perPage = 5;
@@ -216,6 +241,9 @@ class SearchController extends AppController {
     }
 
     public function searchCategories() {
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
+
         $keyword = $_GET['searchResults'] ?? '';
         $page = max(1, (int)($_GET['page'] ?? 1));
         $perPage = 5;
@@ -233,7 +261,12 @@ class SearchController extends AppController {
     }
 
     public function searchUsers() {
+        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $isPageAdmin = false;
+
         $isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        $currentUserId = $_SESSION['user_id'] ?? null;
+        
         $keyword = $_GET['searchResults'] ?? '';
         $page = max(1, (int)($_GET['page'] ?? 1));
         $perPage = 5;
@@ -241,12 +274,22 @@ class SearchController extends AppController {
         $totalPages = 1;
         $totalItems = 0;
 
+        $userFollowStatus = []; // 🔥 Mảng lưu follow status cho mỗi user
+
         if (empty($keyword)) {
             $users = [];
         } else {
             $allUsers = $this->userModel->searchUsers($keyword, $isAdmin);
             list($users, $currentPage, $totalPages, $totalItems) = $this->paginateItems($allUsers, $page, $perPage);
+            
+            // 🔥 Check follow status cho mỗi user (MVC: Model -> Controller -> View)
+            if ($currentUserId) {
+                foreach ($users as $user) {
+                    $userFollowStatus[$user->getUserId()] = $this->followModel->exists($currentUserId, $user->getUserId());
+                }
+            }
         }
+        
         include_once __DIR__ . "/../View/Search/search_user.php";
     }
 }

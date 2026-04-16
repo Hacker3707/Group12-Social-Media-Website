@@ -1,7 +1,6 @@
 <?php 
 include_once __DIR__ . "/AppModel.php";
 include_once __DIR__ . "/../../Entity/Reaction.php";
-include_once __DIR__ . "/../../Module/db_module.php";
 
 class ReactionModel extends AppModel {
 

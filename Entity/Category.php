@@ -1,7 +1,7 @@
 <?php
 class Category {
-    private $CategoryID;
-    private $CategoryName;
+    private int $CategoryID;
+    private string $CategoryName;
 
     public function __construct($CategoryID = null, $CategoryName = ""){
         $this->CategoryID = $CategoryID;

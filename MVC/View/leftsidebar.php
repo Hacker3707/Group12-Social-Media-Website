@@ -1,6 +1,6 @@
 <div class="list-group border-0 rounded-lg">
 
-    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+    <?php if ($isSystemAdmin && $isPageAdmin): ?>
         <div class="list-group-item bg-primary text-white font-weight-bold text-uppercase border-0 py-3">
             <i class="fas fa-user-shield mr-1"></i> Admin Dashboard
         </div>
@@ -15,10 +15,6 @@
 
         <a href="index.php?controller=post&action=list" class="list-group-item list-group-item-action border-0 font-weight-bold text-dark py-3">
             <i class="fas fa-newspaper mr-2 text-info" style="width: 15px;"></i> Quản lý Bài đăng
-        </a>
-
-        <a href="index.php?controller=chat&action=inbox" class="list-group-item list-group-item-action border-0 font-weight-bold text-dark py-3">
-            <i class="fas fa-comments mr-2 text-warning" style="width: 25px;"></i> Tin nhắn
         </a>
 
     <?php else: ?>

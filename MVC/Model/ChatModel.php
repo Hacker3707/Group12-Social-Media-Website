@@ -181,23 +181,44 @@ class ChatModel extends AppModel {
     public function getFriendList($userId) {
         $userId = (int)$userId;
 
-        $sql = "SELECT UserID, Username, Email, AvatarFP, Bio
-                FROM users
-                WHERE AccountStatus = 'active'
-                  AND UserID != $userId
-                ORDER BY Username ASC";
+        $sql = "
+            SELECT DISTINCT u.UserID, u.Username, u.Email, u.AvatarFP, u.Bio
+            FROM users u
+            WHERE u.AccountStatus = 'active'
+            AND u.UserID != $userId
+            AND (
+                -- Người mình follow
+                u.UserID IN (
+                    SELECT f.FollowingID
+                    FROM follow f
+                    WHERE f.FollowerID = $userId
+                )
 
-        $res = mysqli_query($this->link, $sql);
+                OR
 
-        if (!$res) {
-            $this->lastError = mysqli_error($this->link);
-            return [];
-        }
+                -- Người đã từng chat
+                u.UserID IN (
+                    SELECT 
+                        CASE 
+                            WHEN c.User1ID = $userId THEN c.User2ID
+                            ELSE c.User1ID
+                        END
+                    FROM conversations c
+                    WHERE c.User1ID = $userId OR c.User2ID = $userId
+                )
+            )
+            ORDER BY u.Username ASC
+        ";
+
+        $res = $this->query($sql);
 
         $rows = [];
-        while ($r = mysqli_fetch_assoc($res)) {
-            $rows[] = $r;
+        if ($res) {
+            while ($r = mysqli_fetch_assoc($res)) {
+                $rows[] = $r;
+            }
         }
+
         return $rows;
     }
 }
