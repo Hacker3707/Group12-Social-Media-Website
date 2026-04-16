@@ -27,6 +27,8 @@ $userFollowStatus = $userFollowStatus ?? [];
 $username = htmlspecialchars(getUserField($user, 'Username', 'Unknown'));
 $email = htmlspecialchars(getUserField($user, 'Email', ''));
 $bio = htmlspecialchars(getUserField($user, 'Bio', '')) ?? null;
+$avatarRaw = getUserField($user, 'AvatarFP', '');
+$avatar = !empty($avatarRaw) ? htmlspecialchars($avatarRaw) : 'https://via.placeholder.com/60';
 $isUserFollowed = $userFollowStatus[$userId] ?? false;
 $currentUserId = $_SESSION['user_id'] ?? null;
 ?>
@@ -34,6 +36,7 @@ $currentUserId = $_SESSION['user_id'] ?? null;
 <div class="card mb-3 shadow-sm">
     <div class="card-body d-flex align-items-center">
         <img src="<?= $avatar ?>"
+               alt="Avatar"
              class="rounded-circle mr-3"
              width="60"
              height="60"

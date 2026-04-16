@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    [cite_start]RewriteEngine On 
+    [cite_start]RewriteBase / 
+    
+    # Nếu truy cập vào file hoặc thư mục có thật thì bỏ qua
+    [cite_start]RewriteCond %{REQUEST_FILENAME} !-f 
+    [cite_start]RewriteCond %{REQUEST_FILENAME} !-d 
+    
+    # Còn lại thì đẩy hết về index.php
+    [cite_start]RewriteRule ^(.*)$ index.php [QSA,L] 
+</IfModule>

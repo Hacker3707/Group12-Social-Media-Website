@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../Module/config.php';
 
 abstract class AppModel {
     protected $link = null;
@@ -10,7 +11,7 @@ abstract class AppModel {
     }
 
     public function taoKetNoi() {
-        $this->link = mysqli_connect("localhost", "root", "", "passo");
+        $this->link = mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT);
 
         if(!$this->link){
             die("Không thể kết nối CSDL: ".mysqli_connect_error());

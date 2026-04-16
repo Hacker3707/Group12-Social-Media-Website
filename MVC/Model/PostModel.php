@@ -63,6 +63,14 @@ class PostModel extends AppModel {
         return $posts;
     }
 
+    public function countAll() {
+        $sql = "SELECT COUNT(*) AS total FROM post";
+        $result = $this->query($sql);
+        $row = mysqli_fetch_assoc($result);
+
+        return (int)($row['total'] ?? 0);
+    }
+
     public function fetchByField($field, $value) {
         $allowed = ['UserID','GroupID','CategoryID'];
         if (!in_array($field, $allowed)) return false;
