@@ -210,14 +210,15 @@ public function PostAction()
 
         case "create":
             $this->showCreateForm();
-             break;
-        case "showEditForm":
-            $this->showEditForm();
-             break;
+            break;
 
-        foreach ($posts as $post) {
-            include "MVC/View/post_item.php";
-        }
+        case "showEditForm":
+            $this->showEditForm();
+            break;
+
+        default:
+            $this->showHome();
+            break;
     }
 }
 
@@ -413,9 +414,9 @@ public function PostAction()
 
         $post = new Post(
             $postId,
-            null,
-            null,
-            null,
+            $existingPost->getUserID(),
+            $existingPost->getGroupID(),
+            $existingPost->getCategoryID(),
             $title,
             $content,
             $price,
