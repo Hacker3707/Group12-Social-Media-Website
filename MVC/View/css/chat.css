@@ -377,3 +377,42 @@
         .lightbox.show { display:flex; }
         .lightbox img { max-width:90vw; max-height:90vh; border-radius:12px; }
         .lightbox .close-x { position:absolute; top:18px; right:24px; color:#fff; font-size:34px; cursor:pointer; }
+
+@media (max-width: 767.98px) {
+    #main-content {
+        padding: 12px;
+    }
+
+    .chat-page-card,
+    .friend-pane,
+    .chat-pane {
+        min-height: auto;
+    }
+
+    .chat-page-card {
+        border-radius: 12px;
+    }
+
+    .friend-pane {
+        border-right: none;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .friend-list {
+        max-height: 240px;
+    }
+
+    .msg-list {
+        min-height: 50vh;
+        padding: 12px;
+    }
+
+    .bubble {
+        max-width: 86%;
+    }
+
+    .bubble img.chat-img {
+        max-width: 62vw;
+        max-height: 62vw;
+    }
+}

@@ -2,15 +2,16 @@
 <html>
 <head>
     <title>Đăng ký tài khoản</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 </head>
 <body class="bg-light">
 
-    <div class="container mt-5">
+    <div class="container mt-4 mt-md-5">
         <div class="row justify-content-center">
-            <div class="col-md-5">
+            <div class="col-12 col-sm-10 col-md-7 col-lg-5">
                 <div class="card shadow-sm">
-                    <div class="card-body p-4">
+                    <div class="card-body p-4 p-md-4">
                         <h3 class="text-center mb-4 text-primary">Tạo tài khoản</h3>
                         
                         <form action="index.php?controller=user&action=create" method="POST">

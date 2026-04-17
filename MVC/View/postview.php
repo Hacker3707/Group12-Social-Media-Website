@@ -11,7 +11,10 @@ if(empty($posts)){
 <?php 
     $isProduct = $post->getPrice() !== null || $post->getCondition() || $post->getStatus();
     $postId = $post->getPostId();
-    $canManagePost = (bool)($canDel_EditPost[$postId] ?? false);
+    $canEditPostMap = $canEditPost ?? $canDel_EditPost ?? [];
+    $canDeletePostMap = $canDeletePost ?? $canDel_EditPost ?? [];
+    $canManagePost = (bool)($canEditPostMap[$postId] ?? false);
+    $canDeleteThisPost = (bool)($canDeletePostMap[$postId] ?? false);
     $groupName = trim((string)($post->getGroupName() ?? ''));
     $hasGroupName = ($groupName !== '' && strcasecmp($groupName, 'No Group') !== 0);
     
@@ -89,11 +92,21 @@ $isProduct = $post->getPrice() !== null
 
             <button class="dropdown-item delete-btn"
                 type="button"
-                data-postid="<?= $postId ?>">
+                data-postid="<?= $postId ?>"
+                data-group-context="<?= !empty($groupModerationContext) ? '1' : '0' ?>">
                 Delete
             </button>
         </div>
     </div>
+    <?php endif; ?>
+
+    <?php if (!$canManagePost && $canDeleteThisPost): ?>
+        <button class="btn btn-sm btn-outline-danger ml-2 delete-btn"
+                type="button"
+                data-postid="<?= $postId ?>"
+                data-group-context="<?= !empty($groupModerationContext) ? '1' : '0' ?>">
+            Delete
+        </button>
     <?php endif; ?>
 
     </div>
@@ -272,6 +285,7 @@ document.addEventListener("click", function(e){
 document.addEventListener("click", function(e){
     if(!e.target.classList.contains("delete-btn")) return;
     let postId = e.target.getAttribute("data-postid");
+    let groupContext = e.target.getAttribute("data-group-context") || "0";
 
     showConfirm("Delete this post?", function(result) {
         if (!result) return;
@@ -297,7 +311,7 @@ document.addEventListener("click", function(e){
 
     xhr.open("POST", "index.php?controller=post&action=deletePost", true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhr.send("postId=" + encodeURIComponent(postId));
+    xhr.send("postId=" + encodeURIComponent(postId) + "&group_context=" + encodeURIComponent(groupContext));
 
     });
 
@@ -646,6 +660,7 @@ document.addEventListener("click", function(e){
     if(!e.target.classList.contains("delete-btn-cmt")) return;
 
     let commentId = e.target.getAttribute("data-comment-id");
+    let groupContext = e.target.getAttribute("data-group-context") || "0";
 
     showConfirm("Delete this comment?", function(result) {
 
@@ -686,7 +701,7 @@ document.addEventListener("click", function(e){
 
         xhr.open("POST","index.php?controller=comment&action=deleteComment",true);
         xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-        xhr.send("commentId=" + encodeURIComponent(commentId));
+        xhr.send("commentId=" + encodeURIComponent(commentId) + "&group_context=" + encodeURIComponent(groupContext));
 
     });
 

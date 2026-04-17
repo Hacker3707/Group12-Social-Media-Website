@@ -16,22 +16,45 @@ class FollowController extends AppController {
         exit;
     }
 
+    private function isAjaxRequest() {
+        return strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest';
+    }
+
+    private function redirectBackWithMessage($message) {
+        $_SESSION['flash_message'] = $message;
+        $referer = $_SERVER['HTTP_REFERER'] ?? 'index.php';
+        header('Location: ' . $referer);
+        exit;
+    }
+
     // follow user
     public function follow() {
 
     if (!isset($_SESSION['user_id'])) {
-        $this->jsonResponse(["status" => "error", "message" => "not_logged_in"]);
+        if ($this->isAjaxRequest()) {
+            $this->jsonResponse(["status" => "error", "message" => "not_logged_in"]);
+        }
+
+        $this->redirectBackWithMessage('Vui lòng đăng nhập để theo dõi người dùng.');
     }
 
     $followerId = (int)$_SESSION['user_id'];
-    $followingId = (int)($_POST['following_id'] ?? 0);
+    $followingId = (int)($_POST['following_id'] ?? ($_GET['id'] ?? 0));
 
     if (!$followingId || $followerId === $followingId) {
-        $this->jsonResponse(["status" => "error", "message" => "invalid_data"]);
+        if ($this->isAjaxRequest()) {
+            $this->jsonResponse(["status" => "error", "message" => "invalid_data"]);
+        }
+
+        $this->redirectBackWithMessage('Bạn không thể tự theo dõi chính mình.');
     }
 
     if ($this->followModel->exists($followerId, $followingId)) {
-        $this->jsonResponse(["status" => "already"]);
+        if ($this->isAjaxRequest()) {
+            $this->jsonResponse(["status" => "already"]);
+        }
+
+        $this->redirectBackWithMessage('Bạn đã theo dõi tài khoản này rồi.');
     }
 
     // 🔥 FOLLOW
@@ -55,34 +78,50 @@ class FollowController extends AppController {
 
     $count = $this->followModel->countFollowers($followingId);
 
-    $this->jsonResponse([
-        "status" => "followed",
-        "count" => $count
-    ]);
+    if ($this->isAjaxRequest()) {
+        $this->jsonResponse([
+            "status" => "followed",
+            "count" => $count
+        ]);
+    }
+
+    $this->redirectBackWithMessage('Đã theo dõi thành công.');
 }
 
     // unfollow
     public function unfollow() {
 
         if (!isset($_SESSION['user_id'])) {
-            $this->jsonResponse(["status" => "error", "message" => "not_logged_in"]);
+            if ($this->isAjaxRequest()) {
+                $this->jsonResponse(["status" => "error", "message" => "not_logged_in"]);
+            }
+
+            $this->redirectBackWithMessage('Vui lòng đăng nhập để bỏ theo dõi.');
         }
 
         $followerId = (int)$_SESSION['user_id'];
-        $followingId = (int)($_POST['following_id'] ?? 0);
+        $followingId = (int)($_POST['following_id'] ?? ($_GET['id'] ?? 0));
 
         if (!$followingId) {
-            $this->jsonResponse(["status" => "error", "message" => "invalid_data"]);
+            if ($this->isAjaxRequest()) {
+                $this->jsonResponse(["status" => "error", "message" => "invalid_data"]);
+            }
+
+            $this->redirectBackWithMessage('Không thể bỏ theo dõi tài khoản này.');
         }
 
        $this->followModel->unfollowUser($followerId, $followingId);
 
         $count = $this->followModel->countFollowers($followingId);
 
-        $this->jsonResponse([
-            "status" => "unfollowed",
-            "count" => $count
-        ]);
+        if ($this->isAjaxRequest()) {
+            $this->jsonResponse([
+                "status" => "unfollowed",
+                "count" => $count
+            ]);
+        }
+
+        $this->redirectBackWithMessage('Đã bỏ theo dõi.');
     }
 
     public function getFollowers() {

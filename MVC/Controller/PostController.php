@@ -212,10 +212,13 @@ public function PostAction()
             $this->showCreateForm();
             break;
 
-        case "showEditForm":
-            $this->showEditForm();
+        case "showEditForm":
+
+            $this->showEditForm();
+
             break;
-
+
+
         default:
             $this->showHome();
             break;
@@ -287,6 +290,7 @@ public function PostAction()
         }
 
         $postId = (int)($_POST['postId'] ?? 0);
+        $groupContext = (int)($_POST['group_context'] ?? 0);
 
         if (!$postId) {
             echo "fail";
@@ -302,8 +306,16 @@ public function PostAction()
         $currentUserId = (int)$_SESSION['user_id'];
         $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
         $isPostOwner = ((int)$post->getUserId() === $currentUserId);
+        $isGroupAdmin = false;
 
-        if (!$isSystemAdmin && !$isPostOwner) {
+        if ($groupContext === 1 && method_exists($post, 'getGroupId')) {
+            $groupId = (int)$post->getGroupId();
+            if ($groupId > 0) {
+                $isGroupAdmin = ($this->groupModel->getUserRole($currentUserId, $groupId) === 'admin');
+            }
+        }
+
+        if (!$isSystemAdmin && !$isPostOwner && !$isGroupAdmin) {
             echo "fail";
             exit;
         }
@@ -509,7 +521,7 @@ public function PostAction()
         }
 
         $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
-        $isPageAdmin = ($_GET['control'] === 'user' && $_GET['action'] === 'list');
+        $isPageAdmin = true;
 
         $postId = (int)($_GET['id'] ?? 0);
         $post = $this->postModel->getById($postId);
