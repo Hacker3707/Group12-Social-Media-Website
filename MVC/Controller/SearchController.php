@@ -133,7 +133,7 @@ class SearchController extends AppController {
 
     if (!empty($keyword)) {
 
-        $posts = $this->postModel->searchPosts($keyword);
+        $posts = $this->postModel->searchVisiblePosts($keyword, (int)$userid);
         $categories = $this->filterCategoriesByName(
             $this->categoryModel->searchCategories($keyword), $keyword
         );
@@ -236,7 +236,7 @@ class SearchController extends AppController {
         if (empty($keyword)) {
             $posts = [];
         } else {
-            $allPosts = $this->filterPostsByContent($this->postModel->searchPosts($keyword), $keyword);
+            $allPosts = $this->filterPostsByContent($this->postModel->searchVisiblePosts($keyword, (int)$userid), $keyword);
             list($posts, $currentPage, $totalPages, $totalItems) = $this->paginateItems($allPosts, $page, $perPage);
 
             foreach($posts as $post) {

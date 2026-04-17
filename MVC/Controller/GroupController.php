@@ -291,10 +291,30 @@ class GroupController {
                 $this->back("Lỗi quyền truy cập!");
             }
 
-            $name = $_POST['group_name'];
-            $desc = $_POST['description'];
-            $privacy = $_POST['privacy'];
-            $categoryId = 0; 
+            $group = $this->groupModel->getById($groupId);
+            if (!$group) {
+                $this->back("Nhóm không tồn tại!");
+            }
+
+            $name = trim((string)($_POST['group_name'] ?? ''));
+            $desc = trim((string)($_POST['description'] ?? ''));
+            $privacy = strtolower((string)($_POST['privacy'] ?? 'public'));
+
+            if ($name === '') {
+                $this->back("Tên nhóm không được để trống!");
+            }
+
+            if (!in_array($privacy, ['public', 'private'], true)) {
+                $privacy = 'public';
+            }
+
+            if (isset($_POST['category_id']) && $_POST['category_id'] !== '') {
+                $categoryId = (int)$_POST['category_id'];
+            } else {
+                $categoryId = isset($group['CategoryID']) && $group['CategoryID'] !== null
+                    ? (int)$group['CategoryID']
+                    : null;
+            }
 
             $this->groupModel->update($groupId, $name, $desc, $privacy, $categoryId);
             $this->redirect("index.php?controller=group&action=detail&id=$groupId", "Cập nhật thông tin nhóm thành công!");

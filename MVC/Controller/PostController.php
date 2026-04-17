@@ -105,8 +105,8 @@ class PostController extends AppController
 
     public function showHome()
     {
-        $posts  = $this->postModel->getAll() ?? [];
         $userid = $_SESSION['user_id'] ?? null;
+        $posts  = $this->postModel->getVisibleForHome((int)$userid) ?? [];
 
         $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
         $isPageAdmin = false;
@@ -273,10 +273,58 @@ public function PostAction()
         $isPageAdmin = false;
 
         $navbarCategories = $this->categoryModel->getAll() ?? [];
+        $userid = (int)($_SESSION['user_id'] ?? 0);
+
+        $reactions_forPost = [];
+        $isSameUser_reactPost = [];
+        $comments = [];
+        $commentTree = [];
+        $reactions_forComment = [];
+        $isSameUser_reactCmt = [];
+        $mediaForPost = [];
+        $canDel_EditPost = [];
 
         if (isset($_GET['category_id'])) {
-            $categoryId = $_GET['category_id'];
-            $posts      = $this->postModel->fetchByField('CategoryID', $categoryId);
+            $categoryId = (int)$_GET['category_id'];
+            $posts      = $this->postModel->getVisibleForHome($userid, $categoryId);
+
+            foreach ($posts as $post) {
+                $postId = $post->getPostId();
+
+                $canDel_EditPost[$postId] = ($userid && (int)$post->getUserId() === (int)$userid) || $isSystemAdmin;
+
+                $reactions_forPost[$postId] = $this->reactionModel->selectReactionsForPost($postId);
+                $isSameUser_reactPost[$postId] = false;
+
+                foreach (($reactions_forPost[$postId] ?? []) as $reaction) {
+                    if ($userid && $reaction->getUserId() == $userid) {
+                        $isSameUser_reactPost[$postId] = true;
+                        break;
+                    }
+                }
+
+                $comments[$postId] = $this->commentModel->fetchByField('PostID', $postId);
+                $commentTree[$postId] = [];
+
+                foreach (($comments[$postId] ?? []) as $c) {
+                    $parent = $c->getParentCommentId();
+                    $commentId = $c->getCommentId();
+
+                    $commentTree[$postId][$parent][] = $c;
+                    $reactions_forComment[$commentId] = $this->reactionModel->selectReactionsForComment($commentId);
+                    $isSameUser_reactCmt[$commentId] = false;
+
+                    foreach (($reactions_forComment[$commentId] ?? []) as $reaction) {
+                        if ($userid && $reaction->getUserId() == $userid) {
+                            $isSameUser_reactCmt[$commentId] = true;
+                            break;
+                        }
+                    }
+                }
+
+                $mediaForPost[$postId] = $this->mediaModel->getByPostId($postId);
+            }
+
             include_once __DIR__ . "/../View/home.php";
         }
         return [];

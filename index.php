@@ -47,10 +47,9 @@ $_SESSION['last_activity'] = time();
 $isLoggedIn = isset($_SESSION['user_id']);
 
 // 2. Quyết định trang mặc định nếu URL trống
-// Nếu đã login -> về trang chủ (post/showHome)
-// Nếu chưa login -> bắt buộc ra trang đăng nhập (user/login)
-$defaultController = $isLoggedIn ? 'post' : 'user';
-$defaultAction     = $isLoggedIn ? 'showHome' : 'login';
+// Luôn vào trang chủ khi mở index.php; login/register là action riêng
+$defaultController = 'post';
+$defaultAction     = 'showHome';
 
 // 3. Lấy tham số từ URL, nếu URL không có thì dùng giá trị mặc định ở trên
 $controllerName = $_GET['controller'] ?? $defaultController;

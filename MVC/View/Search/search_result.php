@@ -137,7 +137,19 @@ $displayUsers = array_slice($users, 0, $maxItems);
                 <?php foreach ($displayPosts as $post): ?>
                     <div class="col-md-3 mb-4">
                         <div class="card group-card h-100">
-                            <img src="https://via.placeholder.com/400x150/1877f2/ffffff?text=<?= urlencode(substr($post->getUsername(), 0, 1)) ?>" class="group-cover-sm">
+                            <?php
+                                $postId = $post->getPostId();
+                                $firstMedia = $mediaForPost[$postId][0] ?? null;
+                            ?>
+                            <?php if ($firstMedia && $firstMedia->getMediaType() === 'photo'): ?>
+                                <img src="/<?= htmlspecialchars($firstMedia->getFilePath()) ?>" class="group-cover-sm" style="object-fit: cover;" alt="Post image">
+                            <?php elseif ($firstMedia && $firstMedia->getMediaType() === 'video'): ?>
+                                <video class="group-cover-sm" style="object-fit: cover; background: #000;" muted>
+                                    <source src="/<?= htmlspecialchars($firstMedia->getFilePath()) ?>">
+                                </video>
+                            <?php else: ?>
+                                <img src="https://via.placeholder.com/400x150/1877f2/ffffff?text=<?= urlencode(substr($post->getUsername(), 0, 1)) ?>" class="group-cover-sm">
+                            <?php endif; ?>
                             <div class="card-body d-flex flex-column">
                                 <h6 class="font-weight-bold text-truncate"><?= htmlspecialchars($post->getTitle()) ?></h6>
                                 <p class="small text-muted mb-3 flex-grow-1 post-preview"><?= htmlspecialchars($post->getContent() ?? 'Chưa có mô tả') ?></p>
