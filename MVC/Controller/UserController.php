@@ -63,7 +63,7 @@ class UserController {
     }
 
     private function generateLoginCaptcha() {
-        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789abcdefghijklmnopqrstuvwxyz';
         $captcha = '';
 
         for ($i = 0; $i < 5; $i++) {
