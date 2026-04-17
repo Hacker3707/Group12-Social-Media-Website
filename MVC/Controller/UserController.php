@@ -15,7 +15,7 @@ include_once "MVC/Service/Supabase/SupabaseService.php";
 include_once "MVC/Service/Cloudinary/CloudinaryService.php";
 
 class UserController {
-    private const LOGIN_CAPTCHA_TTL = 60;
+    private const LOGIN_CAPTCHA_TTL = 180;
 
     private $postModel;
     private $reactionModel;
@@ -76,12 +76,23 @@ class UserController {
         $_SESSION['login_captcha_ttl'] = self::LOGIN_CAPTCHA_TTL;
     }
 
+    private function hasValidLoginCaptcha() {
+        $captchaAnswer = (string)($_SESSION['login_captcha_answer'] ?? '');
+        $captchaGeneratedAt = (int)($_SESSION['login_captcha_generated_at'] ?? 0);
+
+        return $captchaAnswer !== ''
+            && $captchaGeneratedAt > 0
+            && (time() - $captchaGeneratedAt) <= self::LOGIN_CAPTCHA_TTL;
+    }
+
     public function register() {
         include_once "MVC/View/User/register.php";
     }
 
     public function login() {
-        $this->generateLoginCaptcha();
+        if (!$this->hasValidLoginCaptcha()) {
+            $this->generateLoginCaptcha();
+        }
         include_once "MVC/View/User/login.php";
     }
 

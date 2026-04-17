@@ -1,6 +1,6 @@
 DELIMITER $$
 
-CREATE PROCEDURE insert_group (
+CREATE PROCEDURE createGroup(
     IN p_name VARCHAR(255),
     IN p_desc VARCHAR(150),
     IN p_privacy VARCHAR(10),

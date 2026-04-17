@@ -59,7 +59,7 @@
         $captchaQuestion = (string)($_SESSION['login_captcha_question'] ?? 'A B C D E');
         $captchaGeneratedAt = (int)($_SESSION['login_captcha_generated_at'] ?? 0);
         $captchaTtl = (int)($_SESSION['login_captcha_ttl'] ?? 60);
-        $captchaExpiresAt = $captchaGeneratedAt > 0 ? $captchaGeneratedAt + $captchaTtl : 0;
+        $captchaRemainingSeconds = $captchaGeneratedAt > 0 ? max(0, $captchaTtl - (time() - $captchaGeneratedAt)) : 0;
         $captchaLetters = array_values(array_filter(explode(' ', $captchaQuestion), static function ($part) {
             return $part !== '';
         }));
@@ -98,7 +98,7 @@
                                     <?php endforeach; ?>
                                 </span>
                             </label>
-                            <small id="captcha_status" class="captcha-status" data-expires-at="<?= htmlspecialchars((string)$captchaExpiresAt) ?>" data-ttl="<?= htmlspecialchars((string)$captchaTtl) ?>">
+                            <small id="captcha_status" class="captcha-status" data-remaining-seconds="<?= htmlspecialchars((string)$captchaRemainingSeconds) ?>" data-ttl="<?= htmlspecialchars((string)$captchaTtl) ?>">
                                 CAPTCHA hết hạn sau <?= htmlspecialchars((string)$captchaTtl) ?> giây.
                             </small>
                             <input id="captcha_answer" type="text" name="captcha_answer" class="form-control form-control-lg" placeholder="Nhập lại chuỗi ký tự" required>
@@ -130,15 +130,13 @@
         (function () {
             const statusEl = document.getElementById('captcha_status');
             const submitBtn = document.getElementById('login_submit_btn');
-            const expiresAt = Number(statusEl?.dataset.expiresAt || 0);
+            let remainingSeconds = Number(statusEl?.dataset.remainingSeconds || 0);
 
-            if (!statusEl || !submitBtn || !expiresAt) {
+            if (!statusEl || !submitBtn || !remainingSeconds) {
                 return;
             }
 
             const updateStatus = () => {
-                const remainingSeconds = Math.max(0, Math.ceil((expiresAt * 1000 - Date.now()) / 1000));
-
                 if (remainingSeconds <= 0) {
                     statusEl.textContent = 'CAPTCHA đã hết hạn. Vui lòng tải lại trang để lấy mã mới.';
                     statusEl.classList.add('is-expired');
@@ -153,7 +151,7 @@
             updateStatus();
 
             const timerId = setInterval(() => {
-                const remainingSeconds = Math.max(0, Math.ceil((expiresAt * 1000 - Date.now()) / 1000));
+                remainingSeconds -= 1;
 
                 if (remainingSeconds <= 0) {
                     clearInterval(timerId);

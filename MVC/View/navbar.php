@@ -10,6 +10,11 @@ if (isset($_SESSION['flash_message'])): ?>
 // KẾT THÚC: KHU VỰC HIỂN THỊ THÔNG BÁO
 
 ?>
+<?php
+$currentController = $_GET['controller'] ?? 'post';
+$currentAction = $_GET['action'] ?? 'showHome';
+$isHomeRoute = ($currentController === 'post' && $currentAction === 'showHome');
+?>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
   <a class="navbar-brand" href="index.php" style="margin-right: 65px;">
@@ -81,7 +86,9 @@ if (isset($_SESSION['flash_message'])): ?>
             </div>
         <?php else: ?>
             <a href="./index.php?controller=user&action=login" class="btn btn-outline-primary mr-2">Login</a>
+          <?php if (!$isHomeRoute): ?>
             <a href="./index.php?controller=user&action=register" class="btn btn-primary">Register</a>
+          <?php endif; ?>
         <?php endif; ?>
     </div>
 
