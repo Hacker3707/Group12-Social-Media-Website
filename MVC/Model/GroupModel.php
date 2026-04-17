@@ -8,16 +8,34 @@ class GroupModel extends AppModel {
     public function insert(Group $group) {
         $name = mysqli_real_escape_string($this->link, $group->getGroupName());
         $desc = mysqli_real_escape_string($this->link, $group->getDescription());
-        $privacy = $group->getPrivacy(); 
-        $categoryId = (int)$group->getCategoryId(); // Nếu form chưa có Category, có thể tạm để 1 hoặc NULL
+        $privacy = mysqli_real_escape_string($this->link, $group->getPrivacy());
+        $categoryId = $group->getCategoryId();
 
-        $sql = "INSERT INTO groups (GroupName, Description, Privacy, CategoryID) 
-                VALUES ('$name', '$desc', '$privacy', " . ($categoryId ?: "NULL") . ")";
-        
-        // Thay vì chỉ trả về true/false, ta trả về cái ID thật vừa tạo
-        if ($this->execute($sql)) {
-            return $this->getLastInsertId(); 
+        $categoryId = $categoryId ?: null;
+
+        $sql = "CALL createGroup(
+            '$name',
+            '$desc',
+            '$privacy',
+            " . ($categoryId === null ? "NULL" : $categoryId) . "
+        )";
+
+        $result = mysqli_query($this->link, $sql);
+
+        if ($result) {
+            $row = mysqli_fetch_assoc($result);
+            $newId = $row['new_id'] ?? null;
+
+            mysqli_free_result($result);
+
+            // 🔥 QUAN TRỌNG: clear thêm result nếu có
+            while (mysqli_more_results($this->link)) {
+                mysqli_next_result($this->link);
+            }
+
+            return $newId;
         }
+
         return false;
     }
 
