@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Tạo nhóm mới - Passo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <style>
         body { background-color: #f0f2f5; }
@@ -14,7 +15,7 @@
     <?php include 'MVC/View/navbar.php'; ?>
     <div class="container mt-5">
         <div class="row justify-content-center">
-            <div class="col-md-6">
+            <div class="col-12 col-md-8 col-lg-6">
                 <div class="card create-card p-4">
                     <h2 class="font-weight-bold mb-4">Tạo nhóm</h2>
                     <form action="index.php?controller=group&action=store" method="POST">

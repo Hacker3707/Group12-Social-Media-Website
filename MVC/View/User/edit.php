@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Chỉnh sửa hồ sơ - Passo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -30,7 +31,7 @@
 
     <div class="container mt-5">
         <div class="row justify-content-center">
-            <div class="col-md-8">
+            <div class="col-12 col-lg-8">
                 <div class="card settings-card">
                     <div class="card-header-custom">
                         <h3 class="mb-0 font-weight-bold">Chỉnh sửa chi tiết công khai</h3>
@@ -87,8 +88,8 @@
                             
                             <hr class="mt-4 mb-4">
 
-                            <div class="d-flex justify-content-end">
-                                <a href="index.php?controller=user&action=profile&id=<?= $user['UserID'] ?>" class="btn btn-cancel mr-2">Hủy</a>
+                            <div class="d-flex flex-column flex-sm-row justify-content-end">
+                                <a href="index.php?controller=user&action=profile&id=<?= $user['UserID'] ?>" class="btn btn-cancel mr-sm-2 mb-2 mb-sm-0">Hủy</a>
                                 <button type="submit" class="btn btn-save">Lưu thay đổi</button>
                             </div>
                         </form>

@@ -11,7 +11,10 @@ if(empty($posts)){
 <?php 
     $isProduct = $post->getPrice() !== null || $post->getCondition() || $post->getStatus();
     $postId = $post->getPostId();
-    $canManagePost = (bool)($canDel_EditPost[$postId] ?? false);
+    $canEditPostMap = $canEditPost ?? $canDel_EditPost ?? [];
+    $canDeletePostMap = $canDeletePost ?? $canDel_EditPost ?? [];
+    $canManagePost = (bool)($canEditPostMap[$postId] ?? false);
+    $canDeleteThisPost = (bool)($canDeletePostMap[$postId] ?? false);
     $groupName = trim((string)($post->getGroupName() ?? ''));
     $hasGroupName = ($groupName !== '' && strcasecmp($groupName, 'No Group') !== 0);
     
@@ -89,11 +92,21 @@ $isProduct = $post->getPrice() !== null
 
             <button class="dropdown-item delete-btn"
                 type="button"
-                data-postid="<?= $postId ?>">
+                data-postid="<?= $postId ?>"
+                data-group-context="<?= !empty($groupModerationContext) ? '1' : '0' ?>">
                 Delete
             </button>
         </div>
     </div>
+    <?php endif; ?>
+
+    <?php if (!$canManagePost && $canDeleteThisPost): ?>
+        <button class="btn btn-sm btn-outline-danger ml-2 delete-btn"
+                type="button"
+                data-postid="<?= $postId ?>"
+                data-group-context="<?= !empty($groupModerationContext) ? '1' : '0' ?>">
+            Delete
+        </button>
     <?php endif; ?>
 
     </div>

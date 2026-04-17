@@ -2,6 +2,7 @@
 <html>
 <head>
     <title><?= htmlspecialchars($group['GroupName']) ?> | Passo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
@@ -17,6 +18,10 @@
         .nav-tabs { border-bottom: none; }
         .nav-link { color: #65676b; font-weight: 600; padding: 15px 20px; }
         .nav-link.active { color: #1877f2 !important; border-bottom: 3px solid #1877f2 !important; border: none; }
+        @media (max-width: 767.98px) {
+            .group-cover { height: 220px; }
+            .nav-link { padding: 10px 12px; font-size: 0.95rem; }
+        }
     </style>
 </head>
 <body>
@@ -29,7 +34,7 @@
                 <img src="https://picsum.photos/1200/400" class="w-100 h-100" style="object-fit: cover;">
             </div>
             <div class="p-4 relative">
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center">
                     <div>
                         <h1 class="font-weight-bold mb-1"><?= htmlspecialchars($group['GroupName']) ?></h1>
                         <p class="text-muted mb-0">
@@ -38,7 +43,7 @@
                         </p>
                     </div>
 
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex flex-wrap align-items-center mt-3 mt-lg-0">
                         <?php if (isset($_SESSION['user_id'])): ?>
                             
                             <?php if (isset($userRole) && $userRole === 'admin'): ?>
@@ -87,7 +92,7 @@
 
     <div class="container mt-4">
         <div class="row">
-            <div class="col-md-4">
+            <div class="col-12 col-lg-4">
                 <div class="card border-0 shadow-sm p-3 mb-3">
                     <h5 class="font-weight-bold">Giới thiệu</h5>
                     <p><?= nl2br(htmlspecialchars($group['Description'] ?? 'Chào mừng các bạn đến với cộng đồng ' . $group['GroupName'])) ?></p>
@@ -95,7 +100,7 @@
                 </div>
             </div>
             
-            <div class="col-md-8">
+            <div class="col-12 col-lg-8">
                 <?php if (isset($joinStatus) && $joinStatus === 'approved'): ?>
                     
                 <?php endif; ?>

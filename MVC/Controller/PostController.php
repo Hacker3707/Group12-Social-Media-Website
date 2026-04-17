@@ -290,6 +290,7 @@ public function PostAction()
         }
 
         $postId = (int)($_POST['postId'] ?? 0);
+        $groupContext = (int)($_POST['group_context'] ?? 0);
 
         if (!$postId) {
             echo "fail";
@@ -305,8 +306,16 @@ public function PostAction()
         $currentUserId = (int)$_SESSION['user_id'];
         $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
         $isPostOwner = ((int)$post->getUserId() === $currentUserId);
+        $isGroupAdmin = false;
 
-        if (!$isSystemAdmin && !$isPostOwner) {
+        if ($groupContext === 1 && method_exists($post, 'getGroupId')) {
+            $groupId = (int)$post->getGroupId();
+            if ($groupId > 0) {
+                $isGroupAdmin = ($this->groupModel->getUserRole($currentUserId, $groupId) === 'admin');
+            }
+        }
+
+        if (!$isSystemAdmin && !$isPostOwner && !$isGroupAdmin) {
             echo "fail";
             exit;
         }
