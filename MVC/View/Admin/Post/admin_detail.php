@@ -15,11 +15,11 @@
         </div>
 
         <div class="row" id="middle-content">
-            <div class="col-md-3 col-lg-2 col-12 " id="left-sidebar" style="font-size: 11px;">
+            <div class="col-md-3 col-lg-2 col-12 " id="left-sidebar" style="font-size: 15px;">
                 <?php include 'MVC/View/leftsidebar.php'; ?>
             </div>
             
-            <div class="col-md-9 col-lg-10 col-12" id="main-content"  style="padding-left: 0px;">
+            <div class="col-md-9 col-lg-10 col-12" id="main-content"  style="padding: 35px;">
                 
                 <a href="index.php?controller=post&action=list" class="btn btn-secondary mb-3"><i class="fas fa-arrow-left"></i> Quay lại Danh sách</a>
 

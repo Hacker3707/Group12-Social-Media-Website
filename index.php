@@ -2,9 +2,12 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-$sessionTimeout = 1800; // 30 minutes idle timeout
+$sessionTimeout = 1800; // ✅ dùng 1 biến duy nhất
+
 $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+
 ini_set('session.gc_maxlifetime', (string)$sessionTimeout);
+
 session_set_cookie_params([
     'lifetime' => $sessionTimeout,
     'path' => '/',
@@ -12,14 +15,28 @@ session_set_cookie_params([
     'httponly' => true,
     'samesite' => 'Lax'
 ]);
+
 session_start();
 
-if (isset($_SESSION['last_activity']) && (time() - (int)$_SESSION['last_activity']) > $sessionTimeout) {
+// ✅ idle timeout chuẩn
+if (isset($_SESSION['last_activity']) && 
+    (time() - $_SESSION['last_activity']) > $sessionTimeout) {
+
     $_SESSION = [];
+
     if (ini_get('session.use_cookies')) {
         $params = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], (bool)$params['secure'], (bool)$params['httponly']);
+        setcookie(
+            session_name(),
+            '',
+            time() - 42000,
+            $params['path'],
+            $params['domain'] ?? '',
+            (bool)$params['secure'],
+            (bool)$params['httponly']
+        );
     }
+
     session_destroy();
     session_start();
 }

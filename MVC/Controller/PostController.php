@@ -212,10 +212,13 @@ public function PostAction()
             $this->showCreateForm();
             break;
 
-        case "showEditForm":
-            $this->showEditForm();
+        case "showEditForm":
+
+            $this->showEditForm();
+
             break;
-
+
+
         default:
             $this->showHome();
             break;
@@ -509,7 +512,7 @@ public function PostAction()
         }
 
         $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
-        $isPageAdmin = ($_GET['control'] === 'user' && $_GET['action'] === 'list');
+        $isPageAdmin = true;
 
         $postId = (int)($_GET['id'] ?? 0);
         $post = $this->postModel->getById($postId);

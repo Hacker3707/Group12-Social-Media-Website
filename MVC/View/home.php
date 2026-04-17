@@ -44,5 +44,6 @@
         </div>
 
     </div>
-
+    <script src="MVC/View/script/comment.js"></script>
+    <script src="MVC/View/script/post.js"></script>
 </body>
