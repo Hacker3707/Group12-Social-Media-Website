@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Nhóm của bạn | Passo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <style>
         body { background-color: #f0f2f5; }
@@ -17,9 +18,9 @@
     <?php include 'MVC/View/navbar.php'; ?>
 
     <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
             <h2 class="font-weight-bold">Nhóm của bạn</h2>
-            <a href="index.php?controller=group&action=create" class="btn btn-primary font-weight-bold">+ Tạo nhóm mới</a>
+            <a href="index.php?controller=group&action=create" class="btn btn-primary font-weight-bold mt-2 mt-md-0">+ Tạo nhóm mới</a>
         </div>
 
         <div class="row">
@@ -30,7 +31,7 @@
                 </div>
             <?php else: ?>
                 <?php foreach ($myGroups as $group): ?>
-                    <div class="col-md-4 mb-4">
+                    <div class="col-12 col-sm-6 col-lg-4 mb-4">
                         <div class="card group-card h-100">
                             <img src="https://via.placeholder.com/400x150/1877f2/ffffff?text=<?= urlencode(substr($group['GroupName'], 0, 1)) ?>" class="group-cover-sm" alt="Cover">
                             

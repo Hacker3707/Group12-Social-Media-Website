@@ -2,6 +2,7 @@
 <html>
 <head>
     <title><?= htmlspecialchars($user['Username']) ?> | Passo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -11,6 +12,31 @@
 
     <style>
         /* ── Page ── */
+        @media (max-width: 767.98px) {
+            .profile-name {
+                font-size: 1.6rem;
+            }
+
+            .profile-bio {
+                font-size: 0.95rem;
+            }
+
+            .content-section {
+                padding-left: 8px;
+                padding-right: 8px;
+            }
+
+            .nav-pills .nav-link {
+                padding: 0.45rem 0.7rem;
+                font-size: 0.95rem;
+            }
+
+            #followBtn,
+            .chat-btn {
+                width: 100%;
+                margin-left: 0 !important;
+            }
+        }
         
     </style>
 </head>
@@ -38,13 +64,13 @@
                 
                 <?php if(isset($_SESSION['user_id']) && $_SESSION['user_id'] == $user['UserID']): ?>
                     <a href="index.php?controller=user&action=edit&id=<?= $user['UserID'] ?>"
-                       class="btn btn-light font-weight-bold mt-2">
+                       class="btn btn-light font-weight-bold mt-2 d-block d-sm-inline-block">
                         <i class="fas fa-pen"></i> Chỉnh sửa trang cá nhân
                     </a>
                     
                     <?php if (!$sameUser): ?>
                     <!-- Chủ trang cũng có thể mở Messenger của mình -->
-                    <button class="chat-btn mt-2 ml-2" onclick="openMessenger()">
+                    <button class="chat-btn mt-2 ml-sm-2 d-block d-sm-inline-block" onclick="openMessenger()">
                         💬 Tin nhắn
                     </button>
                     <?php endif; ?>
@@ -52,7 +78,7 @@
                 <?php elseif(isset($_SESSION['user_id'])): ?>
                     <?php $isFollowing = $isFollowing ?? false; ?>
                     <button id="followBtn"
-                            class="follow-btn mt-2 <?= $isFollowing ? 'following' : '' ?>"
+                            class="follow-btn mt-2 d-block d-sm-inline-block <?= $isFollowing ? 'following' : '' ?>"
                             data-user-id="<?= $user['UserID'] ?>">
                         <?= $isFollowing ? 'Đang theo dõi' : 'Theo dõi' ?>
                     </button>
@@ -60,7 +86,7 @@
                     <!-- Mở Messenger và focus thẳng vào cuộc trò chuyện với user này -->
 
                     <?php if (!$sameUser): ?>
-                    <button class="chat-btn mt-2 ml-2"
+                    <button class="chat-btn mt-2 ml-sm-2 d-block d-sm-inline-block"
                             onclick="openMessengerWith(<?= (int)$user['UserID'] ?>, '<?= htmlspecialchars($user['Username'], ENT_QUOTES) ?>')">
                         💬 Nhắn tin
                     </button>
@@ -94,12 +120,12 @@
             <div class="col-md-12 px-0">
                 <?php if(isset($_SESSION['user_id']) && $_SESSION['user_id'] == $user['UserID']): ?>
                 <div class="card card-custom p-3 mb-3">
-                    <div class="d-flex align-items-center">
-                        <img src="<?= !empty($user['AvatarFP']) ? $user['AvatarFP'] : 'https://via.placeholder.com/40' ?>" class="rounded-circle mr-2" width="40" height="40">
-                        <a href="index.php?controller=post&action=showCreateForm" class="form-control rounded-pill bg-light text-muted text-left" style="border:none; text-decoration:none; line-height: 1.6;">
+                    <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center">
+                        <img src="<?= !empty($user['AvatarFP']) ? $user['AvatarFP'] : 'https://via.placeholder.com/40' ?>" class="rounded-circle mr-md-2 mb-2 mb-md-0" width="40" height="40">
+                        <a href="index.php?controller=post&action=showCreateForm" class="form-control rounded-pill bg-light text-muted text-left mb-2 mb-md-0" style="border:none; text-decoration:none; line-height: 1.6;">
                             <?= htmlspecialchars($user['Username']) ?> oi, ban dang nghi gi the?
                         </a>
-                        <a href="index.php?controller=post&action=showCreateForm" class="btn btn-primary ml-2">Create Post</a>
+                        <a href="index.php?controller=post&action=showCreateForm" class="btn btn-primary ml-md-2">Create Post</a>
                     </div>
                 </div>
                 <?php endif; ?>

@@ -114,6 +114,7 @@ class GroupController {
         $memberCount = $this->groupModel->getMemberCount($groupId);
         $joinStatus = $this->groupModel->getJoinStatus($userId, $groupId);
         $userRole = $this->groupModel->getUserRole($userId, $groupId);
+        $isGroupAdmin = ($userRole === 'admin');
 
         // ==========================================================
         // 🔥 BỘ LỌC QUYỀN TRUY CẬP VÀ TƯƠNG TÁC (NEW)
@@ -121,6 +122,7 @@ class GroupController {
         $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
         $canViewPosts = true;
         $canInteract = true;
+        $groupModerationContext = false;
 
         if (!$isSystemAdmin) {
             // Luật 1: Nhóm Private + Chưa tham gia -> Cấm xem bài
@@ -144,11 +146,15 @@ class GroupController {
         }
 
         $userid = $_SESSION['user_id'] ?? null;
-        $canDel_EditPost = [];
+        $canEditPost = [];
+        $canDeletePost = [];
+        $groupModerationContext = $isSystemAdmin || $isGroupAdmin;
 
         foreach ($posts as $post) {
             $postId = $post->getPostId();
-            $canDel_EditPost[$postId] = ($userid && (int)$post->getUserId() === (int)$userid) || $isSystemAdmin;
+            $isOwnerPost = ($userid && (int)$post->getUserId() === (int)$userid);
+            $canEditPost[$postId] = $isOwnerPost || $isSystemAdmin;
+            $canDeletePost[$postId] = $isOwnerPost || $isSystemAdmin || $isGroupAdmin;
         }
 
         
