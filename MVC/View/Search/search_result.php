@@ -170,47 +170,6 @@ $displayUsers = array_slice($users, 0, $maxItems);
             <?php endif; ?>
         </div>
 
-        <!-- Like Post Script -->
-        <script>
-            document.addEventListener("click", function(e){
-
-            let btn = e.target.closest(".like-btn");
-            if(!btn) return;
-
-            let postId = btn.getAttribute("data-postid");
-
-            let xhr = new XMLHttpRequest();
-
-            xhr.onreadystatechange = function(){
-
-                if(xhr.readyState === 4 && xhr.status === 200){
-
-                    if(xhr.responseText.trim() === "success"){
-
-                        let badge = btn.querySelector(".like-count");
-                        let count = parseInt(badge.textContent);
-
-                        badge.textContent = count + 1;
-
-                    }
-                    else{
-                        alert("Like failed");
-                    }
-
-                }
-
-            };
-
-            xhr.open("POST", "index.php?controller=reaction&action=addReaction", true);
-            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            xhr.send(
-                "postId=" + encodeURIComponent(postId) +
-                "&type=like"
-            );
-
-        });
-        </script>
-
         <div class="row mb-4 align-items-center">
             <div class="col-md-6">
                 <h3 class="font-weight-bold">Tìm kiếm danh mục</h3>

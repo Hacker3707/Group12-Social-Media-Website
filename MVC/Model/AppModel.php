@@ -11,7 +11,7 @@ abstract class AppModel {
     }
 
     public function taoKetNoi() {
-        $this->link = mysqli_connect(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT);
+        $this->link = mysqli_connect("localhost", "root", "", "passo");
 
         if(!$this->link){
             die("Không thể kết nối CSDL: ".mysqli_connect_error());
