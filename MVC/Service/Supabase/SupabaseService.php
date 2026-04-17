@@ -4,12 +4,26 @@ require_once dirname(__DIR__, 2) . '/Core/EnvSetup.php';
 
 class SupabaseService
 {
+    private static function getAppBaseUrl($envConfig)
+    {
+        $appUrl = trim((string)($envConfig('APP_URL') ?? ''));
+
+        if ($appUrl === '' || stripos($appUrl, 'localhost') !== false || stripos($appUrl, '127.0.0.1') !== false) {
+            $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+            $scheme = $isHttps ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost');
+            $appUrl = $scheme . '://' . $host;
+        }
+
+        return rtrim($appUrl, '/');
+    }
+
     public static function getGoogleLoginUrl()
     {
         $envConfig = EnvSetup::env(dirname(__DIR__, 3)); 
         
         $baseUrl = $envConfig('SUPABASE_URL') ?? '';
-        $appUrl = $envConfig('APP_URL') ?? '';
+        $appUrl = self::getAppBaseUrl($envConfig);
         
         $redirectUrl = rtrim($appUrl, '/') . '/MVC/View/User/callback.php'; 
         

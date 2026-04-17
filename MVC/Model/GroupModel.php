@@ -108,18 +108,25 @@ class GroupModel extends AppModel {
     }
 
     // ================= UPDATE =================
-    public function update($groupId, $name, $desc, $privacy, $categoryId) {
+    public function update($groupId, $name, $desc, $privacy, $categoryId = null) {
         $groupId = (int)$groupId;
         $name = mysqli_real_escape_string($this->link, $name);
         $desc = mysqli_real_escape_string($this->link, $desc);
         $privacy = mysqli_real_escape_string($this->link, $privacy);
-        $categoryId = (int)$categoryId;
+        $categorySql = "NULL";
+
+        if ($categoryId !== null) {
+            $categoryId = (int)$categoryId;
+            if ($categoryId > 0) {
+                $categorySql = (string)$categoryId;
+            }
+        }
 
         $sql = "UPDATE groups 
                 SET GroupName = '$name', 
                     Description = '$desc', 
                     Privacy = '$privacy', 
-                    CategoryID = $categoryId
+                    CategoryID = $categorySql
                 WHERE GroupID = $groupId";
 
         return $this->execute($sql);

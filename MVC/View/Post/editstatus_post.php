@@ -1,5 +1,3 @@
-<?php define("BASE_URL", "/Group12-Social-Media-Website/"); ?>
-
 <form id="postForm" method="POST" enctype="multipart/form-data">
 <input type="hidden" name="is_product" id="isProductInput" value="1">
 

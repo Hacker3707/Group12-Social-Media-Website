@@ -137,7 +137,7 @@
                     errorText.style.display = 'block';
 
                     setTimeout(() => {
-                        window.location.href = '/client/auth/login?error=network_error';
+                        window.location.href = 'login.php?error=network_error';
                     }, 5000);
                 });
         } else {
@@ -147,7 +147,7 @@
             errorText.style.display = 'block';
 
             setTimeout(() => {
-                window.location.href = '/client/auth/login?error=no_token';
+                window.location.href = 'login.php?error=no_token';
             }, 2000);
         }
     </script>

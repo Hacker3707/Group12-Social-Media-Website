@@ -4,6 +4,52 @@ include_once __DIR__ . "/../../Entity/Post.php";
 
 class PostModel extends AppModel {
 
+    public function getVisibleForHome($viewerUserId, $categoryId = null) {
+        $viewerUserId = (int)$viewerUserId;
+
+        $categoryCondition = '';
+        if ($categoryId !== null) {
+            $categoryId = (int)$categoryId;
+            $categoryCondition = " AND p.CategoryID = $categoryId";
+        }
+
+        $sql = "SELECT p.*, u.Username, u.AvatarFP, c.CategoryName, g.GroupName
+                FROM post p
+                JOIN `users` u ON p.UserID = u.UserID
+                LEFT JOIN category c ON p.CategoryID = c.CategoryID
+                LEFT JOIN `groups` g ON g.GroupID = p.GroupID
+                LEFT JOIN group_member gm ON gm.GroupID = p.GroupID
+                    AND gm.UserID = $viewerUserId
+                    AND gm.Status = 'approved'
+                WHERE (
+                    p.GroupID IS NULL
+                    OR g.Privacy = 'public'
+                    OR gm.UserID IS NOT NULL
+                )
+                $categoryCondition
+                ORDER BY p.CreatedAt DESC";
+
+        $result = $this->query($sql);
+        $posts = [];
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            $post = new Post(
+                $row['PostID'], $row['UserID'], $row['GroupID'], $row['CategoryID'],
+                $row['Title'], $row['Content'], $row['Price'], $row['ProductCondition'],
+                $row['Location'], $row['Brand'], $row['PostStatus']
+            );
+            $post->setUsername($row['Username']);
+            $post->setCreatedAt($row['CreatedAt']);
+            $post->setCategoryName($row['CategoryName'] ?? 'No Category');
+            $post->setAvatar($row['AvatarFP']);
+            $post->setGroupName($row['GroupName'] ?? 'No Group');
+
+            $posts[] = $post;
+        }
+
+        return $posts;
+    }
+
     public function insertPost(Post $post) {
         $groupId = $post->getGroupId() === null ? "NULL" : intval($post->getGroupId());
         $categoryId = $post->getCategoryId() === null ? "NULL" : intval($post->getCategoryId());
@@ -38,9 +84,9 @@ class PostModel extends AppModel {
         // Đã thêm: u.AvatarFP
         $sql = "SELECT p.*, u.Username, u.AvatarFP, c.CategoryName, g.GroupName
                 FROM post p
-                JOIN users u ON p.UserID = u.UserID
+                JOIN `users` u ON p.UserID = u.UserID
                 LEFT JOIN category c ON p.CategoryID = c.CategoryID
-            LEFT JOIN groups g ON g.GroupID = p.GroupID
+            LEFT JOIN `groups` g ON g.GroupID = p.GroupID
                 ORDER BY p.CreatedAt DESC";
 
         $result = $this->query($sql);
@@ -81,9 +127,9 @@ class PostModel extends AppModel {
         // Đã thêm: u.AvatarFP
         $sql = "SELECT p.*, u.Username, u.AvatarFP, c.CategoryName, g.GroupName
                 FROM post p
-                JOIN users u ON p.UserID = u.UserID
+                JOIN `users` u ON p.UserID = u.UserID
                 LEFT JOIN category c ON p.CategoryID = c.CategoryID
-                LEFT JOIN groups g ON g.GroupID = p.GroupID
+                LEFT JOIN `groups` g ON g.GroupID = p.GroupID
                 WHERE p.$field = $value
                 ORDER BY p.CreatedAt DESC";
 
@@ -134,7 +180,7 @@ class PostModel extends AppModel {
         // Đã thêm: u.AvatarFP
         $sql = "SELECT p.*, u.Username, u.AvatarFP 
                 FROM post p
-                JOIN users u ON p.UserID = u.UserID
+                JOIN `users` u ON p.UserID = u.UserID
                 WHERE p.PostID = $postId";
         $result = $this->query($sql);
 
@@ -158,9 +204,9 @@ class PostModel extends AppModel {
         // Đã thêm: u.AvatarFP
         $sql = "SELECT p.*, u.Username, u.AvatarFP, c.CategoryName, g.GroupName
                 FROM post p
-                JOIN users u ON p.UserID = u.UserID
+                JOIN `users` u ON p.UserID = u.UserID
                 LEFT JOIN category c ON p.CategoryID = c.CategoryID
-            LEFT JOIN groups g ON g.GroupID = p.GroupID
+            LEFT JOIN `groups` g ON g.GroupID = p.GroupID
                 WHERE p.Title LIKE '%$keyword%' OR p.Content LIKE '%$keyword%'
                 ORDER BY p.CreatedAt DESC";
 
@@ -181,6 +227,48 @@ class PostModel extends AppModel {
 
             $posts[] = $post;
         }
+        return $posts;
+    }
+
+    public function searchVisiblePosts($keyword, $viewerUserId) {
+        $keyword = mysqli_real_escape_string($this->link, $keyword);
+        $viewerUserId = (int)$viewerUserId;
+
+        $sql = "SELECT p.*, u.Username, u.AvatarFP, c.CategoryName, g.GroupName
+                FROM post p
+                JOIN `users` u ON p.UserID = u.UserID
+                LEFT JOIN category c ON p.CategoryID = c.CategoryID
+                LEFT JOIN `groups` g ON g.GroupID = p.GroupID
+                LEFT JOIN group_member gm ON gm.GroupID = p.GroupID
+                    AND gm.UserID = $viewerUserId
+                    AND gm.Status = 'approved'
+                WHERE
+                    (p.Title LIKE '%$keyword%' OR p.Content LIKE '%$keyword%')
+                    AND (
+                        p.GroupID IS NULL
+                        OR g.Privacy = 'public'
+                        OR gm.UserID IS NOT NULL
+                    )
+                ORDER BY p.CreatedAt DESC";
+
+        $result = $this->query($sql);
+        $posts = [];
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            $post = new Post(
+                $row['PostID'], $row['UserID'], $row['GroupID'], $row['CategoryID'],
+                $row['Title'], $row['Content'], $row['Price'], $row['ProductCondition'],
+                $row['Location'], $row['Brand'], $row['PostStatus']
+            );
+            $post->setUsername($row['Username']);
+            $post->setCreatedAt($row['CreatedAt']);
+            $post->setCategoryName($row['CategoryName'] ?? 'No Category');
+            $post->setAvatar($row['AvatarFP']);
+            $post->setGroupName($row['GroupName'] ?? 'No Group');
+
+            $posts[] = $post;
+        }
+
         return $posts;
     }
 
