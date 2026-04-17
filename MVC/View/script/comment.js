@@ -286,6 +286,7 @@ document.addEventListener("click", function(e){
     if(!e.target.classList.contains("delete-btn-cmt")) return;
 
     let commentId = e.target.getAttribute("data-comment-id");
+    let groupContext = e.target.getAttribute("data-group-context") || "0";
 
     showConfirm("Delete this comment?", function(result) {
 
@@ -326,7 +327,7 @@ document.addEventListener("click", function(e){
 
         xhr.open("POST","index.php?controller=comment&action=deleteComment",true);
         xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-        xhr.send("commentId=" + encodeURIComponent(commentId));
+        xhr.send("commentId=" + encodeURIComponent(commentId) + "&group_context=" + encodeURIComponent(groupContext));
 
     });
 

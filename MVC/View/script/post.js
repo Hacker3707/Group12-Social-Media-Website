@@ -19,6 +19,7 @@ document.addEventListener("click", function(e){
 document.addEventListener("click", function(e){
     if(!e.target.classList.contains("delete-btn")) return;
     let postId = e.target.getAttribute("data-postid");
+    let groupContext = e.target.getAttribute("data-group-context") || "0";
 
     showConfirm("Delete this post?", function(result) {
         if (!result) return;
@@ -44,7 +45,7 @@ document.addEventListener("click", function(e){
 
     xhr.open("POST", "index.php?controller=post&action=deletePost", true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhr.send("postId=" + encodeURIComponent(postId));
+    xhr.send("postId=" + encodeURIComponent(postId) + "&group_context=" + encodeURIComponent(groupContext));
 
     });
 
