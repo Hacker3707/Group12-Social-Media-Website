@@ -105,111 +105,107 @@ class SearchController extends AppController {
 
     public function find() {
 
-        $userid = $_SESSION['user_id'] ?? null;
-        $isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+    $userid = $_SESSION['user_id'] ?? null;
+    $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+    $isPageAdmin = false;
 
-        $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
-        $isPageAdmin = false;
+    $navbarCategories = $this->categoryModel->getAll() ?? [];
 
-        $navbarCategories = $this->categoryModel->getAll() ?? [];
+    $keyword = $_GET['searchResults'] ?? '';
 
-        $keyword = $_GET['searchResults'] ?? '';
-        $userFollowStatus = []; // 🔥 Mảng lưu follow status cho mỗi user
-        
-        if(empty($keyword)){
-            $posts = [];
-            $categories = [];
-            $groups = [];
-            $users = [];
-            $reactions = [];
-        } else {
-            $posts = $this->postModel->searchPosts($keyword);
-            $categories = $this->filterCategoriesByName($this->categoryModel->searchCategories($keyword), $keyword);
-            $groups = $this->filterGroupRowsByName($this->groupModel->searchGroups($keyword), $keyword);
-            $users = $this->userModel->searchUsers($keyword, $isAdmin);
-            
-            // 🔥 Check follow status cho mỗi user (MVC: Model -> Controller -> View)
-            if ($userid) {
-                foreach ($users as $user) {
-                    $userFollowStatus[$user->getUserId()] = $this->followModel->exists($userid, $user->getUserId());
-                }
-            }
-            
-            foreach($posts as $post) {
-            $reactions[$post->getPostId()] = $this->reactionModel->selectReactionsForPost($post->getPostId());
-            }
-            $isSameUser_reactPost = [];
+    $userFollowStatus = []; // 🔥 Mảng lưu follow status cho mỗi user
 
-        foreach($posts as $post){
+    // 🔥 Check follow status cho mỗi user (MVC: Model -> Controller -> View)
+
+    $posts = [];
+    $categories = [];
+    $groups = [];
+    $users = [];
+
+    $reactions_forPost = [];
+    $isSameUser_reactPost = [];
+    $comments = [];
+    $commentTree = [];
+    $reactions_forComment = [];
+    $isSameUser_reactCmt = [];
+    $mediaForPost = [];
+    $canDel_EditPost = [];
+
+    if (!empty($keyword)) {
+
+        $posts = $this->postModel->searchPosts($keyword);
+        $categories = $this->filterCategoriesByName(
+            $this->categoryModel->searchCategories($keyword), $keyword
+        );
+
+        $groups = $this->filterGroupRowsByName(
+            $this->groupModel->searchGroups($keyword), $keyword
+        );
+
+        $users = $this->userModel->searchUsers($keyword);
+
+        if ($userid) {
+        foreach ($users as $user) {
+            $userFollowStatus[$user->getUserId()] = $this->followModel->exists($userid, $user->getUserId()); 
+            } 
+        }
+
+        foreach ($posts as $post) {
 
             $postId = $post->getPostId();
+
+            // quyền edit/delete
+            $canDel_EditPost[$postId] =
+                ($userid && (int)$post->getUserId() === (int)$userid) || $isSystemAdmin;
+
+            // reactions post
+            $reactions_forPost[$postId] =
+                $this->reactionModel->selectReactionsForPost($postId);
+
             $isSameUser_reactPost[$postId] = false;
 
-            foreach($reactions[$postId] ?? [] as $reaction){
-                if($reaction->getUserId() == $userid){
+            foreach ($reactions_forPost[$postId] as $reaction) {
+                if ($userid && $reaction->getUserId() == $userid) {
                     $isSameUser_reactPost[$postId] = true;
                     break;
                 }
             }
 
-        }
+            // comments
+            $comments[$postId] =
+                $this->commentModel->fetchByField('PostID', $postId);
 
-        $comments = [];
-        foreach($posts as $post) {
-            $comments[$post->getPostId()] = $this->commentModel->fetchByField('PostID', $post->getPostId());
-        }
-
-        $commentTree = [];
-
-        foreach($posts as $post){
-
-            $postId = $post->getPostId();
             $commentTree[$postId] = [];
 
-            foreach($comments[$postId] as $c){
+            foreach ($comments[$postId] as $c) {
+
                 $parent = $c->getParentCommentId();
+                $commentId = $c->getCommentId();
+
                 $commentTree[$postId][$parent][] = $c;
-            }
-        }
 
-        $reactions_forComment = [];
-
-        foreach($comments as $postComments){
-
-            foreach($postComments as $comment){
-
-                $commentId = $comment->getCommentId();
-
+                // reaction comment
                 $reactions_forComment[$commentId] =
                     $this->reactionModel->selectReactionsForComment($commentId);
 
-            }
+                $isSameUser_reactCmt[$commentId] = false;
 
-        }
-
-        $isSameUser_reactPost_reactCmt = [];
-
-            foreach($comments as $postComments){
-
-                foreach($postComments as $comment){
-
-                    $commentId = $comment->getCommentId();
-                    $isSameUser_reactPost_reactCmt[$commentId] = false;
-
-                    foreach(($reactions_forComment[$commentId] ?? []) as $reaction){
-                        if($reaction->getUserId() == $userid){
-                            $isSameUser_reactPost_reactCmt[$commentId] = true;
-                            break;
-                        }
+                foreach ($reactions_forComment[$commentId] as $reaction) {
+                    if ($userid && $reaction->getUserId() == $userid) {
+                        $isSameUser_reactCmt[$commentId] = true;
+                        break;
                     }
-
                 }
-
             }
-        }
 
-        include_once __DIR__ . "/../View/Search/search_view.php";
+            // media
+            $mediaForPost[$postId] =
+                $this->mediaModel->getByPostId($postId);
+        }
     }
+
+    include_once __DIR__ . "/../View/Search/search_view.php";
+}
 
     public function searchPosts() {
 
