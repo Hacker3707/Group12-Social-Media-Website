@@ -412,7 +412,7 @@ class UserController {
         $id = $_GET['id'] ?? ($_SESSION['user_id'] ?? null);
 
         $sameUser = false;
-        if ($_SESSION['user_id'] == $_GET['id']) {
+        if (isset($_SESSION['user_id'], $_GET['id']) && $_SESSION['user_id'] == $id) {
             $sameUser = true;
         }
 

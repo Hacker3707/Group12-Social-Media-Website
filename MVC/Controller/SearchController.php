@@ -123,10 +123,10 @@ class SearchController extends AppController {
             $users = [];
             $reactions = [];
         } else {
-            $posts = $this->filterPostsByContent($this->postModel->searchPosts($keyword), $keyword);
-            $categories = $this->filterCategoriesByName($this->categoryModel->searchCategories($keyword), $keyword);
-            $groups = $this->filterGroupRowsByName($this->groupModel->searchGroups($keyword), $keyword);
-            $users = $this->filterUsersByUsername($this->userModel->searchUsers($keyword, $isAdmin), $keyword);
+            $posts = $this->postModel->searchPosts($keyword);
+            $categories = $this->filterCategoriesByName($this->categoryModel->searchCategories($keyword), $keyword);
+            $groups = $this->filterGroupRowsByName($this->groupModel->searchGroups($keyword), $keyword);
+            $users = $this->userModel->searchUsers($keyword, $isAdmin);
             
             // 🔥 Check follow status cho mỗi user (MVC: Model -> Controller -> View)
             if ($userid) {
