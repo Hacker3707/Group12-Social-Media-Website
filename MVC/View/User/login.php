@@ -2,12 +2,13 @@
 <html>
 <head>
     <title>Passo - Đăng nhập hoặc Đăng ký</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <style>
         body { background-color: #f0f2f5; } 
         /* Căn chỉnh logo hình ảnh */
-        .fb-logo-img { width: 300px; margin-left: -20px; margin-bottom: 10px; }
-        .fb-tagline { font-size: 1.75rem; font-weight: 400; line-height: 32px; width: 500px; color: #1c1e21; }
+        .fb-logo-img { width: 100%; max-width: 300px; margin-bottom: 10px; }
+        .fb-tagline { font-size: 1.75rem; font-weight: 400; line-height: 1.35; width: 100%; max-width: 500px; color: #1c1e21; }
         .login-card { border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, .1), 0 8px 16px rgba(0, 0, 0, .1); padding: 20px; background: #fff; }
         .btn-login { background-color: #1877f2; font-size: 1.25rem; font-weight: bold; padding: 10px; border: none; }
         .btn-register { background-color: #42b72a; font-size: 1.1rem; font-weight: bold; padding: 10px 20px; border-radius: 6px; color: white; border: none; display: inline-block; }
@@ -57,22 +58,22 @@
     <?php
         $captchaQuestion = (string)($_SESSION['login_captcha_question'] ?? 'A B C D E');
         $captchaGeneratedAt = (int)($_SESSION['login_captcha_generated_at'] ?? 0);
-        $captchaTtl = (int)($_SESSION['login_captcha_ttl'] ?? 30);
+        $captchaTtl = (int)($_SESSION['login_captcha_ttl'] ?? 60);
         $captchaExpiresAt = $captchaGeneratedAt > 0 ? $captchaGeneratedAt + $captchaTtl : 0;
         $captchaLetters = array_values(array_filter(explode(' ', $captchaQuestion), static function ($part) {
             return $part !== '';
         }));
     ?>
 
-    <div class="container d-flex align-items-center" style="min-height: 100vh;">
-        <div class="row w-100 justify-content-between">
+    <div class="container py-4 py-md-0 d-flex align-items-center min-vh-100">
+        <div class="row w-100 justify-content-between align-items-center">
             
-            <div class="col-md-6 d-flex flex-column justify-content-center pb-5">
-                <img src="Materials/Picture/Passo.png" alt="Passo Logo" class="fb-logo-img">
-                <h2 class="fb-tagline">Chào mừng đến với Passo, nơi đồ second hand tìm được chủ mới dễ dàng hơn.</h2>
+            <div class="col-12 col-lg-6 d-flex flex-column justify-content-center text-center text-lg-left mb-4 mb-lg-0">
+                <img src="Materials/Picture/Passo.png" alt="Passo Logo" class="fb-logo-img img-fluid d-block mx-auto mx-lg-0">
+                <h2 class="fb-tagline mx-auto mx-lg-0">Chào mừng đến với Passo, nơi đồ second hand tìm được chủ mới dễ dàng hơn.</h2>
             </div>
             
-            <div class="col-md-5">
+            <div class="col-12 col-lg-5">
                 <div class="login-card">
                     <?php if (isset($_SESSION['flash_message'])): ?>
                         <div class="flash-message" role="alert">
@@ -118,7 +119,7 @@
                     <hr>
                     
                     <div class="text-center mt-4 mb-2">
-                        <a href="index.php?controller=user&action=register" class="btn btn-register">Tạo tài khoản mới</a>
+                        <a href="index.php?controller=user&action=register" class="btn btn-register d-block d-sm-inline-block">Tạo tài khoản mới</a>
                     </div>
                 </div>
             </div>

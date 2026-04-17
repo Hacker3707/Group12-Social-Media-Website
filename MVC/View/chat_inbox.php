@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Tin nhắn | Passo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -21,14 +22,14 @@
         </div>
 
         <div class="row" id="middle-content">
-            <div class="col-md-2 col-12" id="left-sidebar">
+            <div class="col-lg-2 d-none d-lg-block" id="left-sidebar">
                 <?php include(__DIR__ . "/leftsidebar.php"); ?>
             </div>
 
-            <div class="col-md-10 col-12 mt-3 mb-4">
+            <div class="col-12 col-lg-10 mt-3 mb-4">
                 <div class="card chat-page-card">
                     <div class="row no-gutters">
-                        <div class="col-md-4 friend-pane">
+                        <div class="col-12 col-lg-4 friend-pane">
                             <div class="friend-pane-header">
                                 <h4 class="font-weight-bold text-primary mb-3">
                                     <i class="fas fa-comments"></i> Tin nhắn
@@ -64,7 +65,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-8 chat-pane">
+                        <div class="col-12 col-lg-8 chat-pane">
                             <div class="chat-header">
                                 <div class="chat-header-avatar" id="chat-header-avatar">💬</div>
                                 <div class="chat-header-name" id="chat-header-name">Chọn một tài khoản để bắt đầu trò chuyện</div>

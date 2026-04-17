@@ -600,3 +600,57 @@ body { background-color: #f0f2f5; }
             object-fit: cover;
             border: 1px solid #ddd;
         }
+
+@media (max-width: 767.98px) {
+    #main-content,
+    .content-section {
+        padding: 12px;
+    }
+
+    .profile-name {
+        font-size: 1.6rem;
+    }
+
+    .profile-bio {
+        font-size: 0.95rem;
+    }
+
+    .card-custom {
+        margin-bottom: 12px;
+    }
+
+    #mess-box {
+        width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    #mess-sidebar {
+        width: 220px;
+        min-width: 220px;
+    }
+
+    .mbubble {
+        max-width: 85%;
+    }
+}
+
+@media (max-width: 575.98px) {
+    #mess-sidebar {
+        display: none;
+    }
+
+    #mess-box {
+        width: 100vw;
+        height: 100vh;
+    }
+
+    #mess-chat-hdr {
+        padding: 10px 12px;
+    }
+
+    #mess-msg-list {
+        padding: 10px;
+    }
+}

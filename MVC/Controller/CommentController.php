@@ -2,17 +2,20 @@
 include_once __DIR__ . "/../Model/CommentModel.php";
 include_once __DIR__ . "/../Model/NotificationModel.php";
 include_once __DIR__ . "/../Model/PostModel.php";
+include_once __DIR__ . "/../Model/GroupModel.php";
 
 class CommentController {
     private $commentModel;
     private $notiModel;
     private $postModel;
+    private $groupModel;
     
    
     public function __construct() {
         $this->commentModel = new CommentModel();
         $this -> notiModel = new NotificationModel();
         $this -> postModel = new PostModel();
+        $this -> groupModel = new GroupModel();
     }
 
    public function addComment() {
@@ -147,6 +150,7 @@ class CommentController {
         }
 
         $commentId = (int)($_POST['commentId'] ?? 0);
+        $groupContext = (int)($_POST['group_context'] ?? 0);
 
         if(!$commentId){
             echo json_encode([
@@ -170,16 +174,23 @@ class CommentController {
         $isCommentOwner = ((int)$comment['user_id'] === $currentUserId);
 
         $isPostOwner = false;
+        $isGroupAdmin = false;
         $postId = (int)($comment['post_id'] ?? 0);
         if ($postId > 0) {
             $postModel = new PostModel();
             $post = $postModel->getById($postId);
             if ($post) {
                 $isPostOwner = ((int)$post->getUserId() === $currentUserId);
+                if ($groupContext === 1 && method_exists($post, 'getGroupId')) {
+                    $groupId = (int)$post->getGroupId();
+                    if ($groupId > 0) {
+                        $isGroupAdmin = ($this->groupModel->getUserRole($currentUserId, $groupId) === 'admin');
+                    }
+                }
             }
         }
 
-        if (!$isAdmin && !$isCommentOwner && !$isPostOwner) {
+        if (!$isAdmin && !$isCommentOwner && !$isPostOwner && !$isGroupAdmin) {
             echo json_encode([
                 "status" => "error",
                 "message" => "Ban khong co quyen xoa comment nay"

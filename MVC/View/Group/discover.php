@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Khám phá nhóm | Passo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <style>
         body { background-color: #f0f2f5; }
@@ -14,16 +15,16 @@
 
     <div class="container mt-4">
         <div class="row mb-4 align-items-center">
-            <div class="col-md-6">
+            <div class="col-12 col-md-6 mb-3 mb-md-0">
                 <h2 class="font-weight-bold">Khám phá các nhóm</h2>
                 <p class="text-muted">Tìm kiếm và tham gia những cộng đồng có cùng sở thích với bạn.</p>
             </div>
             
-            <div class="col-md-6">
-                <form action="index.php" method="GET" class="d-flex">
+            <div class="col-12 col-md-6">
+                <form action="index.php" method="GET" class="d-flex flex-column flex-sm-row">
                     <input type="hidden" name="controller" value="group">
                     <input type="hidden" name="action" value="discover">
-                    <input type="text" name="q" class="form-control mr-2" placeholder="Nhập tên nhóm bạn muốn tìm..." value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
+                    <input type="text" name="q" class="form-control mr-sm-2 mb-2 mb-sm-0" placeholder="Nhập tên nhóm bạn muốn tìm..." value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
                     <button type="submit" class="btn btn-primary">Tìm kiếm</button>
                 </form>
             </div>
@@ -36,7 +37,7 @@
                 </div>
             <?php else: ?>
                 <?php foreach ($groups as $group): ?>
-                    <div class="col-md-3 mb-4">
+                    <div class="col-12 col-sm-6 col-lg-3 mb-4">
                         <div class="card group-card h-100">
                             <img src="https://via.placeholder.com/400x150/1877f2/ffffff?text=<?= urlencode(substr($group['GroupName'], 0, 1)) ?>" class="group-cover-sm">
                             <div class="card-body d-flex flex-column">

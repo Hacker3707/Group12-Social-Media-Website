@@ -15,7 +15,7 @@ include_once "MVC/Service/Supabase/SupabaseService.php";
 include_once "MVC/Service/Cloudinary/CloudinaryService.php";
 
 class UserController {
-    private const LOGIN_CAPTCHA_TTL = 30;
+    private const LOGIN_CAPTCHA_TTL = 60;
 
     private $postModel;
     private $reactionModel;

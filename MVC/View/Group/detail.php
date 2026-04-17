@@ -2,6 +2,7 @@
 <html>
 <head>
     <title><?= htmlspecialchars($group['GroupName']) ?> | Passo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
@@ -17,6 +18,16 @@
         .nav-tabs { border-bottom: none; }
         .nav-link { color: #65676b; font-weight: 600; padding: 15px 20px; }
         .nav-link.active { color: #1877f2 !important; border-bottom: 3px solid #1877f2 !important; border: none; }
+        @media (max-width: 767.98px) {
+            .group-cover {
+                height: 220px;
+            }
+
+            .nav-link {
+                padding: 10px 12px;
+                font-size: 0.95rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -29,7 +40,7 @@
                 <img src="https://picsum.photos/1200/400" class="w-100 h-100" style="object-fit: cover;">
             </div>
             <div class="p-4 relative">
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center">
                     <div>
                         <h1 class="font-weight-bold mb-1"><?= htmlspecialchars($group['GroupName']) ?></h1>
                         <p class="text-muted mb-0">
@@ -38,7 +49,7 @@
                         </p>
                     </div>
 
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex flex-wrap align-items-center mt-3 mt-lg-0">
                         <?php if (isset($_SESSION['user_id'])): ?>
                             
                             <?php if (isset($userRole) && $userRole === 'admin'): ?>
@@ -130,7 +141,7 @@
                 ?>
                     <div class="row" id="lower-bar">
                         <div class="col-md-1 col-12">
-                            <a href="index.php?controller=group&action=showCreateForm&id=<?= $group['GroupID'] ?>" class="btn btn-primary shadow font-weight-bold" style="position: fixed; bottom: 30px; right: 30px; border-radius: 50px; padding: 10px 20px; z-index: 1000;">
+                            <a href="index.php?controller=group&action=showCreateForm&id=<?= $group['GroupID'] ?>" class="btn btn-primary shadow font-weight-bold" style="position: fixed; bottom: 16px; right: 16px; border-radius: 50px; padding: 10px 16px; z-index: 1000;">
                                 <i class="fas fa-pen mr-1"></i> Create Post
                             </a>
                         </div>

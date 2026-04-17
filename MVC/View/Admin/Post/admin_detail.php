@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Chi tiết Bài đăng | Passo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="MVC/View/css/home.css"> 
@@ -15,11 +16,11 @@
         </div>
 
         <div class="row" id="middle-content">
-            <div class="col-md-3 col-lg-2 col-12 " id="left-sidebar" style="font-size: 15px;">
+            <div class="col-12 col-lg-2 mb-3 mb-lg-0" id="left-sidebar" style="font-size: 11px;">
                 <?php include 'MVC/View/leftsidebar.php'; ?>
             </div>
             
-            <div class="col-md-9 col-lg-10 col-12" id="main-content"  style="padding: 35px;">
+            <div class="col-12 col-lg-10" id="main-content"  style="padding-left: 0px;">
                 
                 <a href="index.php?controller=post&action=list" class="btn btn-secondary mb-3"><i class="fas fa-arrow-left"></i> Quay lại Danh sách</a>
 

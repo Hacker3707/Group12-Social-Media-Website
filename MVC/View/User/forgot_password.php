@@ -2,14 +2,15 @@
 <html>
 <head>
     <title>Quên mật khẩu - Passo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 </head>
 <body class="bg-light">
     <div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
         <div class="row w-100 justify-content-center">
-            <div class="col-md-5">
+            <div class="col-12 col-sm-10 col-md-7 col-lg-5">
                 <div class="card shadow-sm border-0">
-                    <div class="card-body p-5">
+                    <div class="card-body p-4 p-md-5">
                         
                         <div class="text-center mb-4">
                             <a href="index.php">

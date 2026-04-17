@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <head>
     <title>Home Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
@@ -18,10 +19,10 @@
         </div>
 
         <div class="row" id = "middle-content">
-            <div class= "col-md-2 col-12" id = "left-sidebar">
+            <div class= "col-12 col-lg-2 mb-3 mb-lg-0" id = "left-sidebar">
                 <?php include_once __DIR__ . "/../leftsidebar.php"; ?>
             </div>
-            <div class= "col-md-10 col-12" id = "main-content">
+            <div class= "col-12 col-lg-10" id = "main-content">
                 <?php
                 if (isset($keyword)) {
                     echo "<h2>Search Results for Post: " . htmlspecialchars($keyword) . "</h2>";

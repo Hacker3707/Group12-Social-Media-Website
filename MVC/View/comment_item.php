@@ -26,13 +26,15 @@
                     $isSystemAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
                     $isCommentOwner = ((int)$c->getUserId() === $currentUserId);
                     $isPostOwner = (isset($postOwnerId) && (int)$postOwnerId === $currentUserId);
-                    $canDeleteComment = $isSystemAdmin || $isCommentOwner || $isPostOwner;
+                    $canGroupDelete = !empty($groupModerationContext) && !empty($isGroupAdmin);
+                    $canDeleteComment = $isSystemAdmin || $isCommentOwner || $isPostOwner || $canGroupDelete;
                 ?>
 
                 <?php if ($canDeleteComment): ?>
                     <button class="dropdown-item delete-btn-cmt"
                             type="button"
-                            data-comment-id="<?= $c->getCommentId() ?>">
+                            data-comment-id="<?= $c->getCommentId() ?>"
+                            data-group-context="<?= !empty($groupModerationContext) ? '1' : '0' ?>">
                         Delete
                     </button>
                 <?php endif; ?>
