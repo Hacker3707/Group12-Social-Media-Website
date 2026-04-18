@@ -112,12 +112,11 @@
                                                     <?php if ($u->getUserId() != $_SESSION['user_id']): ?>
 
                                                         <!-- Chat -->
-                                                        <button type="button"
-                                                                class="btn btn-sm btn-primary mr-1"
-                                                                title="Nhắn tin"
-                                                                onclick="startChat(<?= (int)$u->getUserId() ?>, '<?= htmlspecialchars($u->getUsername(), ENT_QUOTES) ?>')">
+                                                        <a href="index.php?controller=chat&action=inbox&user_id=<?= (int)$u->getUserId() ?>"
+                                                           class="btn btn-sm btn-primary mr-1"
+                                                           title="Nhắn tin">
                                                             <i class="fas fa-comment-dots"></i>
-                                                        </button>
+                                                        </a>
 
                                                         <?php if ($u->getAccountStatus() !== 'banned'): ?>
                                                             <!-- Khóa -->
@@ -162,7 +161,5 @@
             </div>
         </div>
     </div>
-
-    <?php include_once "MVC/View/chat_widget.php"; ?>
 </body>
 </html>

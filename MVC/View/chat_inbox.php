@@ -22,7 +22,7 @@
         </div>
 
         <div class="row" id="middle-content">
-            <div class="col-lg-2 d-none d-lg-block" id="left-sidebar">
+            <div class="col-12 col-lg-2 mb-3 mb-lg-0" id="left-sidebar">
                 <?php include(__DIR__ . "/leftsidebar.php"); ?>
             </div>
 
@@ -44,21 +44,38 @@
                                     </div>
                                 <?php else: ?>
                                     <?php foreach ($friends as $f): ?>
+                                        <?php
+                                            $friendId = (int)($f['UserID'] ?? 0);
+                                            $friendName = (string)($f['Username'] ?? 'User');
+                                            $rawAvatar = html_entity_decode(trim((string)($f['AvatarFP'] ?? '')), ENT_QUOTES, 'UTF-8');
+                                            if ($rawAvatar !== '' && strpos($rawAvatar, '//') === 0) {
+                                                $rawAvatar = 'https:' . $rawAvatar;
+                                            }
+                                            $friendAvatar = $rawAvatar !== '' ? $rawAvatar : null;
+                                            $unreadCount = (int)($f['UnreadCount'] ?? 0);
+                                            $lastPreview = trim((string)($f['LastMessagePreview'] ?? 'Nhấn để trò chuyện'));
+                                            if ($lastPreview === '') {
+                                                $lastPreview = 'Nhấn để trò chuyện';
+                                            }
+                                        ?>
                                         <div class="friend-item"
-                                             id="friend-<?= (int)$f['UserID'] ?>"
-                                             data-name="<?= htmlspecialchars(strtolower($f['Username']), ENT_QUOTES) ?>"
-                                             onclick="openChatFromList(<?= (int)$f['UserID'] ?>, '<?= htmlspecialchars($f['Username'], ENT_QUOTES) ?>', '<?= htmlspecialchars($f['AvatarFP'] ?? '', ENT_QUOTES) ?>')">
+                                             id="friend-<?= $friendId ?>"
+                                             data-name="<?= htmlspecialchars(strtolower($friendName), ENT_QUOTES) ?>"
+                                             onclick="openChatFromList(<?= $friendId ?>, '<?= htmlspecialchars($friendName, ENT_QUOTES) ?>', '<?= htmlspecialchars($friendAvatar ?? '', ENT_QUOTES) ?>')">
                                             <div class="friend-avatar">
-                                                <?php if (!empty($f['AvatarFP'])): ?>
-                                                    <img src="<?= htmlspecialchars($f['AvatarFP']) ?>" alt="">
+                                                <?php if ($friendAvatar !== null): ?>
+                                                    <img src="<?= htmlspecialchars($friendAvatar, ENT_QUOTES) ?>" alt="">
                                                 <?php else: ?>
-                                                    <?= strtoupper(substr($f['Username'], 0, 1)) ?>
+                                                    <?= strtoupper(substr($friendName, 0, 1)) ?>
                                                 <?php endif; ?>
                                             </div>
-                                            <div class="flex-grow-1">
-                                                <div class="friend-name"><?= htmlspecialchars($f['Username']) ?></div>
-                                                <div class="friend-bio"><?= htmlspecialchars($f['Bio'] ?? 'Nhấn để trò chuyện') ?></div>
+                                            <div class="friend-content flex-grow-1">
+                                                <div class="friend-name<?= $unreadCount > 0 ? ' unread' : '' ?>"><?= htmlspecialchars($friendName) ?></div>
+                                                <div class="friend-preview<?= $unreadCount > 0 ? ' unread' : '' ?>"><?= htmlspecialchars($lastPreview) ?></div>
                                             </div>
+                                            <?php if ($unreadCount > 0): ?>
+                                                <span class="friend-unread-badge"><?= $unreadCount ?></span>
+                                            <?php endif; ?>
                                         </div>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -124,6 +141,22 @@
     let currentEmojiTarget = null;
     let activeFriendItem = null;
 
+    function normalizeAvatarUrl(url) {
+        const raw = String(url || '').trim();
+        if (!raw) return '';
+
+        const decoded = raw
+            .replace(/&amp;/g, '&')
+            .replace(/&#039;/g, "'")
+            .replace(/&quot;/g, '"');
+
+        if (decoded.indexOf('//') === 0) {
+            return 'https:' + decoded;
+        }
+
+        return decoded;
+    }
+
     function filterFriends(q) {
         q = String(q || '').toLowerCase();
         document.querySelectorAll('.friend-item').forEach(item => {
@@ -148,8 +181,9 @@
         document.getElementById('chat-header-name').textContent = uname;
 
         const avBox = document.getElementById('chat-header-avatar');
-        avBox.innerHTML = avatar
-            ? `<img src="${avatar}" alt="" style="width:100%;height:100%;object-fit:cover;">`
+        const normalizedAvatar = normalizeAvatarUrl(avatar);
+        avBox.innerHTML = normalizedAvatar
+            ? `<img src="${normalizedAvatar}" alt="" style="width:100%;height:100%;object-fit:cover;">`
             : uname.charAt(0).toUpperCase();
 
         currentConvId = null;
@@ -170,9 +204,63 @@
 
                 currentConvId = d.conversation_id;
 
-                if (d.other_user && d.other_user.avatar) {
-                    avBox.innerHTML = `<img src="${d.other_user.avatar}" alt="" style="width:100%;height:100%;object-fit:cover;">`;
+                const apiAvatar = normalizeAvatarUrl(d.other_user && d.other_user.avatar ? d.other_user.avatar : '');
+                if (apiAvatar) {
+                    avBox.innerHTML = `<img src="${apiAvatar}" alt="" style="width:100%;height:100%;object-fit:cover;">`;
                 }
+
+                renderMessages(d.messages || []);
+                if ((d.messages || []).length > 0) {
+                    currentLastMsgId = d.messages[d.messages.length - 1].MessageID;
+                }
+                startPoll();
+            })
+            .catch(err => alert('Lỗi mở chat: ' + err));
+    }
+
+    function openChatDirect(uid) {
+        const safeUid = parseInt(uid, 10);
+        if (!safeUid) return;
+
+        if (activeFriendItem) activeFriendItem.classList.remove('active');
+        activeFriendItem = null;
+
+        document.getElementById('chat-empty').style.display = 'none';
+        document.getElementById('msg-list').style.display = 'flex';
+        document.getElementById('sticker-bar').style.display = 'flex';
+        document.getElementById('chat-input').style.display = 'flex';
+        document.getElementById('msg-list').innerHTML = '';
+        document.getElementById('chat-header-name').textContent = 'Đang tải...';
+
+        const avBox = document.getElementById('chat-header-avatar');
+        avBox.innerHTML = '💬';
+
+        currentConvId = null;
+        currentLastMsgId = 0;
+        stopPoll();
+
+        fetch(`index.php?controller=chat&action=open&user_id=${safeUid}`)
+            .then(r => r.text())
+            .then(t => {
+                let d;
+                try { d = JSON.parse(t); }
+                catch (e) { alert('Lỗi mở chat: ' + t); return; }
+
+                if (d.status !== 'ok') {
+                    alert('Lỗi mở chat: ' + (d.debug || d.message || 'unknown'));
+                    return;
+                }
+
+                currentConvId = d.conversation_id;
+
+                const otherUser = d.other_user || {};
+                const uname = String(otherUser.username || 'User');
+                document.getElementById('chat-header-name').textContent = uname;
+
+                const apiAvatar = normalizeAvatarUrl(otherUser.avatar || '');
+                avBox.innerHTML = apiAvatar
+                    ? `<img src="${apiAvatar}" alt="" style="width:100%;height:100%;object-fit:cover;">`
+                    : uname.charAt(0).toUpperCase();
 
                 renderMessages(d.messages || []);
                 if ((d.messages || []).length > 0) {
@@ -425,7 +513,12 @@
         if (!uid) return;
 
         const item = document.getElementById('friend-' + uid);
-        if (item) item.click();
+        if (item) {
+            item.click();
+            return;
+        }
+
+        openChatDirect(uid);
     })();
     </script>
 </body>

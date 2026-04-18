@@ -106,7 +106,5 @@
             </div>
         </div>
     </div>
-
-    <?php include_once "MVC/View/chat_widget.php"; ?>
 </body>
 </html>
